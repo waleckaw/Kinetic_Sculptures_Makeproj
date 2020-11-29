@@ -1,0 +1,559 @@
+ARM GAS  C:\cygwin64\tmp\ccRcUFPF.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"ring_buf.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.resetRingBuf,"ax",%progbits
+  18              		.align	1
+  19              		.global	resetRingBuf
+  20              		.arch armv7e-m
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  24              		.fpu fpv4-sp-d16
+  26              	resetRingBuf:
+  27              	.LVL0:
+  28              	.LFB3:
+  29              		.file 1 "Src/ring_buf.c"
+   1:Src/ring_buf.c **** #include "ring_buf.h"
+   2:Src/ring_buf.c **** #include <stdint.h>
+   3:Src/ring_buf.c **** #include <stdio.h>
+   4:Src/ring_buf.c **** #include "CustomUserFunctions.h"
+   5:Src/ring_buf.c **** 
+   6:Src/ring_buf.c **** void resetRingBuf(ring_buffer *buf) {
+  30              		.loc 1 6 37 view -0
+  31              		.cfi_startproc
+  32              		@ args = 0, pretend = 0, frame = 0
+  33              		@ frame_needed = 0, uses_anonymous_args = 0
+  34              		@ link register save eliminated.
+   7:Src/ring_buf.c ****     buf->numFilled = 0;
+  35              		.loc 1 7 5 view .LVU1
+  36              		.loc 1 7 20 is_stmt 0 view .LVU2
+  37 0000 0023     		movs	r3, #0
+  38 0002 80F83C30 		strb	r3, [r0, #60]
+   8:Src/ring_buf.c ****     buf->head = 0;
+  39              		.loc 1 8 5 is_stmt 1 view .LVU3
+  40              		.loc 1 8 15 is_stmt 0 view .LVU4
+  41 0006 4364     		str	r3, [r0, #68]
+   9:Src/ring_buf.c ****     buf->tail = 0;
+  42              		.loc 1 9 5 is_stmt 1 view .LVU5
+  43              		.loc 1 9 15 is_stmt 0 view .LVU6
+  44 0008 8364     		str	r3, [r0, #72]
+  10:Src/ring_buf.c **** }
+  45              		.loc 1 10 1 view .LVU7
+  46 000a 7047     		bx	lr
+  47              		.cfi_endproc
+  48              	.LFE3:
+ARM GAS  C:\cygwin64\tmp\ccRcUFPF.s 			page 2
+
+
+  50              		.section	.text.addToRingBuf,"ax",%progbits
+  51              		.align	1
+  52              		.global	addToRingBuf
+  53              		.syntax unified
+  54              		.thumb
+  55              		.thumb_func
+  56              		.fpu fpv4-sp-d16
+  58              	addToRingBuf:
+  59              	.LVL1:
+  60              	.LFB4:
+  11:Src/ring_buf.c **** 
+  12:Src/ring_buf.c ****  void addToRingBuf(ring_buffer *buf, analogPosnArray val) {
+  61              		.loc 1 12 59 is_stmt 1 view -0
+  62              		.cfi_startproc
+  63              		@ args = 0, pretend = 0, frame = 8
+  64              		@ frame_needed = 0, uses_anonymous_args = 0
+  65              		@ link register save eliminated.
+  66              		.loc 1 12 59 is_stmt 0 view .LVU9
+  67 0000 10B4     		push	{r4}
+  68              	.LCFI0:
+  69              		.cfi_def_cfa_offset 4
+  70              		.cfi_offset 4, -4
+  71 0002 83B0     		sub	sp, sp, #12
+  72              	.LCFI1:
+  73              		.cfi_def_cfa_offset 16
+  74 0004 0346     		mov	r3, r0
+  75 0006 02A8     		add	r0, sp, #8
+  76              	.LVL2:
+  77              		.loc 1 12 59 view .LVU10
+  78 0008 00E90600 		stmdb	r0, {r1, r2}
+  13:Src/ring_buf.c ****     if (buf->numFilled == buf->size) {
+  79              		.loc 1 13 5 is_stmt 1 view .LVU11
+  80              		.loc 1 13 12 is_stmt 0 view .LVU12
+  81 000c 93F83C20 		ldrb	r2, [r3, #60]	@ zero_extendqisi2
+  82              		.loc 1 13 30 view .LVU13
+  83 0010 196C     		ldr	r1, [r3, #64]
+  84              		.loc 1 13 8 view .LVU14
+  85 0012 8A42     		cmp	r2, r1
+  86 0014 19D0     		beq	.L6
+  87              	.L3:
+  14:Src/ring_buf.c ****         buf->tail++;
+  15:Src/ring_buf.c ****         buf->tail = buf->tail % buf->size;
+  16:Src/ring_buf.c ****     }
+  17:Src/ring_buf.c **** 
+  18:Src/ring_buf.c ****     if (buf->numFilled < buf->size) {
+  88              		.loc 1 18 5 is_stmt 1 view .LVU15
+  89              		.loc 1 18 8 is_stmt 0 view .LVU16
+  90 0016 8A42     		cmp	r2, r1
+  91 0018 02DA     		bge	.L4
+  19:Src/ring_buf.c ****         buf->numFilled++;
+  92              		.loc 1 19 9 is_stmt 1 view .LVU17
+  93              		.loc 1 19 23 is_stmt 0 view .LVU18
+  94 001a 0132     		adds	r2, r2, #1
+  95 001c 83F83C20 		strb	r2, [r3, #60]
+  96              	.L4:
+  20:Src/ring_buf.c ****     }
+  21:Src/ring_buf.c **** 
+ARM GAS  C:\cygwin64\tmp\ccRcUFPF.s 			page 3
+
+
+  22:Src/ring_buf.c ****     buf->head++;
+  97              		.loc 1 22 5 is_stmt 1 view .LVU19
+  98              		.loc 1 22 8 is_stmt 0 view .LVU20
+  99 0020 5A6C     		ldr	r2, [r3, #68]
+ 100              		.loc 1 22 14 view .LVU21
+ 101 0022 501C     		adds	r0, r2, #1
+  23:Src/ring_buf.c ****     buf->head = buf->head % buf->size;
+ 102              		.loc 1 23 5 is_stmt 1 view .LVU22
+ 103              		.loc 1 23 27 is_stmt 0 view .LVU23
+ 104 0024 90FBF1F2 		sdiv	r2, r0, r1
+ 105 0028 01FB1202 		mls	r2, r1, r2, r0
+ 106              		.loc 1 23 15 view .LVU24
+ 107 002c 5A64     		str	r2, [r3, #68]
+  24:Src/ring_buf.c **** 
+  25:Src/ring_buf.c ****     buf->vals[buf->head] = val;
+ 108              		.loc 1 25 5 is_stmt 1 view .LVU25
+ 109              		.loc 1 25 26 is_stmt 0 view .LVU26
+ 110 002e 02EB4202 		add	r2, r2, r2, lsl #1
+ 111 0032 03EB4201 		add	r1, r3, r2, lsl #1
+ 112 0036 0098     		ldr	r0, [sp]
+ 113 0038 43F81200 		str	r0, [r3, r2, lsl #1]	@ unaligned
+ 114 003c BDF80430 		ldrh	r3, [sp, #4]	@ unaligned
+ 115              	.LVL3:
+ 116              		.loc 1 25 26 view .LVU27
+ 117 0040 8B80     		strh	r3, [r1, #4]	@ unaligned
+  26:Src/ring_buf.c **** }
+ 118              		.loc 1 26 1 view .LVU28
+ 119 0042 03B0     		add	sp, sp, #12
+ 120              	.LCFI2:
+ 121              		.cfi_remember_state
+ 122              		.cfi_def_cfa_offset 4
+ 123              		@ sp needed
+ 124 0044 5DF8044B 		ldr	r4, [sp], #4
+ 125              	.LCFI3:
+ 126              		.cfi_restore 4
+ 127              		.cfi_def_cfa_offset 0
+ 128 0048 7047     		bx	lr
+ 129              	.LVL4:
+ 130              	.L6:
+ 131              	.LCFI4:
+ 132              		.cfi_restore_state
+  14:Src/ring_buf.c ****         buf->tail = buf->tail % buf->size;
+ 133              		.loc 1 14 9 is_stmt 1 view .LVU29
+  14:Src/ring_buf.c ****         buf->tail = buf->tail % buf->size;
+ 134              		.loc 1 14 12 is_stmt 0 view .LVU30
+ 135 004a 986C     		ldr	r0, [r3, #72]
+  14:Src/ring_buf.c ****         buf->tail = buf->tail % buf->size;
+ 136              		.loc 1 14 18 view .LVU31
+ 137 004c 0130     		adds	r0, r0, #1
+  15:Src/ring_buf.c ****     }
+ 138              		.loc 1 15 9 is_stmt 1 view .LVU32
+  15:Src/ring_buf.c ****     }
+ 139              		.loc 1 15 31 is_stmt 0 view .LVU33
+ 140 004e 90FBF1F4 		sdiv	r4, r0, r1
+ 141 0052 01FB1400 		mls	r0, r1, r4, r0
+  15:Src/ring_buf.c ****     }
+ 142              		.loc 1 15 19 view .LVU34
+ARM GAS  C:\cygwin64\tmp\ccRcUFPF.s 			page 4
+
+
+ 143 0056 9864     		str	r0, [r3, #72]
+ 144 0058 DDE7     		b	.L3
+ 145              		.cfi_endproc
+ 146              	.LFE4:
+ 148              		.section	.rodata.getRingBufXRecent.str1.4,"aMS",%progbits,1
+ 149              		.align	2
+ 150              	.LC0:
+ 151 0000 63616E6E 		.ascii	"cannot return value from the future\015\000"
+ 151      6F742072 
+ 151      65747572 
+ 151      6E207661 
+ 151      6C756520 
+ 152 0025 000000   		.align	2
+ 153              	.LC1:
+ 154 0028 78206578 		.ascii	"x exceeds size of buf\015\000"
+ 154      63656564 
+ 154      73207369 
+ 154      7A65206F 
+ 154      66206275 
+ 155              		.section	.text.getRingBufXRecent,"ax",%progbits
+ 156              		.align	1
+ 157              		.global	getRingBufXRecent
+ 158              		.syntax unified
+ 159              		.thumb
+ 160              		.thumb_func
+ 161              		.fpu fpv4-sp-d16
+ 163              	getRingBufXRecent:
+ 164              	.LVL5:
+ 165              	.LFB5:
+  27:Src/ring_buf.c **** 
+  28:Src/ring_buf.c **** //0 = most recent (head)
+  29:Src/ring_buf.c **** analogPosnArray getRingBufXRecent(ring_buffer *buf, int x) {
+ 166              		.loc 1 29 60 is_stmt 1 view -0
+ 167              		.cfi_startproc
+ 168              		@ args = 0, pretend = 0, frame = 0
+ 169              		@ frame_needed = 0, uses_anonymous_args = 0
+ 170              		.loc 1 29 60 is_stmt 0 view .LVU36
+ 171 0000 38B5     		push	{r3, r4, r5, lr}
+ 172              	.LCFI5:
+ 173              		.cfi_def_cfa_offset 16
+ 174              		.cfi_offset 3, -16
+ 175              		.cfi_offset 4, -12
+ 176              		.cfi_offset 5, -8
+ 177              		.cfi_offset 14, -4
+ 178 0002 0546     		mov	r5, r0
+ 179 0004 0C46     		mov	r4, r1
+  30:Src/ring_buf.c **** 
+  31:Src/ring_buf.c ****     if (x < 0) {
+ 180              		.loc 1 31 5 is_stmt 1 view .LVU37
+ 181              		.loc 1 31 8 is_stmt 0 view .LVU38
+ 182 0006 002A     		cmp	r2, #0
+ 183              		.loc 1 31 8 view .LVU39
+ 184 0008 0FDB     		blt	.L14
+  32:Src/ring_buf.c ****         printf("cannot return value from the future\r\n");
+  33:Src/ring_buf.c ****         return buf->vals[buf->head];
+  34:Src/ring_buf.c ****     } else if (x > buf->size-1) { //starts at 0, so x=4 is really 5th most recent
+ 185              		.loc 1 34 12 is_stmt 1 view .LVU40
+ARM GAS  C:\cygwin64\tmp\ccRcUFPF.s 			page 5
+
+
+ 186              		.loc 1 34 23 is_stmt 0 view .LVU41
+ 187 000a 096C     		ldr	r1, [r1, #64]
+ 188              	.LVL6:
+ 189              		.loc 1 34 15 view .LVU42
+ 190 000c 9142     		cmp	r1, r2
+ 191 000e 1ADD     		ble	.L15
+ 192              	.LBB2:
+  35:Src/ring_buf.c ****         printf("x exceeds size of buf\r\n");
+  36:Src/ring_buf.c ****         return buf->vals[buf->tail]; //whats the best thing to actually do here? return oldest val?
+  37:Src/ring_buf.c ****     } else {
+  38:Src/ring_buf.c ****         int ind;
+ 193              		.loc 1 38 9 is_stmt 1 view .LVU43
+  39:Src/ring_buf.c ****         if (x == 0) {
+ 194              		.loc 1 39 9 view .LVU44
+ 195              		.loc 1 39 12 is_stmt 0 view .LVU45
+ 196 0010 3ABB     		cbnz	r2, .L11
+  40:Src/ring_buf.c ****             ind = buf->head;
+ 197              		.loc 1 40 13 is_stmt 1 view .LVU46
+ 198              		.loc 1 40 17 is_stmt 0 view .LVU47
+ 199 0012 636C     		ldr	r3, [r4, #68]
+ 200              	.LVL7:
+ 201              	.L12:
+  41:Src/ring_buf.c ****         } else if ((buf->head - x) < 0) {
+  42:Src/ring_buf.c ****             ind = buf->size - (x - buf->head);
+  43:Src/ring_buf.c ****         } else {
+  44:Src/ring_buf.c ****             ind = buf->head - x;
+  45:Src/ring_buf.c ****         }
+  46:Src/ring_buf.c ****         return buf->vals[ind];
+ 202              		.loc 1 46 9 is_stmt 1 view .LVU48
+ 203              		.loc 1 46 25 is_stmt 0 view .LVU49
+ 204 0014 03EB4302 		add	r2, r3, r3, lsl #1
+ 205 0018 04EB4203 		add	r3, r4, r2, lsl #1
+ 206              	.LVL8:
+ 207              		.loc 1 46 25 view .LVU50
+ 208 001c 54F81220 		ldr	r2, [r4, r2, lsl #1]	@ unaligned
+ 209 0020 2A60     		str	r2, [r5]	@ unaligned
+ 210 0022 9B88     		ldrh	r3, [r3, #4]	@ unaligned
+ 211 0024 AB80     		strh	r3, [r5, #4]	@ unaligned
+ 212              	.L7:
+ 213              		.loc 1 46 25 view .LVU51
+ 214              	.LBE2:
+  47:Src/ring_buf.c ****     }
+  48:Src/ring_buf.c **** }
+ 215              		.loc 1 48 1 view .LVU52
+ 216 0026 2846     		mov	r0, r5
+ 217 0028 38BD     		pop	{r3, r4, r5, pc}
+ 218              	.LVL9:
+ 219              	.L14:
+  32:Src/ring_buf.c ****         return buf->vals[buf->head];
+ 220              		.loc 1 32 9 is_stmt 1 view .LVU53
+ 221 002a 1148     		ldr	r0, .L16
+ 222              	.LVL10:
+  32:Src/ring_buf.c ****         return buf->vals[buf->head];
+ 223              		.loc 1 32 9 is_stmt 0 view .LVU54
+ 224 002c FFF7FEFF 		bl	puts
+ 225              	.LVL11:
+  33:Src/ring_buf.c ****     } else if (x > buf->size-1) { //starts at 0, so x=4 is really 5th most recent
+ARM GAS  C:\cygwin64\tmp\ccRcUFPF.s 			page 6
+
+
+ 226              		.loc 1 33 9 is_stmt 1 view .LVU55
+  33:Src/ring_buf.c ****     } else if (x > buf->size-1) { //starts at 0, so x=4 is really 5th most recent
+ 227              		.loc 1 33 29 is_stmt 0 view .LVU56
+ 228 0030 636C     		ldr	r3, [r4, #68]
+  33:Src/ring_buf.c ****     } else if (x > buf->size-1) { //starts at 0, so x=4 is really 5th most recent
+ 229              		.loc 1 33 25 view .LVU57
+ 230 0032 03EB4303 		add	r3, r3, r3, lsl #1
+ 231 0036 04EB4302 		add	r2, r4, r3, lsl #1
+ 232 003a 54F81330 		ldr	r3, [r4, r3, lsl #1]	@ unaligned
+ 233 003e 2B60     		str	r3, [r5]	@ unaligned
+ 234 0040 9388     		ldrh	r3, [r2, #4]	@ unaligned
+ 235 0042 AB80     		strh	r3, [r5, #4]	@ unaligned
+ 236 0044 EFE7     		b	.L7
+ 237              	.LVL12:
+ 238              	.L15:
+  35:Src/ring_buf.c ****         return buf->vals[buf->tail]; //whats the best thing to actually do here? return oldest val?
+ 239              		.loc 1 35 9 is_stmt 1 view .LVU58
+ 240 0046 0B48     		ldr	r0, .L16+4
+ 241              	.LVL13:
+  35:Src/ring_buf.c ****         return buf->vals[buf->tail]; //whats the best thing to actually do here? return oldest val?
+ 242              		.loc 1 35 9 is_stmt 0 view .LVU59
+ 243 0048 FFF7FEFF 		bl	puts
+ 244              	.LVL14:
+  36:Src/ring_buf.c ****     } else {
+ 245              		.loc 1 36 9 is_stmt 1 view .LVU60
+  36:Src/ring_buf.c ****     } else {
+ 246              		.loc 1 36 29 is_stmt 0 view .LVU61
+ 247 004c A36C     		ldr	r3, [r4, #72]
+  36:Src/ring_buf.c ****     } else {
+ 248              		.loc 1 36 25 view .LVU62
+ 249 004e 03EB4303 		add	r3, r3, r3, lsl #1
+ 250 0052 04EB4302 		add	r2, r4, r3, lsl #1
+ 251 0056 54F81330 		ldr	r3, [r4, r3, lsl #1]	@ unaligned
+ 252 005a 2B60     		str	r3, [r5]	@ unaligned
+ 253 005c 9388     		ldrh	r3, [r2, #4]	@ unaligned
+ 254 005e AB80     		strh	r3, [r5, #4]	@ unaligned
+ 255 0060 E1E7     		b	.L7
+ 256              	.LVL15:
+ 257              	.L11:
+ 258              	.LBB3:
+  41:Src/ring_buf.c ****             ind = buf->size - (x - buf->head);
+ 259              		.loc 1 41 16 is_stmt 1 view .LVU63
+  41:Src/ring_buf.c ****             ind = buf->size - (x - buf->head);
+ 260              		.loc 1 41 24 is_stmt 0 view .LVU64
+ 261 0062 606C     		ldr	r0, [r4, #68]
+ 262              	.LVL16:
+  41:Src/ring_buf.c ****             ind = buf->size - (x - buf->head);
+ 263              		.loc 1 41 19 view .LVU65
+ 264 0064 831A     		subs	r3, r0, r2
+ 265 0066 D5D5     		bpl	.L12
+  42:Src/ring_buf.c ****         } else {
+ 266              		.loc 1 42 13 is_stmt 1 view .LVU66
+  42:Src/ring_buf.c ****         } else {
+ 267              		.loc 1 42 34 is_stmt 0 view .LVU67
+ 268 0068 121A     		subs	r2, r2, r0
+ 269              	.LVL17:
+  42:Src/ring_buf.c ****         } else {
+ARM GAS  C:\cygwin64\tmp\ccRcUFPF.s 			page 7
+
+
+ 270              		.loc 1 42 17 view .LVU68
+ 271 006a 8B1A     		subs	r3, r1, r2
+ 272              	.LVL18:
+  42:Src/ring_buf.c ****         } else {
+ 273              		.loc 1 42 17 view .LVU69
+ 274 006c D2E7     		b	.L12
+ 275              	.L17:
+ 276 006e 00BF     		.align	2
+ 277              	.L16:
+ 278 0070 00000000 		.word	.LC0
+ 279 0074 28000000 		.word	.LC1
+ 280              	.LBE3:
+ 281              		.cfi_endproc
+ 282              	.LFE5:
+ 284              		.section	.rodata.printRingBuf.str1.4,"aMS",%progbits,1
+ 285              		.align	2
+ 286              	.LC2:
+ 287 0000 68656164 		.ascii	"head = %d, tail = %d, numFilled = %d\015\012\000"
+ 287      203D2025 
+ 287      642C2074 
+ 287      61696C20 
+ 287      3D202564 
+ 288 0027 00       		.align	2
+ 289              	.LC3:
+ 290 0028 63627566 		.ascii	"cbuf: \000"
+ 290      3A2000
+ 291 002f 00       		.align	2
+ 292              	.LC4:
+ 293 0030 0D00     		.ascii	"\015\000"
+ 294 0032 0000     		.align	2
+ 295              	.LC5:
+ 296 0034 2D2D2D2D 		.ascii	"-----------------------\015\000"
+ 296      2D2D2D2D 
+ 296      2D2D2D2D 
+ 296      2D2D2D2D 
+ 296      2D2D2D2D 
+ 297              		.section	.text.printRingBuf,"ax",%progbits
+ 298              		.align	1
+ 299              		.global	printRingBuf
+ 300              		.syntax unified
+ 301              		.thumb
+ 302              		.thumb_func
+ 303              		.fpu fpv4-sp-d16
+ 305              	printRingBuf:
+ 306              	.LVL19:
+ 307              	.LFB6:
+  49:Src/ring_buf.c **** 
+  50:Src/ring_buf.c **** //prints most recent first
+  51:Src/ring_buf.c **** void printRingBuf(ring_buffer *buf) {
+ 308              		.loc 1 51 37 is_stmt 1 view -0
+ 309              		.cfi_startproc
+ 310              		@ args = 0, pretend = 0, frame = 8
+ 311              		@ frame_needed = 0, uses_anonymous_args = 0
+ 312              		.loc 1 51 37 is_stmt 0 view .LVU71
+ 313 0000 30B5     		push	{r4, r5, lr}
+ 314              	.LCFI6:
+ 315              		.cfi_def_cfa_offset 12
+ARM GAS  C:\cygwin64\tmp\ccRcUFPF.s 			page 8
+
+
+ 316              		.cfi_offset 4, -12
+ 317              		.cfi_offset 5, -8
+ 318              		.cfi_offset 14, -4
+ 319 0002 83B0     		sub	sp, sp, #12
+ 320              	.LCFI7:
+ 321              		.cfi_def_cfa_offset 24
+ 322 0004 0546     		mov	r5, r0
+  52:Src/ring_buf.c ****     printf("head = %d, tail = %d, numFilled = %d\r\n", buf->head, buf->tail, buf->numFilled);
+ 323              		.loc 1 52 5 is_stmt 1 view .LVU72
+ 324 0006 90F83C30 		ldrb	r3, [r0, #60]	@ zero_extendqisi2
+ 325 000a 826C     		ldr	r2, [r0, #72]
+ 326 000c 416C     		ldr	r1, [r0, #68]
+ 327 000e 0D48     		ldr	r0, .L23
+ 328              	.LVL20:
+ 329              		.loc 1 52 5 is_stmt 0 view .LVU73
+ 330 0010 FFF7FEFF 		bl	printf
+ 331              	.LVL21:
+  53:Src/ring_buf.c ****     printf("cbuf: ");
+ 332              		.loc 1 53 5 is_stmt 1 view .LVU74
+ 333 0014 0C48     		ldr	r0, .L23+4
+ 334 0016 FFF7FEFF 		bl	printf
+ 335              	.LVL22:
+  54:Src/ring_buf.c ****     for (int i=0; i<buf->numFilled; i++) {
+ 336              		.loc 1 54 5 view .LVU75
+ 337              	.LBB4:
+ 338              		.loc 1 54 10 view .LVU76
+ 339              		.loc 1 54 14 is_stmt 0 view .LVU77
+ 340 001a 0024     		movs	r4, #0
+ 341              	.LVL23:
+ 342              	.L19:
+ 343              		.loc 1 54 19 is_stmt 1 discriminator 1 view .LVU78
+ 344              		.loc 1 54 24 is_stmt 0 discriminator 1 view .LVU79
+ 345 001c 95F83C30 		ldrb	r3, [r5, #60]	@ zero_extendqisi2
+ 346              		.loc 1 54 5 discriminator 1 view .LVU80
+ 347 0020 A342     		cmp	r3, r4
+ 348 0022 09DD     		ble	.L22
+ 349              	.LBB5:
+  55:Src/ring_buf.c ****         analogPosnArray posns = getRingBufXRecent(buf, i);
+ 350              		.loc 1 55 9 is_stmt 1 view .LVU81
+ 351              		.loc 1 55 33 is_stmt 0 view .LVU82
+ 352 0024 2246     		mov	r2, r4
+ 353 0026 2946     		mov	r1, r5
+ 354 0028 6846     		mov	r0, sp
+ 355 002a FFF7FEFF 		bl	getRingBufXRecent
+ 356              	.LVL24:
+  56:Src/ring_buf.c ****         for (int i=3; i<NUM_SERVOS; i++) {
+ 357              		.loc 1 56 9 is_stmt 1 view .LVU83
+ 358              	.LBE5:
+ 359              	.LBE4:
+ 360              		.loc 1 56 14 view .LVU84
+ 361              		.loc 1 56 23 view .LVU85
+ 362              	.LBB7:
+ 363              	.LBB6:
+  57:Src/ring_buf.c ****             printf("%d, ", posns.servoVals[i]);
+  58:Src/ring_buf.c ****         }
+  59:Src/ring_buf.c **** 
+  60:Src/ring_buf.c ****         printf("\r\n");
+ARM GAS  C:\cygwin64\tmp\ccRcUFPF.s 			page 9
+
+
+ 364              		.loc 1 60 9 view .LVU86
+ 365 002e 0748     		ldr	r0, .L23+8
+ 366 0030 FFF7FEFF 		bl	puts
+ 367              	.LVL25:
+ 368              	.LBE6:
+  54:Src/ring_buf.c ****         analogPosnArray posns = getRingBufXRecent(buf, i);
+ 369              		.loc 1 54 37 view .LVU87
+  54:Src/ring_buf.c ****         analogPosnArray posns = getRingBufXRecent(buf, i);
+ 370              		.loc 1 54 38 is_stmt 0 view .LVU88
+ 371 0034 0134     		adds	r4, r4, #1
+ 372              	.LVL26:
+  54:Src/ring_buf.c ****         analogPosnArray posns = getRingBufXRecent(buf, i);
+ 373              		.loc 1 54 38 view .LVU89
+ 374 0036 F1E7     		b	.L19
+ 375              	.LVL27:
+ 376              	.L22:
+  54:Src/ring_buf.c ****         analogPosnArray posns = getRingBufXRecent(buf, i);
+ 377              		.loc 1 54 38 view .LVU90
+ 378              	.LBE7:
+  61:Src/ring_buf.c ****     }
+  62:Src/ring_buf.c ****     printf("-----------------------\r\n");
+ 379              		.loc 1 62 5 is_stmt 1 view .LVU91
+ 380 0038 0548     		ldr	r0, .L23+12
+ 381 003a FFF7FEFF 		bl	puts
+ 382              	.LVL28:
+  63:Src/ring_buf.c **** }...
+ 383              		.loc 1 63 1 is_stmt 0 view .LVU92
+ 384 003e 03B0     		add	sp, sp, #12
+ 385              	.LCFI8:
+ 386              		.cfi_def_cfa_offset 12
+ 387              		@ sp needed
+ 388 0040 30BD     		pop	{r4, r5, pc}
+ 389              	.LVL29:
+ 390              	.L24:
+ 391              		.loc 1 63 1 view .LVU93
+ 392 0042 00BF     		.align	2
+ 393              	.L23:
+ 394 0044 00000000 		.word	.LC2
+ 395 0048 28000000 		.word	.LC3
+ 396 004c 30000000 		.word	.LC4
+ 397 0050 34000000 		.word	.LC5
+ 398              		.cfi_endproc
+ 399              	.LFE6:
+ 401              		.text
+ 402              	.Letext0:
+ 403              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\inc
+ 404              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\inc
+ 405              		.file 4 "Inc/CustomUserFunctions.h"
+ 406              		.file 5 "Inc/ring_buf.h"
+ 407              		.file 6 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\lib\\gcc\\arm-none
+ 408              		.file 7 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\inc
+ 409              		.file 8 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\inc
+ 410              		.file 9 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\inc
+ 411              		.file 10 "<built-in>"
+ 412              		.file 11 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\in
+ARM GAS  C:\cygwin64\tmp\ccRcUFPF.s 			page 10
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 ring_buf.c
+C:\cygwin64\tmp\ccRcUFPF.s:18     .text.resetRingBuf:00000000 $t
+C:\cygwin64\tmp\ccRcUFPF.s:26     .text.resetRingBuf:00000000 resetRingBuf
+C:\cygwin64\tmp\ccRcUFPF.s:51     .text.addToRingBuf:00000000 $t
+C:\cygwin64\tmp\ccRcUFPF.s:58     .text.addToRingBuf:00000000 addToRingBuf
+C:\cygwin64\tmp\ccRcUFPF.s:149    .rodata.getRingBufXRecent.str1.4:00000000 $d
+C:\cygwin64\tmp\ccRcUFPF.s:156    .text.getRingBufXRecent:00000000 $t
+C:\cygwin64\tmp\ccRcUFPF.s:163    .text.getRingBufXRecent:00000000 getRingBufXRecent
+C:\cygwin64\tmp\ccRcUFPF.s:278    .text.getRingBufXRecent:00000070 $d
+C:\cygwin64\tmp\ccRcUFPF.s:285    .rodata.printRingBuf.str1.4:00000000 $d
+C:\cygwin64\tmp\ccRcUFPF.s:298    .text.printRingBuf:00000000 $t
+C:\cygwin64\tmp\ccRcUFPF.s:305    .text.printRingBuf:00000000 printRingBuf
+C:\cygwin64\tmp\ccRcUFPF.s:394    .text.printRingBuf:00000044 $d
+
+UNDEFINED SYMBOLS
+puts
+printf

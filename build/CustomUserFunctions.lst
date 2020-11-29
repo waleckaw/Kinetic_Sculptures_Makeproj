@@ -1,0 +1,2013 @@
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"CustomUserFunctions.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.rodata.sendATCommand.str1.4,"aMS",%progbits,1
+  18              		.align	2
+  19              	.LC0:
+  20 0000 0D0A4F4B 		.ascii	"\015\012OK\015\012> \000"
+  20      0D0A3E20 
+  20      00
+  21 0009 000000   		.align	2
+  22              	.LC1:
+  23 000c 0D0A4552 		.ascii	"\015\012ERROR\000"
+  23      524F5200 
+  24              		.section	.text.sendATCommand,"ax",%progbits
+  25              		.align	1
+  26              		.arch armv7e-m
+  27              		.syntax unified
+  28              		.thumb
+  29              		.thumb_func
+  30              		.fpu fpv4-sp-d16
+  32              	sendATCommand:
+  33              	.LFB322:
+  34              		.file 1 "Src/CustomUserFunctions.c"
+   1:Src/CustomUserFunctions.c **** /*
+   2:Src/CustomUserFunctions.c ****  * CustomUserFunctions.c
+   3:Src/CustomUserFunctions.c ****  *
+   4:Src/CustomUserFunctions.c ****  *  Created on: Feb 16, 2020
+   5:Src/CustomUserFunctions.c ****  *      Author: Will Walekcka and Kristine Chen
+   6:Src/CustomUserFunctions.c ****  */
+   7:Src/CustomUserFunctions.c **** //functions used for wifi connection and inter-device/communication
+   8:Src/CustomUserFunctions.c **** //carried out using commands to ISM chip
+   9:Src/CustomUserFunctions.c **** 
+  10:Src/CustomUserFunctions.c **** #include "rootca.h"
+  11:Src/CustomUserFunctions.c **** #include "httpclient.h"
+  12:Src/CustomUserFunctions.c **** #include "es_wifi_conf.h"
+  13:Src/CustomUserFunctions.c **** #include "es_wifi_io.h"
+  14:Src/CustomUserFunctions.c **** #include "es_wifi.h"
+  15:Src/CustomUserFunctions.c **** #include "http_lib.h"
+  16:Src/CustomUserFunctions.c **** #include "main.h"
+  17:Src/CustomUserFunctions.c **** #include "CustomUserFunctions.h"
+  18:Src/CustomUserFunctions.c **** 
+  19:Src/CustomUserFunctions.c **** #define NET_READ_TIMEOUT  "2000"
+  20:Src/CustomUserFunctions.c **** #define ES_WIFI_DATA_SIZE 1400
+  21:Src/CustomUserFunctions.c **** #define AT_OK_STRING "\r\nOK\r\n> "
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 2
+
+
+  22:Src/CustomUserFunctions.c **** #define AT_OK_STRING_LEN (sizeof(AT_OK_STRING) - 1)
+  23:Src/CustomUserFunctions.c **** 
+  24:Src/CustomUserFunctions.c **** #define AT_ERROR_STRING "\r\nERROR"
+  25:Src/CustomUserFunctions.c **** 
+  26:Src/CustomUserFunctions.c **** #define AT_DELIMETER_STRING "\r\n> "
+  27:Src/CustomUserFunctions.c **** #define AT_DELIMETER_LEN        4
+  28:Src/CustomUserFunctions.c **** #define NO_DATA 22
+  29:Src/CustomUserFunctions.c **** 
+  30:Src/CustomUserFunctions.c **** #define CHARISHEXNUM(x)                 (((x) >= '0' && (x) <= '9') || \
+  31:Src/CustomUserFunctions.c ****                                          ((x) >= 'a' && (x) <= 'f') || \
+  32:Src/CustomUserFunctions.c ****                                          ((x) >= 'A' && (x) <= 'F'))
+  33:Src/CustomUserFunctions.c **** 
+  34:Src/CustomUserFunctions.c **** #define CHARISNUM(x)                    ((x) >= '0' && (x) <= '9')
+  35:Src/CustomUserFunctions.c **** #define CHAR2NUM(x)                     ((x) - '0')
+  36:Src/CustomUserFunctions.c **** 
+  37:Src/CustomUserFunctions.c **** 
+  38:Src/CustomUserFunctions.c **** 
+  39:Src/CustomUserFunctions.c **** 
+  40:Src/CustomUserFunctions.c **** //Declarations
+  41:Src/CustomUserFunctions.c **** static uint8_t ComBuf[ES_WIFI_DATA_SIZE];
+  42:Src/CustomUserFunctions.c **** static uint8_t retData[ES_WIFI_DATA_SIZE];
+  43:Src/CustomUserFunctions.c **** long unsigned int UNIV_TIMEOUT = 10000;
+  44:Src/CustomUserFunctions.c **** static uint8_t TCPSocket = 0;
+  45:Src/CustomUserFunctions.c **** static uint16_t localPort = 8002;
+  46:Src/CustomUserFunctions.c **** #ifdef NODE_A //defined in header file
+  47:Src/CustomUserFunctions.c **** static uint16_t remotePort = 8002;
+  48:Src/CustomUserFunctions.c **** char *comCheck = "P?";
+  49:Src/CustomUserFunctions.c **** #endif
+  50:Src/CustomUserFunctions.c **** #ifndef NODE_A
+  51:Src/CustomUserFunctions.c **** char *comCheck = "C?";
+  52:Src/CustomUserFunctions.c **** #endif
+  53:Src/CustomUserFunctions.c **** 
+  54:Src/CustomUserFunctions.c **** 
+  55:Src/CustomUserFunctions.c **** //public user functions
+  56:Src/CustomUserFunctions.c **** void connect_nodes();
+  57:Src/CustomUserFunctions.c **** int sendTCPData(uint8_t *dataToSend, uint16_t Reqlen, uint16_t *SentLen);
+  58:Src/CustomUserFunctions.c **** static int sendATCommand();
+  59:Src/CustomUserFunctions.c **** static int sendATData(uint8_t *dataptr, uint16_t len);
+  60:Src/CustomUserFunctions.c **** static int receiveATData(uint16_t Reqlen, uint16_t *ReadData, uint8_t *arr_to_fill);
+  61:Src/CustomUserFunctions.c **** int beginClientServerConnection();
+  62:Src/CustomUserFunctions.c **** int receiveTCPData(uint16_t Reqlen, uint16_t *ReceivedLen, uint8_t *msg_arr);
+  63:Src/CustomUserFunctions.c **** 
+  64:Src/CustomUserFunctions.c **** 
+  65:Src/CustomUserFunctions.c **** //connect each node to wifi network (independent of A OR B) - taken from http library
+  66:Src/CustomUserFunctions.c **** void connect_nodes()
+  67:Src/CustomUserFunctions.c **** {
+  68:Src/CustomUserFunctions.c **** 	httpclient_init();
+  69:Src/CustomUserFunctions.c **** }
+  70:Src/CustomUserFunctions.c **** 
+  71:Src/CustomUserFunctions.c **** //modified http library function - sends AT commands to ISM 43362 M3G to set (local) socket,
+  72:Src/CustomUserFunctions.c **** //set send timeout, set set data length, and read data to send from address in memory
+  73:Src/CustomUserFunctions.c **** //denoted by *dataToSend
+  74:Src/CustomUserFunctions.c **** int sendTCPData(uint8_t *dataToSend, uint16_t Reqlen, uint16_t *SentLen)
+  75:Src/CustomUserFunctions.c **** {
+  76:Src/CustomUserFunctions.c **** 	ES_WIFI_Status_t ret = ES_WIFI_STATUS_ERROR;
+  77:Src/CustomUserFunctions.c **** 	if(Reqlen >= ES_WIFI_PAYLOAD_SIZE )
+  78:Src/CustomUserFunctions.c **** 		{
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 3
+
+
+  79:Src/CustomUserFunctions.c **** 		Reqlen= ES_WIFI_PAYLOAD_SIZE;
+  80:Src/CustomUserFunctions.c **** 		}
+  81:Src/CustomUserFunctions.c **** 
+  82:Src/CustomUserFunctions.c **** 	*SentLen = Reqlen;
+  83:Src/CustomUserFunctions.c **** 	sprintf((char*)ComBuf,"P0=%d\r", TCPSocket);
+  84:Src/CustomUserFunctions.c **** 	ret = sendATCommand();
+  85:Src/CustomUserFunctions.c **** 	if(ret == ES_WIFI_STATUS_OK)
+  86:Src/CustomUserFunctions.c **** 	{
+  87:Src/CustomUserFunctions.c **** 		sprintf((char*)ComBuf,"S2=%lu\r",UNIV_TIMEOUT);
+  88:Src/CustomUserFunctions.c **** 		ret = sendATCommand();
+  89:Src/CustomUserFunctions.c **** 
+  90:Src/CustomUserFunctions.c **** 		if(ret == ES_WIFI_STATUS_OK)
+  91:Src/CustomUserFunctions.c **** 		{
+  92:Src/CustomUserFunctions.c **** 			sprintf((char *)ComBuf,"S3=%d\r\r",Reqlen);
+  93:Src/CustomUserFunctions.c **** 			ret = sendATData(dataToSend, Reqlen);
+  94:Src/CustomUserFunctions.c **** 
+  95:Src/CustomUserFunctions.c **** 			if(ret == ES_WIFI_STATUS_OK)
+  96:Src/CustomUserFunctions.c **** 			{
+  97:Src/CustomUserFunctions.c **** 				if(strstr((char *)(&retData),"-1\r\n"))
+  98:Src/CustomUserFunctions.c **** 				{
+  99:Src/CustomUserFunctions.c **** 					ret = ES_WIFI_STATUS_ERROR;
+ 100:Src/CustomUserFunctions.c **** 				}
+ 101:Src/CustomUserFunctions.c **** 			}
+ 102:Src/CustomUserFunctions.c **** 		}
+ 103:Src/CustomUserFunctions.c **** 	}
+ 104:Src/CustomUserFunctions.c **** 
+ 105:Src/CustomUserFunctions.c **** 	if (ret == ES_WIFI_STATUS_ERROR)
+ 106:Src/CustomUserFunctions.c **** 	{
+ 107:Src/CustomUserFunctions.c **** 		*SentLen = 0;
+ 108:Src/CustomUserFunctions.c **** 	}
+ 109:Src/CustomUserFunctions.c **** 	return ret;
+ 110:Src/CustomUserFunctions.c **** }
+ 111:Src/CustomUserFunctions.c **** 
+ 112:Src/CustomUserFunctions.c **** int receiveTCPData(uint16_t Reqlen, uint16_t *ReceivedLen, uint8_t *msg_arr)
+ 113:Src/CustomUserFunctions.c **** {
+ 114:Src/CustomUserFunctions.c **** 	  ES_WIFI_Status_t ret = ES_WIFI_STATUS_ERROR;
+ 115:Src/CustomUserFunctions.c **** 
+ 116:Src/CustomUserFunctions.c **** 	  if(Reqlen <= ES_WIFI_PAYLOAD_SIZE )
+ 117:Src/CustomUserFunctions.c **** 	  {
+ 118:Src/CustomUserFunctions.c **** 		  sprintf((char*)ComBuf,"P0=%d\r", TCPSocket);
+ 119:Src/CustomUserFunctions.c **** 		  ret = sendATCommand();
+ 120:Src/CustomUserFunctions.c **** 
+ 121:Src/CustomUserFunctions.c **** 		  if(ret == ES_WIFI_STATUS_OK)
+ 122:Src/CustomUserFunctions.c **** 		  {
+ 123:Src/CustomUserFunctions.c **** 			  sprintf((char*)ComBuf,"R1=%d\r", Reqlen);
+ 124:Src/CustomUserFunctions.c **** 			  ret = sendATCommand();
+ 125:Src/CustomUserFunctions.c **** 			  if(ret == ES_WIFI_STATUS_OK)
+ 126:Src/CustomUserFunctions.c **** 			  {
+ 127:Src/CustomUserFunctions.c **** 				  //poll for messages
+ 128:Src/CustomUserFunctions.c **** 				  sprintf((char*)ComBuf,"R2=%i\r", SHORT_TIMEOUT);
+ 129:Src/CustomUserFunctions.c **** 				  ret = sendATCommand();
+ 130:Src/CustomUserFunctions.c **** 				  if(ret == ES_WIFI_STATUS_OK)
+ 131:Src/CustomUserFunctions.c **** 				  {
+ 132:Src/CustomUserFunctions.c **** 					  sprintf((char*)ComBuf,"R0\r");
+ 133:Src/CustomUserFunctions.c **** 					  ret = receiveATData(Reqlen, ReceivedLen, msg_arr);
+ 134:Src/CustomUserFunctions.c **** 					  if (ret != ES_WIFI_STATUS_OK)
+ 135:Src/CustomUserFunctions.c **** 					  {
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 4
+
+
+ 136:Src/CustomUserFunctions.c **** 						  if (ret == NO_DATA)
+ 137:Src/CustomUserFunctions.c **** 						  {
+ 138:Src/CustomUserFunctions.c **** 							  return NO_DATA;
+ 139:Src/CustomUserFunctions.c **** 						  }
+ 140:Src/CustomUserFunctions.c **** 					  }
+ 141:Src/CustomUserFunctions.c **** 				  }
+ 142:Src/CustomUserFunctions.c **** 			  }
+ 143:Src/CustomUserFunctions.c **** 			  else
+ 144:Src/CustomUserFunctions.c **** 			  {
+ 145:Src/CustomUserFunctions.c **** 				  *ReceivedLen = 0;
+ 146:Src/CustomUserFunctions.c **** 			  }
+ 147:Src/CustomUserFunctions.c **** 		  }
+ 148:Src/CustomUserFunctions.c **** 	  }
+ 149:Src/CustomUserFunctions.c **** 	  return ret;
+ 150:Src/CustomUserFunctions.c **** }
+ 151:Src/CustomUserFunctions.c **** 
+ 152:Src/CustomUserFunctions.c **** 
+ 153:Src/CustomUserFunctions.c **** //flexible function that initializes board as either client or server, dependent
+ 154:Src/CustomUserFunctions.c **** //on #define in CustomUserFunctions.h. significance of each AT command in comments below
+ 155:Src/CustomUserFunctions.c **** int beginClientServerConnection()
+ 156:Src/CustomUserFunctions.c **** {
+ 157:Src/CustomUserFunctions.c **** 	printf("opening client (A) /server (B) connection\r\n");
+ 158:Src/CustomUserFunctions.c **** 	ES_WIFI_Status_t ret = ES_WIFI_STATUS_OK;
+ 159:Src/CustomUserFunctions.c **** 
+ 160:Src/CustomUserFunctions.c **** 	//set socket to 0
+ 161:Src/CustomUserFunctions.c **** 	sprintf((char*)(ComBuf),"P0=%d\r", TCPSocket);
+ 162:Src/CustomUserFunctions.c **** 	ret = sendATCommand();
+ 163:Src/CustomUserFunctions.c **** 
+ 164:Src/CustomUserFunctions.c **** 	//set TCP protocol
+ 165:Src/CustomUserFunctions.c **** 	if (ret == ES_WIFI_STATUS_OK)
+ 166:Src/CustomUserFunctions.c **** 	{
+ 167:Src/CustomUserFunctions.c **** 		printf("set socket, setting TCP protocol\r\n");
+ 168:Src/CustomUserFunctions.c **** 		sprintf((char*)ComBuf,"P1=%d\r", 0);
+ 169:Src/CustomUserFunctions.c **** 		ret = sendATCommand();
+ 170:Src/CustomUserFunctions.c **** 	}
+ 171:Src/CustomUserFunctions.c **** 
+ 172:Src/CustomUserFunctions.c **** #ifdef NODE_A
+ 173:Src/CustomUserFunctions.c **** 	//set destination IP address (server address)
+ 174:Src/CustomUserFunctions.c **** 	if ((ret == ES_WIFI_STATUS_OK))
+ 175:Src/CustomUserFunctions.c **** 	{
+ 176:Src/CustomUserFunctions.c **** 		printf("set TCP protocol, setting destination IP address to %d.%d.%d.%d\r\n", nodeB_IPAddr[0],nod
+ 177:Src/CustomUserFunctions.c **** 				nodeB_IPAddr[2],nodeB_IPAddr[3]);
+ 178:Src/CustomUserFunctions.c **** 		sprintf((char*)ComBuf,"P3=%d.%d.%d.%d\r", nodeB_IPAddr[0],nodeB_IPAddr[1],
+ 179:Src/CustomUserFunctions.c **** 				nodeB_IPAddr[2],nodeB_IPAddr[3]);
+ 180:Src/CustomUserFunctions.c **** 		ret = sendATCommand();
+ 181:Src/CustomUserFunctions.c **** 	}
+ 182:Src/CustomUserFunctions.c **** 	else
+ 183:Src/CustomUserFunctions.c **** 	{
+ 184:Src/CustomUserFunctions.c **** 		return 1;
+ 185:Src/CustomUserFunctions.c **** 	}
+ 186:Src/CustomUserFunctions.c **** 
+ 187:Src/CustomUserFunctions.c **** 	//set remote port
+ 188:Src/CustomUserFunctions.c **** 	if ((ret == ES_WIFI_STATUS_OK))
+ 189:Src/CustomUserFunctions.c **** 	{
+ 190:Src/CustomUserFunctions.c **** 		printf("set dest IP addr, setting remote port to %d\r\n", remotePort);
+ 191:Src/CustomUserFunctions.c **** 		sprintf((char*)ComBuf,"P4=%d\r", remotePort);
+ 192:Src/CustomUserFunctions.c **** 		ret = sendATCommand();
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 5
+
+
+ 193:Src/CustomUserFunctions.c **** 	}
+ 194:Src/CustomUserFunctions.c **** 	else
+ 195:Src/CustomUserFunctions.c **** 	{
+ 196:Src/CustomUserFunctions.c **** 		return 1;
+ 197:Src/CustomUserFunctions.c **** 	}
+ 198:Src/CustomUserFunctions.c **** 
+ 199:Src/CustomUserFunctions.c **** 	//show settings before connecting
+ 200:Src/CustomUserFunctions.c **** 	if (ret == ES_WIFI_STATUS_OK)
+ 201:Src/CustomUserFunctions.c **** 	{
+ 202:Src/CustomUserFunctions.c **** 		printf("showing transport settings before trying to connect\r\n");
+ 203:Src/CustomUserFunctions.c **** 		sprintf((char*)ComBuf,"%s\r", comCheck);
+ 204:Src/CustomUserFunctions.c **** 		ret = sendATCommand();
+ 205:Src/CustomUserFunctions.c **** 	}
+ 206:Src/CustomUserFunctions.c **** 	else
+ 207:Src/CustomUserFunctions.c **** 	{
+ 208:Src/CustomUserFunctions.c **** 		return 1;
+ 209:Src/CustomUserFunctions.c **** 	}
+ 210:Src/CustomUserFunctions.c **** 
+ 211:Src/CustomUserFunctions.c **** 	//try to connect to server as client
+ 212:Src/CustomUserFunctions.c **** 	if (ret == ES_WIFI_STATUS_OK)
+ 213:Src/CustomUserFunctions.c **** 	{
+ 214:Src/CustomUserFunctions.c **** 		printf("set dest IP address, setting client mode\r\n");
+ 215:Src/CustomUserFunctions.c **** 		sprintf((char*)ComBuf,"P6=1\r");
+ 216:Src/CustomUserFunctions.c **** 		ret = sendATCommand();
+ 217:Src/CustomUserFunctions.c **** 	}
+ 218:Src/CustomUserFunctions.c **** 	else
+ 219:Src/CustomUserFunctions.c **** 	{
+ 220:Src/CustomUserFunctions.c **** 		return 1;
+ 221:Src/CustomUserFunctions.c **** 	}
+ 222:Src/CustomUserFunctions.c **** #endif
+ 223:Src/CustomUserFunctions.c **** #ifndef NODE_A
+ 224:Src/CustomUserFunctions.c **** 
+ 225:Src/CustomUserFunctions.c **** 	//set local port
+ 226:Src/CustomUserFunctions.c **** 	if ((ret == ES_WIFI_STATUS_OK))
+ 227:Src/CustomUserFunctions.c **** 	{
+ 228:Src/CustomUserFunctions.c **** 		printf("set TCP protocol, setting local port to %d\r\n", localPort);
+ 229:Src/CustomUserFunctions.c **** 		sprintf((char*)ComBuf,"P2=%d\r", localPort);
+ 230:Src/CustomUserFunctions.c **** 		ret = sendATCommand();
+ 231:Src/CustomUserFunctions.c **** 	}
+ 232:Src/CustomUserFunctions.c **** 
+ 233:Src/CustomUserFunctions.c **** 	//show settings before connecting
+ 234:Src/CustomUserFunctions.c **** 	if (ret == ES_WIFI_STATUS_OK)
+ 235:Src/CustomUserFunctions.c **** 	{
+ 236:Src/CustomUserFunctions.c **** 		printf("showing transport settings before trying to connect\r\n");
+ 237:Src/CustomUserFunctions.c **** 		sprintf((char*)ComBuf,"%s\r", comCheck);
+ 238:Src/CustomUserFunctions.c **** 		ret = sendATCommand();
+ 239:Src/CustomUserFunctions.c **** 	}
+ 240:Src/CustomUserFunctions.c **** 
+ 241:Src/CustomUserFunctions.c **** 	//set server mode
+ 242:Src/CustomUserFunctions.c **** 	if (ret == ES_WIFI_STATUS_OK)
+ 243:Src/CustomUserFunctions.c **** 	{
+ 244:Src/CustomUserFunctions.c **** 		printf("set local port, setting server mode\r\n");
+ 245:Src/CustomUserFunctions.c **** 		sprintf((char*)ComBuf,"P5=1\r");
+ 246:Src/CustomUserFunctions.c **** 		ret = sendATCommand();
+ 247:Src/CustomUserFunctions.c **** 	}
+ 248:Src/CustomUserFunctions.c **** 
+ 249:Src/CustomUserFunctions.c **** 
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 6
+
+
+ 250:Src/CustomUserFunctions.c **** 
+ 251:Src/CustomUserFunctions.c **** #endif
+ 252:Src/CustomUserFunctions.c **** 
+ 253:Src/CustomUserFunctions.c **** 	if (ret == ES_WIFI_STATUS_OK)
+ 254:Src/CustomUserFunctions.c **** 	{
+ 255:Src/CustomUserFunctions.c **** 		printf("server/client connection opened successfully\r\n");
+ 256:Src/CustomUserFunctions.c **** 	}
+ 257:Src/CustomUserFunctions.c **** 
+ 258:Src/CustomUserFunctions.c **** 	return ret;
+ 259:Src/CustomUserFunctions.c **** }
+ 260:Src/CustomUserFunctions.c **** 
+ 261:Src/CustomUserFunctions.c **** //modified httpclient code - sends AT command to ISM43362 M3G, assumes that
+ 262:Src/CustomUserFunctions.c **** //proper command been placed in ComBuf before sending, writes wifi chip response into
+ 263:Src/CustomUserFunctions.c **** //retData, which is checked for ACK
+ 264:Src/CustomUserFunctions.c **** static int sendATCommand()
+ 265:Src/CustomUserFunctions.c **** {
+  35              		.loc 1 265 1 view -0
+  36              		.cfi_startproc
+  37              		@ args = 0, pretend = 0, frame = 0
+  38              		@ frame_needed = 0, uses_anonymous_args = 0
+  39 0000 10B5     		push	{r4, lr}
+  40              	.LCFI0:
+  41              		.cfi_def_cfa_offset 8
+  42              		.cfi_offset 4, -8
+  43              		.cfi_offset 14, -4
+ 266:Src/CustomUserFunctions.c ****   int ret = 0;
+  44              		.loc 1 266 3 view .LVU1
+  45              	.LVL0:
+ 267:Src/CustomUserFunctions.c ****   int16_t recv_len = 0;
+  46              		.loc 1 267 3 view .LVU2
+ 268:Src/CustomUserFunctions.c **** 
+ 269:Src/CustomUserFunctions.c ****   ret = SPI_WIFI_SendData(&ComBuf[0],  strlen((char*)(&ComBuf)), UNIV_TIMEOUT);
+  47              		.loc 1 269 3 view .LVU3
+  48              		.loc 1 269 40 is_stmt 0 view .LVU4
+  49 0002 194C     		ldr	r4, .L10
+  50 0004 2046     		mov	r0, r4
+  51 0006 FFF7FEFF 		bl	strlen
+  52              	.LVL1:
+  53              		.loc 1 269 9 view .LVU5
+  54 000a 184B     		ldr	r3, .L10+4
+  55 000c 1A68     		ldr	r2, [r3]
+  56 000e 81B2     		uxth	r1, r0
+  57 0010 2046     		mov	r0, r4
+  58 0012 FFF7FEFF 		bl	SPI_WIFI_SendData
+  59              	.LVL2:
+ 270:Src/CustomUserFunctions.c **** 
+ 271:Src/CustomUserFunctions.c ****   if( ret > 0)
+  60              		.loc 1 271 3 is_stmt 1 view .LVU6
+  61              		.loc 1 271 5 is_stmt 0 view .LVU7
+  62 0016 0028     		cmp	r0, #0
+  63 0018 20DD     		ble	.L4
+ 272:Src/CustomUserFunctions.c ****   {
+ 273:Src/CustomUserFunctions.c **** 	  recv_len = SPI_WIFI_ReceiveData(&retData[0], ES_WIFI_DATA_SIZE, UNIV_TIMEOUT);
+  64              		.loc 1 273 4 is_stmt 1 view .LVU8
+  65              		.loc 1 273 15 is_stmt 0 view .LVU9
+  66 001a 144B     		ldr	r3, .L10+4
+  67 001c 1A68     		ldr	r2, [r3]
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 7
+
+
+  68 001e 4FF4AF61 		mov	r1, #1400
+  69 0022 1348     		ldr	r0, .L10+8
+  70              	.LVL3:
+  71              		.loc 1 273 15 view .LVU10
+  72 0024 FFF7FEFF 		bl	SPI_WIFI_ReceiveData
+  73              	.LVL4:
+  74 0028 0446     		mov	r4, r0
+  75              	.LVL5:
+ 274:Src/CustomUserFunctions.c ****     if((recv_len > 0) && (recv_len < ES_WIFI_DATA_SIZE))
+  76              		.loc 1 274 5 is_stmt 1 view .LVU11
+  77              		.loc 1 274 23 is_stmt 0 view .LVU12
+  78 002a 431E     		subs	r3, r0, #1
+  79 002c 9BB2     		uxth	r3, r3
+  80              		.loc 1 274 7 view .LVU13
+  81 002e 40F27652 		movw	r2, #1398
+  82 0032 9342     		cmp	r3, r2
+  83 0034 0DD8     		bhi	.L3
+ 275:Src/CustomUserFunctions.c ****     {
+ 276:Src/CustomUserFunctions.c ****       *((&retData[0]) + recv_len) = 0;
+  84              		.loc 1 276 7 is_stmt 1 view .LVU14
+  85              		.loc 1 276 23 is_stmt 0 view .LVU15
+  86 0036 0E48     		ldr	r0, .L10+8
+  87              	.LVL6:
+  88              		.loc 1 276 35 view .LVU16
+  89 0038 0023     		movs	r3, #0
+  90 003a 0355     		strb	r3, [r0, r4]
+ 277:Src/CustomUserFunctions.c ****       //receiving ACK from wifi module breaks out of function
+ 278:Src/CustomUserFunctions.c ****       if(strstr((char *)(&retData), AT_OK_STRING))
+  91              		.loc 1 278 7 is_stmt 1 view .LVU17
+  92              		.loc 1 278 10 is_stmt 0 view .LVU18
+  93 003c 0D49     		ldr	r1, .L10+12
+  94 003e FFF7FEFF 		bl	strstr
+  95              	.LVL7:
+  96              		.loc 1 278 9 view .LVU19
+  97 0042 08B1     		cbz	r0, .L9
+ 279:Src/CustomUserFunctions.c ****       {
+ 280:Src/CustomUserFunctions.c ****         return ES_WIFI_STATUS_OK;
+  98              		.loc 1 280 16 view .LVU20
+  99 0044 0020     		movs	r0, #0
+ 100 0046 0AE0     		b	.L1
+ 101              	.L9:
+ 281:Src/CustomUserFunctions.c ****       }
+ 282:Src/CustomUserFunctions.c ****       else if(strstr((char *)(&retData), AT_ERROR_STRING))
+ 102              		.loc 1 282 12 is_stmt 1 view .LVU21
+ 103              		.loc 1 282 15 is_stmt 0 view .LVU22
+ 104 0048 0B49     		ldr	r1, .L10+16
+ 105 004a 0948     		ldr	r0, .L10+8
+ 106 004c FFF7FEFF 		bl	strstr
+ 107              	.LVL8:
+ 108              		.loc 1 282 14 view .LVU23
+ 109 0050 30B9     		cbnz	r0, .L6
+ 110              	.L3:
+ 283:Src/CustomUserFunctions.c ****       {
+ 284:Src/CustomUserFunctions.c ****         return ES_WIFI_STATUS_UNEXPECTED_CLOSED_SOCKET;
+ 285:Src/CustomUserFunctions.c ****       }
+ 286:Src/CustomUserFunctions.c ****     }
+ 287:Src/CustomUserFunctions.c ****     if (recv_len == ES_WIFI_ERROR_STUFFING_FOREVER )
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 8
+
+
+ 111              		.loc 1 287 5 is_stmt 1 view .LVU24
+ 112              		.loc 1 287 8 is_stmt 0 view .LVU25
+ 113 0052 14F1040F 		cmn	r4, #4
+ 114 0056 05D0     		beq	.L7
+ 288:Src/CustomUserFunctions.c ****     {
+ 289:Src/CustomUserFunctions.c ****       return ES_WIFI_STATUS_MODULE_CRASH;
+ 290:Src/CustomUserFunctions.c ****     }
+ 291:Src/CustomUserFunctions.c ****   }
+ 292:Src/CustomUserFunctions.c ****   return ES_WIFI_STATUS_IO_ERROR;
+ 115              		.loc 1 292 10 view .LVU26
+ 116 0058 0420     		movs	r0, #4
+ 117 005a 00E0     		b	.L1
+ 118              	.LVL9:
+ 119              	.L4:
+ 120              		.loc 1 292 10 view .LVU27
+ 121 005c 0420     		movs	r0, #4
+ 122              	.LVL10:
+ 123              	.L1:
+ 293:Src/CustomUserFunctions.c **** }
+ 124              		.loc 1 293 1 view .LVU28
+ 125 005e 10BD     		pop	{r4, pc}
+ 126              	.L6:
+ 284:Src/CustomUserFunctions.c ****       }
+ 127              		.loc 1 284 16 view .LVU29
+ 128 0060 0520     		movs	r0, #5
+ 129 0062 FCE7     		b	.L1
+ 130              	.L7:
+ 289:Src/CustomUserFunctions.c ****     }
+ 131              		.loc 1 289 14 view .LVU30
+ 132 0064 0620     		movs	r0, #6
+ 133 0066 FAE7     		b	.L1
+ 134              	.L11:
+ 135              		.align	2
+ 136              	.L10:
+ 137 0068 00000000 		.word	.LANCHOR0
+ 138 006c 00000000 		.word	.LANCHOR1
+ 139 0070 00000000 		.word	.LANCHOR2
+ 140 0074 00000000 		.word	.LC0
+ 141 0078 0C000000 		.word	.LC1
+ 142              		.cfi_endproc
+ 143              	.LFE322:
+ 145              		.section	.text.sendATData,"ax",%progbits
+ 146              		.align	1
+ 147              		.syntax unified
+ 148              		.thumb
+ 149              		.thumb_func
+ 150              		.fpu fpv4-sp-d16
+ 152              	sendATData:
+ 153              	.LVL11:
+ 154              	.LFB323:
+ 294:Src/CustomUserFunctions.c **** 
+ 295:Src/CustomUserFunctions.c **** //modified function to send data to wifi chip via SPI3 for TCP message send
+ 296:Src/CustomUserFunctions.c **** static int sendATData(uint8_t *dataptr, uint16_t len)
+ 297:Src/CustomUserFunctions.c **** {
+ 155              		.loc 1 297 1 is_stmt 1 view -0
+ 156              		.cfi_startproc
+ 157              		@ args = 0, pretend = 0, frame = 0
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 9
+
+
+ 158              		@ frame_needed = 0, uses_anonymous_args = 0
+ 159              		.loc 1 297 1 is_stmt 0 view .LVU32
+ 160 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 161              	.LCFI1:
+ 162              		.cfi_def_cfa_offset 24
+ 163              		.cfi_offset 3, -24
+ 164              		.cfi_offset 4, -20
+ 165              		.cfi_offset 5, -16
+ 166              		.cfi_offset 6, -12
+ 167              		.cfi_offset 7, -8
+ 168              		.cfi_offset 14, -4
+ 169 0002 0646     		mov	r6, r0
+ 170 0004 0F46     		mov	r7, r1
+ 298:Src/CustomUserFunctions.c **** 	int16_t send_len = 0;
+ 171              		.loc 1 298 2 is_stmt 1 view .LVU33
+ 172              	.LVL12:
+ 299:Src/CustomUserFunctions.c **** 	int16_t recv_len = 0;
+ 173              		.loc 1 299 2 view .LVU34
+ 300:Src/CustomUserFunctions.c **** 	uint16_t cmd_len = 0;
+ 174              		.loc 1 300 2 view .LVU35
+ 301:Src/CustomUserFunctions.c **** 	uint16_t n ;
+ 175              		.loc 1 301 2 view .LVU36
+ 302:Src/CustomUserFunctions.c **** 
+ 303:Src/CustomUserFunctions.c **** 	cmd_len = strlen((char*)(&ComBuf));
+ 176              		.loc 1 303 2 view .LVU37
+ 177              		.loc 1 303 12 is_stmt 0 view .LVU38
+ 178 0006 1F48     		ldr	r0, .L24
+ 179              	.LVL13:
+ 180              		.loc 1 303 12 view .LVU39
+ 181 0008 FFF7FEFF 		bl	strlen
+ 182              	.LVL14:
+ 304:Src/CustomUserFunctions.c **** 
+ 305:Src/CustomUserFunctions.c **** 	//can send only even number of byte on first send
+ 306:Src/CustomUserFunctions.c **** 	//reasons for this are unclear
+ 307:Src/CustomUserFunctions.c **** 	if (cmd_len & 1) return ES_WIFI_STATUS_ERROR;
+ 183              		.loc 1 307 2 is_stmt 1 view .LVU40
+ 184              		.loc 1 307 5 is_stmt 0 view .LVU41
+ 185 000c 10F00104 		ands	r4, r0, #1
+ 186 0010 34D1     		bne	.L15
+ 187 0012 85B2     		uxth	r5, r0
+ 308:Src/CustomUserFunctions.c **** 	n=SPI_WIFI_SendData(&ComBuf[0], cmd_len, UNIV_TIMEOUT);
+ 188              		.loc 1 308 2 is_stmt 1 view .LVU42
+ 189              		.loc 1 308 4 is_stmt 0 view .LVU43
+ 190 0014 1C4B     		ldr	r3, .L24+4
+ 191 0016 1A68     		ldr	r2, [r3]
+ 192 0018 2946     		mov	r1, r5
+ 193 001a 1A48     		ldr	r0, .L24
+ 194              	.LVL15:
+ 195              		.loc 1 308 4 view .LVU44
+ 196 001c FFF7FEFF 		bl	SPI_WIFI_SendData
+ 197              	.LVL16:
+ 198              		.loc 1 308 3 view .LVU45
+ 199 0020 83B2     		uxth	r3, r0
+ 200              	.LVL17:
+ 309:Src/CustomUserFunctions.c **** 	if (n == cmd_len)
+ 201              		.loc 1 309 2 is_stmt 1 view .LVU46
+ 202              		.loc 1 309 5 is_stmt 0 view .LVU47
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 10
+
+
+ 203 0022 9D42     		cmp	r5, r3
+ 204 0024 02D0     		beq	.L21
+ 310:Src/CustomUserFunctions.c **** 	{
+ 311:Src/CustomUserFunctions.c **** 		send_len = SPI_WIFI_SendData(dataptr, len, UNIV_TIMEOUT);
+ 312:Src/CustomUserFunctions.c **** 		if (send_len == len)
+ 313:Src/CustomUserFunctions.c **** 		{
+ 314:Src/CustomUserFunctions.c **** 			recv_len = SPI_WIFI_ReceiveData(&retData[0], 0, UNIV_TIMEOUT);
+ 315:Src/CustomUserFunctions.c **** 			if (recv_len > 0)
+ 316:Src/CustomUserFunctions.c **** 			{
+ 317:Src/CustomUserFunctions.c **** 				*((&retData[0])+recv_len) = 0;
+ 318:Src/CustomUserFunctions.c **** 				//if ACK found in message returned, exit function, otherwise continue error checking
+ 319:Src/CustomUserFunctions.c **** 				if(strstr((char *)(&retData), AT_OK_STRING))
+ 320:Src/CustomUserFunctions.c **** 				{
+ 321:Src/CustomUserFunctions.c **** 					return ES_WIFI_STATUS_OK;
+ 322:Src/CustomUserFunctions.c **** 				}
+ 323:Src/CustomUserFunctions.c **** 				else if(strstr((char *)(&retData), AT_ERROR_STRING))
+ 324:Src/CustomUserFunctions.c **** 				{
+ 325:Src/CustomUserFunctions.c **** 					return ES_WIFI_STATUS_UNEXPECTED_CLOSED_SOCKET;
+ 326:Src/CustomUserFunctions.c **** 				}
+ 327:Src/CustomUserFunctions.c **** 				else
+ 328:Src/CustomUserFunctions.c **** 				{
+ 329:Src/CustomUserFunctions.c **** 					return ES_WIFI_STATUS_ERROR;
+ 330:Src/CustomUserFunctions.c **** 				}
+ 331:Src/CustomUserFunctions.c **** 			}
+ 332:Src/CustomUserFunctions.c **** 			if (recv_len == ES_WIFI_ERROR_STUFFING_FOREVER )
+ 333:Src/CustomUserFunctions.c **** 			{
+ 334:Src/CustomUserFunctions.c **** 				return ES_WIFI_STATUS_MODULE_CRASH;
+ 335:Src/CustomUserFunctions.c **** 			}
+ 336:Src/CustomUserFunctions.c **** 			return ES_WIFI_STATUS_ERROR;
+ 337:Src/CustomUserFunctions.c **** 		}
+ 338:Src/CustomUserFunctions.c **** 		else
+ 339:Src/CustomUserFunctions.c **** 		{
+ 340:Src/CustomUserFunctions.c **** 			return ES_WIFI_STATUS_ERROR;
+ 341:Src/CustomUserFunctions.c **** 		}
+ 342:Src/CustomUserFunctions.c **** 	}
+ 343:Src/CustomUserFunctions.c **** 	return ES_WIFI_STATUS_IO_ERROR;
+ 205              		.loc 1 343 9 view .LVU48
+ 206 0026 0424     		movs	r4, #4
+ 207              	.LVL18:
+ 208              	.L12:
+ 344:Src/CustomUserFunctions.c **** }
+ 209              		.loc 1 344 1 view .LVU49
+ 210 0028 2046     		mov	r0, r4
+ 211 002a F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 212              	.LVL19:
+ 213              	.L21:
+ 311:Src/CustomUserFunctions.c **** 		if (send_len == len)
+ 214              		.loc 1 311 3 is_stmt 1 view .LVU50
+ 311:Src/CustomUserFunctions.c **** 		if (send_len == len)
+ 215              		.loc 1 311 14 is_stmt 0 view .LVU51
+ 216 002c 164B     		ldr	r3, .L24+4
+ 217              	.LVL20:
+ 311:Src/CustomUserFunctions.c **** 		if (send_len == len)
+ 218              		.loc 1 311 14 view .LVU52
+ 219 002e 1A68     		ldr	r2, [r3]
+ 220 0030 3946     		mov	r1, r7
+ 221 0032 3046     		mov	r0, r6
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 11
+
+
+ 222              	.LVL21:
+ 311:Src/CustomUserFunctions.c **** 		if (send_len == len)
+ 223              		.loc 1 311 14 view .LVU53
+ 224 0034 FFF7FEFF 		bl	SPI_WIFI_SendData
+ 225              	.LVL22:
+ 312:Src/CustomUserFunctions.c **** 		{
+ 226              		.loc 1 312 3 is_stmt 1 view .LVU54
+ 312:Src/CustomUserFunctions.c **** 		{
+ 227              		.loc 1 312 6 is_stmt 0 view .LVU55
+ 228 0038 B842     		cmp	r0, r7
+ 229 003a 01D0     		beq	.L22
+ 340:Src/CustomUserFunctions.c **** 		}
+ 230              		.loc 1 340 11 view .LVU56
+ 231 003c 0224     		movs	r4, #2
+ 232 003e F3E7     		b	.L12
+ 233              	.L22:
+ 314:Src/CustomUserFunctions.c **** 			if (recv_len > 0)
+ 234              		.loc 1 314 4 is_stmt 1 view .LVU57
+ 314:Src/CustomUserFunctions.c **** 			if (recv_len > 0)
+ 235              		.loc 1 314 15 is_stmt 0 view .LVU58
+ 236 0040 114B     		ldr	r3, .L24+4
+ 237 0042 1A68     		ldr	r2, [r3]
+ 238 0044 0021     		movs	r1, #0
+ 239 0046 1148     		ldr	r0, .L24+8
+ 240              	.LVL23:
+ 314:Src/CustomUserFunctions.c **** 			if (recv_len > 0)
+ 241              		.loc 1 314 15 view .LVU59
+ 242 0048 FFF7FEFF 		bl	SPI_WIFI_ReceiveData
+ 243              	.LVL24:
+ 315:Src/CustomUserFunctions.c **** 			{
+ 244              		.loc 1 315 4 is_stmt 1 view .LVU60
+ 315:Src/CustomUserFunctions.c **** 			{
+ 245              		.loc 1 315 7 is_stmt 0 view .LVU61
+ 246 004c 031E     		subs	r3, r0, #0
+ 247 004e 0EDD     		ble	.L14
+ 317:Src/CustomUserFunctions.c **** 				//if ACK found in message returned, exit function, otherwise continue error checking
+ 248              		.loc 1 317 5 is_stmt 1 view .LVU62
+ 317:Src/CustomUserFunctions.c **** 				//if ACK found in message returned, exit function, otherwise continue error checking
+ 249              		.loc 1 317 20 is_stmt 0 view .LVU63
+ 250 0050 0E48     		ldr	r0, .L24+8
+ 251              	.LVL25:
+ 317:Src/CustomUserFunctions.c **** 				//if ACK found in message returned, exit function, otherwise continue error checking
+ 252              		.loc 1 317 31 view .LVU64
+ 253 0052 0022     		movs	r2, #0
+ 254 0054 C254     		strb	r2, [r0, r3]
+ 319:Src/CustomUserFunctions.c **** 				{
+ 255              		.loc 1 319 5 is_stmt 1 view .LVU65
+ 319:Src/CustomUserFunctions.c **** 				{
+ 256              		.loc 1 319 8 is_stmt 0 view .LVU66
+ 257 0056 0E49     		ldr	r1, .L24+12
+ 258 0058 FFF7FEFF 		bl	strstr
+ 259              	.LVL26:
+ 319:Src/CustomUserFunctions.c **** 				{
+ 260              		.loc 1 319 7 view .LVU67
+ 261 005c 0028     		cmp	r0, #0
+ 262 005e E3D1     		bne	.L12
+ 323:Src/CustomUserFunctions.c **** 				{
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 12
+
+
+ 263              		.loc 1 323 10 is_stmt 1 view .LVU68
+ 323:Src/CustomUserFunctions.c **** 				{
+ 264              		.loc 1 323 13 is_stmt 0 view .LVU69
+ 265 0060 0C49     		ldr	r1, .L24+16
+ 266 0062 0A48     		ldr	r0, .L24+8
+ 267 0064 FFF7FEFF 		bl	strstr
+ 268              	.LVL27:
+ 323:Src/CustomUserFunctions.c **** 				{
+ 269              		.loc 1 323 12 view .LVU70
+ 270 0068 50B1     		cbz	r0, .L18
+ 325:Src/CustomUserFunctions.c **** 				}
+ 271              		.loc 1 325 13 view .LVU71
+ 272 006a 0524     		movs	r4, #5
+ 273 006c DCE7     		b	.L12
+ 274              	.LVL28:
+ 275              	.L14:
+ 332:Src/CustomUserFunctions.c **** 			{
+ 276              		.loc 1 332 4 is_stmt 1 view .LVU72
+ 332:Src/CustomUserFunctions.c **** 			{
+ 277              		.loc 1 332 7 is_stmt 0 view .LVU73
+ 278 006e 13F1040F 		cmn	r3, #4
+ 279 0072 01D0     		beq	.L23
+ 336:Src/CustomUserFunctions.c **** 		}
+ 280              		.loc 1 336 11 view .LVU74
+ 281 0074 0224     		movs	r4, #2
+ 282 0076 D7E7     		b	.L12
+ 283              	.L23:
+ 334:Src/CustomUserFunctions.c **** 			}
+ 284              		.loc 1 334 12 view .LVU75
+ 285 0078 0624     		movs	r4, #6
+ 286 007a D5E7     		b	.L12
+ 287              	.LVL29:
+ 288              	.L15:
+ 307:Src/CustomUserFunctions.c **** 	n=SPI_WIFI_SendData(&ComBuf[0], cmd_len, UNIV_TIMEOUT);
+ 289              		.loc 1 307 26 view .LVU76
+ 290 007c 0224     		movs	r4, #2
+ 291 007e D3E7     		b	.L12
+ 292              	.LVL30:
+ 293              	.L18:
+ 329:Src/CustomUserFunctions.c **** 				}
+ 294              		.loc 1 329 13 view .LVU77
+ 295 0080 0224     		movs	r4, #2
+ 296 0082 D1E7     		b	.L12
+ 297              	.L25:
+ 298              		.align	2
+ 299              	.L24:
+ 300 0084 00000000 		.word	.LANCHOR0
+ 301 0088 00000000 		.word	.LANCHOR1
+ 302 008c 00000000 		.word	.LANCHOR2
+ 303 0090 00000000 		.word	.LC0
+ 304 0094 0C000000 		.word	.LC1
+ 305              		.cfi_endproc
+ 306              	.LFE323:
+ 308              		.section	.rodata.receiveATData.str1.4,"aMS",%progbits,1
+ 309              		.align	2
+ 310              	.LC2:
+ 311 0000 0D0A3E20 		.ascii	"\015\012> \000"
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 13
+
+
+ 311      00
+ 312              		.section	.text.receiveATData,"ax",%progbits
+ 313              		.align	1
+ 314              		.syntax unified
+ 315              		.thumb
+ 316              		.thumb_func
+ 317              		.fpu fpv4-sp-d16
+ 319              	receiveATData:
+ 320              	.LVL31:
+ 321              	.LFB324:
+ 345:Src/CustomUserFunctions.c **** 
+ 346:Src/CustomUserFunctions.c **** //modified function to recieve data from ISM wifi chip via SPI3 after receive socket/length/timeout
+ 347:Src/CustomUserFunctions.c **** static int receiveATData(uint16_t Reqlen, uint16_t *ReadData, uint8_t *arr_to_fill)
+ 348:Src/CustomUserFunctions.c **** {
+ 322              		.loc 1 348 1 is_stmt 1 view -0
+ 323              		.cfi_startproc
+ 324              		@ args = 0, pretend = 0, frame = 0
+ 325              		@ frame_needed = 0, uses_anonymous_args = 0
+ 326              		.loc 1 348 1 is_stmt 0 view .LVU79
+ 327 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 328              	.LCFI2:
+ 329              		.cfi_def_cfa_offset 24
+ 330              		.cfi_offset 4, -24
+ 331              		.cfi_offset 5, -20
+ 332              		.cfi_offset 6, -16
+ 333              		.cfi_offset 7, -12
+ 334              		.cfi_offset 8, -8
+ 335              		.cfi_offset 14, -4
+ 336 0004 0646     		mov	r6, r0
+ 337 0006 0D46     		mov	r5, r1
+ 338 0008 1746     		mov	r7, r2
+ 349:Src/CustomUserFunctions.c **** 	int len;
+ 339              		.loc 1 349 2 is_stmt 1 view .LVU80
+ 350:Src/CustomUserFunctions.c **** 	int ret = ES_WIFI_STATUS_OK;
+ 340              		.loc 1 350 2 view .LVU81
+ 341              	.LVL32:
+ 351:Src/CustomUserFunctions.c **** 	uint8_t *p = &ComBuf;
+ 342              		.loc 1 351 2 view .LVU82
+ 352:Src/CustomUserFunctions.c **** 
+ 353:Src/CustomUserFunctions.c **** 	//sends AT command to get data and then checks for data received
+ 354:Src/CustomUserFunctions.c **** 	if(SPI_WIFI_SendData(&ComBuf[0], strlen((char*)(&ComBuf[0])), SHORT_TIMEOUT) > 0)
+ 343              		.loc 1 354 2 view .LVU83
+ 344              		.loc 1 354 35 is_stmt 0 view .LVU84
+ 345 000a 334C     		ldr	r4, .L45
+ 346 000c 2046     		mov	r0, r4
+ 347              	.LVL33:
+ 348              		.loc 1 354 35 view .LVU85
+ 349 000e FFF7FEFF 		bl	strlen
+ 350              	.LVL34:
+ 351              		.loc 1 354 5 view .LVU86
+ 352 0012 C822     		movs	r2, #200
+ 353 0014 81B2     		uxth	r1, r0
+ 354 0016 2046     		mov	r0, r4
+ 355 0018 FFF7FEFF 		bl	SPI_WIFI_SendData
+ 356              	.LVL35:
+ 357              		.loc 1 354 4 view .LVU87
+ 358 001c 0028     		cmp	r0, #0
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 14
+
+
+ 359 001e 04DC     		bgt	.L44
+ 355:Src/CustomUserFunctions.c **** 	{
+ 356:Src/CustomUserFunctions.c **** 		len = SPI_WIFI_ReceiveData(p, 0 , SHORT_TIMEOUT);
+ 357:Src/CustomUserFunctions.c **** 		if (len > 0)
+ 358:Src/CustomUserFunctions.c **** 		{
+ 359:Src/CustomUserFunctions.c **** 			if ((p[0]!='\r') || (p[1]!='\n'))
+ 360:Src/CustomUserFunctions.c **** 			{
+ 361:Src/CustomUserFunctions.c **** 				return  ES_WIFI_STATUS_IO_ERROR;
+ 362:Src/CustomUserFunctions.c **** 			}
+ 363:Src/CustomUserFunctions.c **** 			//read past newline and CR
+ 364:Src/CustomUserFunctions.c **** 			len-=2;
+ 365:Src/CustomUserFunctions.c **** 			p+=2;
+ 366:Src/CustomUserFunctions.c **** 			if (len >= AT_OK_STRING_LEN)
+ 367:Src/CustomUserFunctions.c **** 			{
+ 368:Src/CustomUserFunctions.c **** 				while(len && (p[len-1]==0x15)) len--;
+ 369:Src/CustomUserFunctions.c **** 				p[len] = '\0';
+ 370:Src/CustomUserFunctions.c **** 				if(strstr( (char*) p + len - AT_OK_STRING_LEN, AT_OK_STRING))
+ 371:Src/CustomUserFunctions.c **** 				{
+ 372:Src/CustomUserFunctions.c **** 					*ReadData = len - AT_OK_STRING_LEN;
+ 373:Src/CustomUserFunctions.c **** 					//special case where only data returned is ACK,
+ 374:Src/CustomUserFunctions.c **** 					if (*ReadData == 0)
+ 375:Src/CustomUserFunctions.c **** 					{
+ 376:Src/CustomUserFunctions.c **** 						ret = NO_DATA;
+ 377:Src/CustomUserFunctions.c **** 					}
+ 378:Src/CustomUserFunctions.c **** 					if (*ReadData > Reqlen)
+ 379:Src/CustomUserFunctions.c **** 					{
+ 380:Src/CustomUserFunctions.c **** 						*ReadData = Reqlen;
+ 381:Src/CustomUserFunctions.c **** 					}
+ 382:Src/CustomUserFunctions.c **** 					memcpy(arr_to_fill, p, *ReadData);
+ 383:Src/CustomUserFunctions.c **** 					return ret;
+ 384:Src/CustomUserFunctions.c **** 				}
+ 385:Src/CustomUserFunctions.c **** 				else if(memcmp((char *)p + len - AT_DELIMETER_LEN , AT_DELIMETER_STRING, AT_DELIMETER_LEN) == 0
+ 386:Src/CustomUserFunctions.c **** 				{
+ 387:Src/CustomUserFunctions.c **** 					*ReadData = 0;
+ 388:Src/CustomUserFunctions.c **** 					return ES_WIFI_STATUS_UNEXPECTED_CLOSED_SOCKET;
+ 389:Src/CustomUserFunctions.c **** 				}
+ 390:Src/CustomUserFunctions.c **** 
+ 391:Src/CustomUserFunctions.c **** 				*ReadData = 0;
+ 392:Src/CustomUserFunctions.c **** 				return ES_WIFI_STATUS_UNEXPECTED_CLOSED_SOCKET;
+ 393:Src/CustomUserFunctions.c **** 			}
+ 394:Src/CustomUserFunctions.c **** 			if (len == ES_WIFI_ERROR_STUFFING_FOREVER )
+ 395:Src/CustomUserFunctions.c **** 			{
+ 396:Src/CustomUserFunctions.c **** 				return ES_WIFI_STATUS_MODULE_CRASH;
+ 397:Src/CustomUserFunctions.c **** 			}
+ 398:Src/CustomUserFunctions.c **** 		}
+ 399:Src/CustomUserFunctions.c **** 		else
+ 400:Src/CustomUserFunctions.c **** 		{
+ 401:Src/CustomUserFunctions.c **** 			return NO_DATA; //TIMEOUT
+ 402:Src/CustomUserFunctions.c **** 		}
+ 403:Src/CustomUserFunctions.c **** 	}
+ 404:Src/CustomUserFunctions.c **** 	return ret;
+ 360              		.loc 1 404 9 view .LVU88
+ 361 0020 4FF00008 		mov	r8, #0
+ 362              	.LVL36:
+ 363              	.L26:
+ 405:Src/CustomUserFunctions.c **** 
+ 406:Src/CustomUserFunctions.c **** }
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 15
+
+
+ 364              		.loc 1 406 1 view .LVU89
+ 365 0024 4046     		mov	r0, r8
+ 366 0026 BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 367              	.LVL37:
+ 368              	.L44:
+ 356:Src/CustomUserFunctions.c **** 		if (len > 0)
+ 369              		.loc 1 356 3 is_stmt 1 view .LVU90
+ 356:Src/CustomUserFunctions.c **** 		if (len > 0)
+ 370              		.loc 1 356 9 is_stmt 0 view .LVU91
+ 371 002a C822     		movs	r2, #200
+ 372 002c 0021     		movs	r1, #0
+ 373 002e 2046     		mov	r0, r4
+ 374 0030 FFF7FEFF 		bl	SPI_WIFI_ReceiveData
+ 375              	.LVL38:
+ 357:Src/CustomUserFunctions.c **** 		{
+ 376              		.loc 1 357 3 is_stmt 1 view .LVU92
+ 357:Src/CustomUserFunctions.c **** 		{
+ 377              		.loc 1 357 6 is_stmt 0 view .LVU93
+ 378 0034 0028     		cmp	r0, #0
+ 357:Src/CustomUserFunctions.c **** 		{
+ 379              		.loc 1 357 6 view .LVU94
+ 380 0036 43DD     		ble	.L37
+ 359:Src/CustomUserFunctions.c **** 			{
+ 381              		.loc 1 359 4 is_stmt 1 view .LVU95
+ 359:Src/CustomUserFunctions.c **** 			{
+ 382              		.loc 1 359 10 is_stmt 0 view .LVU96
+ 383 0038 2378     		ldrb	r3, [r4]	@ zero_extendqisi2
+ 359:Src/CustomUserFunctions.c **** 			{
+ 384              		.loc 1 359 7 view .LVU97
+ 385 003a 0D2B     		cmp	r3, #13
+ 386 003c 43D1     		bne	.L38
+ 359:Src/CustomUserFunctions.c **** 			{
+ 387              		.loc 1 359 26 discriminator 1 view .LVU98
+ 388 003e 6378     		ldrb	r3, [r4, #1]	@ zero_extendqisi2
+ 359:Src/CustomUserFunctions.c **** 			{
+ 389              		.loc 1 359 21 discriminator 1 view .LVU99
+ 390 0040 0A2B     		cmp	r3, #10
+ 391 0042 43D1     		bne	.L39
+ 364:Src/CustomUserFunctions.c **** 			p+=2;
+ 392              		.loc 1 364 4 is_stmt 1 view .LVU100
+ 364:Src/CustomUserFunctions.c **** 			p+=2;
+ 393              		.loc 1 364 7 is_stmt 0 view .LVU101
+ 394 0044 841E     		subs	r4, r0, #2
+ 395              	.LVL39:
+ 365:Src/CustomUserFunctions.c **** 			if (len >= AT_OK_STRING_LEN)
+ 396              		.loc 1 365 4 is_stmt 1 view .LVU102
+ 366:Src/CustomUserFunctions.c **** 			{
+ 397              		.loc 1 366 4 view .LVU103
+ 366:Src/CustomUserFunctions.c **** 			{
+ 398              		.loc 1 366 7 is_stmt 0 view .LVU104
+ 399 0046 072C     		cmp	r4, #7
+ 400 0048 06D8     		bhi	.L28
+ 394:Src/CustomUserFunctions.c **** 			{
+ 401              		.loc 1 394 4 is_stmt 1 view .LVU105
+ 394:Src/CustomUserFunctions.c **** 			{
+ 402              		.loc 1 394 7 is_stmt 0 view .LVU106
+ 403 004a 14F1040F 		cmn	r4, #4
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 16
+
+
+ 404 004e 40D0     		beq	.L41
+ 404:Src/CustomUserFunctions.c **** 
+ 405              		.loc 1 404 9 view .LVU107
+ 406 0050 4FF00008 		mov	r8, #0
+ 407 0054 E6E7     		b	.L26
+ 408              	.L31:
+ 368:Src/CustomUserFunctions.c **** 				p[len] = '\0';
+ 409              		.loc 1 368 36 is_stmt 1 discriminator 3 view .LVU108
+ 368:Src/CustomUserFunctions.c **** 				p[len] = '\0';
+ 410              		.loc 1 368 39 is_stmt 0 discriminator 3 view .LVU109
+ 411 0056 013C     		subs	r4, r4, #1
+ 412              	.LVL40:
+ 413              	.L28:
+ 368:Src/CustomUserFunctions.c **** 				p[len] = '\0';
+ 414              		.loc 1 368 10 is_stmt 1 discriminator 1 view .LVU110
+ 415 0058 24B1     		cbz	r4, .L30
+ 368:Src/CustomUserFunctions.c **** 				p[len] = '\0';
+ 416              		.loc 1 368 20 is_stmt 0 discriminator 2 view .LVU111
+ 417 005a 1F4B     		ldr	r3, .L45
+ 418 005c 2344     		add	r3, r3, r4
+ 419 005e 5B78     		ldrb	r3, [r3, #1]	@ zero_extendqisi2
+ 368:Src/CustomUserFunctions.c **** 				p[len] = '\0';
+ 420              		.loc 1 368 15 discriminator 2 view .LVU112
+ 421 0060 152B     		cmp	r3, #21
+ 422 0062 F8D0     		beq	.L31
+ 423              	.L30:
+ 369:Src/CustomUserFunctions.c **** 				if(strstr( (char*) p + len - AT_OK_STRING_LEN, AT_OK_STRING))
+ 424              		.loc 1 369 5 is_stmt 1 view .LVU113
+ 369:Src/CustomUserFunctions.c **** 				if(strstr( (char*) p + len - AT_OK_STRING_LEN, AT_OK_STRING))
+ 425              		.loc 1 369 6 is_stmt 0 view .LVU114
+ 426 0064 1D4B     		ldr	r3, .L45+4
+ 369:Src/CustomUserFunctions.c **** 				if(strstr( (char*) p + len - AT_OK_STRING_LEN, AT_OK_STRING))
+ 427              		.loc 1 369 12 view .LVU115
+ 428 0066 0022     		movs	r2, #0
+ 429 0068 1A55     		strb	r2, [r3, r4]
+ 370:Src/CustomUserFunctions.c **** 				{
+ 430              		.loc 1 370 5 is_stmt 1 view .LVU116
+ 370:Src/CustomUserFunctions.c **** 				{
+ 431              		.loc 1 370 32 is_stmt 0 view .LVU117
+ 432 006a A4F10800 		sub	r0, r4, #8
+ 370:Src/CustomUserFunctions.c **** 				{
+ 433              		.loc 1 370 8 view .LVU118
+ 434 006e 1C49     		ldr	r1, .L45+8
+ 435 0070 1844     		add	r0, r0, r3
+ 436 0072 FFF7FEFF 		bl	strstr
+ 437              	.LVL41:
+ 370:Src/CustomUserFunctions.c **** 				{
+ 438              		.loc 1 370 7 view .LVU119
+ 439 0076 88B1     		cbz	r0, .L32
+ 372:Src/CustomUserFunctions.c **** 					//special case where only data returned is ACK,
+ 440              		.loc 1 372 6 is_stmt 1 view .LVU120
+ 372:Src/CustomUserFunctions.c **** 					//special case where only data returned is ACK,
+ 441              		.loc 1 372 22 is_stmt 0 view .LVU121
+ 442 0078 083C     		subs	r4, r4, #8
+ 443              	.LVL42:
+ 372:Src/CustomUserFunctions.c **** 					//special case where only data returned is ACK,
+ 444              		.loc 1 372 22 view .LVU122
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 17
+
+
+ 445 007a A4B2     		uxth	r4, r4
+ 446              	.LVL43:
+ 372:Src/CustomUserFunctions.c **** 					//special case where only data returned is ACK,
+ 447              		.loc 1 372 16 view .LVU123
+ 448 007c 2C80     		strh	r4, [r5]	@ movhi
+ 374:Src/CustomUserFunctions.c **** 					{
+ 449              		.loc 1 374 6 is_stmt 1 view .LVU124
+ 374:Src/CustomUserFunctions.c **** 					{
+ 450              		.loc 1 374 9 is_stmt 0 view .LVU125
+ 451 007e 54B1     		cbz	r4, .L40
+ 350:Src/CustomUserFunctions.c **** 	uint8_t *p = &ComBuf;
+ 452              		.loc 1 350 6 view .LVU126
+ 453 0080 4FF00008 		mov	r8, #0
+ 454              	.L33:
+ 455              	.LVL44:
+ 378:Src/CustomUserFunctions.c **** 					{
+ 456              		.loc 1 378 6 is_stmt 1 view .LVU127
+ 378:Src/CustomUserFunctions.c **** 					{
+ 457              		.loc 1 378 9 is_stmt 0 view .LVU128
+ 458 0084 B442     		cmp	r4, r6
+ 459 0086 00D9     		bls	.L34
+ 380:Src/CustomUserFunctions.c **** 					}
+ 460              		.loc 1 380 7 is_stmt 1 view .LVU129
+ 380:Src/CustomUserFunctions.c **** 					}
+ 461              		.loc 1 380 17 is_stmt 0 view .LVU130
+ 462 0088 2E80     		strh	r6, [r5]	@ movhi
+ 463              	.L34:
+ 382:Src/CustomUserFunctions.c **** 					return ret;
+ 464              		.loc 1 382 6 is_stmt 1 view .LVU131
+ 465 008a 2A88     		ldrh	r2, [r5]
+ 466 008c 1349     		ldr	r1, .L45+4
+ 467 008e 3846     		mov	r0, r7
+ 468 0090 FFF7FEFF 		bl	memcpy
+ 469              	.LVL45:
+ 383:Src/CustomUserFunctions.c **** 				}
+ 470              		.loc 1 383 6 view .LVU132
+ 383:Src/CustomUserFunctions.c **** 				}
+ 471              		.loc 1 383 13 is_stmt 0 view .LVU133
+ 472 0094 C6E7     		b	.L26
+ 473              	.LVL46:
+ 474              	.L40:
+ 376:Src/CustomUserFunctions.c **** 					}
+ 475              		.loc 1 376 11 view .LVU134
+ 476 0096 4FF01608 		mov	r8, #22
+ 477 009a F3E7     		b	.L33
+ 478              	.LVL47:
+ 479              	.L32:
+ 385:Src/CustomUserFunctions.c **** 				{
+ 480              		.loc 1 385 10 is_stmt 1 view .LVU135
+ 385:Src/CustomUserFunctions.c **** 				{
+ 481              		.loc 1 385 36 is_stmt 0 view .LVU136
+ 482 009c 043C     		subs	r4, r4, #4
+ 483              	.LVL48:
+ 385:Src/CustomUserFunctions.c **** 				{
+ 484              		.loc 1 385 13 view .LVU137
+ 485 009e 0422     		movs	r2, #4
+ 486 00a0 1049     		ldr	r1, .L45+12
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 18
+
+
+ 487 00a2 0E48     		ldr	r0, .L45+4
+ 488 00a4 2044     		add	r0, r0, r4
+ 489 00a6 FFF7FEFF 		bl	memcmp
+ 490              	.LVL49:
+ 385:Src/CustomUserFunctions.c **** 				{
+ 491              		.loc 1 385 12 view .LVU138
+ 492 00aa 20B9     		cbnz	r0, .L35
+ 387:Src/CustomUserFunctions.c **** 					return ES_WIFI_STATUS_UNEXPECTED_CLOSED_SOCKET;
+ 493              		.loc 1 387 6 is_stmt 1 view .LVU139
+ 387:Src/CustomUserFunctions.c **** 					return ES_WIFI_STATUS_UNEXPECTED_CLOSED_SOCKET;
+ 494              		.loc 1 387 16 is_stmt 0 view .LVU140
+ 495 00ac 0023     		movs	r3, #0
+ 496 00ae 2B80     		strh	r3, [r5]	@ movhi
+ 388:Src/CustomUserFunctions.c **** 				}
+ 497              		.loc 1 388 6 is_stmt 1 view .LVU141
+ 388:Src/CustomUserFunctions.c **** 				}
+ 498              		.loc 1 388 13 is_stmt 0 view .LVU142
+ 499 00b0 4FF00508 		mov	r8, #5
+ 500 00b4 B6E7     		b	.L26
+ 501              	.L35:
+ 391:Src/CustomUserFunctions.c **** 				return ES_WIFI_STATUS_UNEXPECTED_CLOSED_SOCKET;
+ 502              		.loc 1 391 5 is_stmt 1 view .LVU143
+ 391:Src/CustomUserFunctions.c **** 				return ES_WIFI_STATUS_UNEXPECTED_CLOSED_SOCKET;
+ 503              		.loc 1 391 15 is_stmt 0 view .LVU144
+ 504 00b6 0023     		movs	r3, #0
+ 505 00b8 2B80     		strh	r3, [r5]	@ movhi
+ 392:Src/CustomUserFunctions.c **** 			}
+ 506              		.loc 1 392 5 is_stmt 1 view .LVU145
+ 392:Src/CustomUserFunctions.c **** 			}
+ 507              		.loc 1 392 12 is_stmt 0 view .LVU146
+ 508 00ba 4FF00508 		mov	r8, #5
+ 509 00be B1E7     		b	.L26
+ 510              	.LVL50:
+ 511              	.L37:
+ 401:Src/CustomUserFunctions.c **** 		}
+ 512              		.loc 1 401 11 view .LVU147
+ 513 00c0 4FF01608 		mov	r8, #22
+ 514 00c4 AEE7     		b	.L26
+ 515              	.L38:
+ 361:Src/CustomUserFunctions.c **** 			}
+ 516              		.loc 1 361 13 view .LVU148
+ 517 00c6 4FF00408 		mov	r8, #4
+ 518 00ca ABE7     		b	.L26
+ 519              	.L39:
+ 520 00cc 4FF00408 		mov	r8, #4
+ 521 00d0 A8E7     		b	.L26
+ 522              	.LVL51:
+ 523              	.L41:
+ 396:Src/CustomUserFunctions.c **** 			}
+ 524              		.loc 1 396 12 view .LVU149
+ 525 00d2 4FF00608 		mov	r8, #6
+ 526 00d6 A5E7     		b	.L26
+ 527              	.L46:
+ 528              		.align	2
+ 529              	.L45:
+ 530 00d8 00000000 		.word	.LANCHOR0
+ 531 00dc 02000000 		.word	.LANCHOR0+2
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 19
+
+
+ 532 00e0 00000000 		.word	.LC0
+ 533 00e4 00000000 		.word	.LC2
+ 534              		.cfi_endproc
+ 535              	.LFE324:
+ 537              		.section	.text.connect_nodes,"ax",%progbits
+ 538              		.align	1
+ 539              		.global	connect_nodes
+ 540              		.syntax unified
+ 541              		.thumb
+ 542              		.thumb_func
+ 543              		.fpu fpv4-sp-d16
+ 545              	connect_nodes:
+ 546              	.LFB318:
+  67:Src/CustomUserFunctions.c **** 	httpclient_init();
+ 547              		.loc 1 67 1 is_stmt 1 view -0
+ 548              		.cfi_startproc
+ 549              		@ args = 0, pretend = 0, frame = 0
+ 550              		@ frame_needed = 0, uses_anonymous_args = 0
+ 551 0000 08B5     		push	{r3, lr}
+ 552              	.LCFI3:
+ 553              		.cfi_def_cfa_offset 8
+ 554              		.cfi_offset 3, -8
+ 555              		.cfi_offset 14, -4
+  68:Src/CustomUserFunctions.c **** }
+ 556              		.loc 1 68 2 view .LVU151
+ 557 0002 FFF7FEFF 		bl	httpclient_init
+ 558              	.LVL52:
+  69:Src/CustomUserFunctions.c **** 
+ 559              		.loc 1 69 1 is_stmt 0 view .LVU152
+ 560 0006 08BD     		pop	{r3, pc}
+ 561              		.cfi_endproc
+ 562              	.LFE318:
+ 564              		.section	.rodata.sendTCPData.str1.4,"aMS",%progbits,1
+ 565              		.align	2
+ 566              	.LC3:
+ 567 0000 50303D25 		.ascii	"P0=%d\015\000"
+ 567      640D00
+ 568 0007 00       		.align	2
+ 569              	.LC4:
+ 570 0008 53323D25 		.ascii	"S2=%lu\015\000"
+ 570      6C750D00 
+ 571              		.align	2
+ 572              	.LC5:
+ 573 0010 53333D25 		.ascii	"S3=%d\015\015\000"
+ 573      640D0D00 
+ 574              		.align	2
+ 575              	.LC6:
+ 576 0018 2D310D0A 		.ascii	"-1\015\012\000"
+ 576      00
+ 577              		.section	.text.sendTCPData,"ax",%progbits
+ 578              		.align	1
+ 579              		.global	sendTCPData
+ 580              		.syntax unified
+ 581              		.thumb
+ 582              		.thumb_func
+ 583              		.fpu fpv4-sp-d16
+ 585              	sendTCPData:
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 20
+
+
+ 586              	.LVL53:
+ 587              	.LFB319:
+  75:Src/CustomUserFunctions.c **** 	ES_WIFI_Status_t ret = ES_WIFI_STATUS_ERROR;
+ 588              		.loc 1 75 1 is_stmt 1 view -0
+ 589              		.cfi_startproc
+ 590              		@ args = 0, pretend = 0, frame = 0
+ 591              		@ frame_needed = 0, uses_anonymous_args = 0
+  75:Src/CustomUserFunctions.c **** 	ES_WIFI_Status_t ret = ES_WIFI_STATUS_ERROR;
+ 592              		.loc 1 75 1 is_stmt 0 view .LVU154
+ 593 0000 F8B5     		push	{r3, r4, r5, r6, r7, lr}
+ 594              	.LCFI4:
+ 595              		.cfi_def_cfa_offset 24
+ 596              		.cfi_offset 3, -24
+ 597              		.cfi_offset 4, -20
+ 598              		.cfi_offset 5, -16
+ 599              		.cfi_offset 6, -12
+ 600              		.cfi_offset 7, -8
+ 601              		.cfi_offset 14, -4
+ 602 0002 0746     		mov	r7, r0
+ 603 0004 0D46     		mov	r5, r1
+ 604 0006 1646     		mov	r6, r2
+  76:Src/CustomUserFunctions.c **** 	if(Reqlen >= ES_WIFI_PAYLOAD_SIZE )
+ 605              		.loc 1 76 2 is_stmt 1 view .LVU155
+ 606              	.LVL54:
+  77:Src/CustomUserFunctions.c **** 		{
+ 607              		.loc 1 77 2 view .LVU156
+  77:Src/CustomUserFunctions.c **** 		{
+ 608              		.loc 1 77 4 is_stmt 0 view .LVU157
+ 609 0008 B1F5966F 		cmp	r1, #1200
+ 610 000c 01D3     		bcc	.L50
+  79:Src/CustomUserFunctions.c **** 		}
+ 611              		.loc 1 79 9 view .LVU158
+ 612 000e 4FF49665 		mov	r5, #1200
+ 613              	.L50:
+ 614              	.LVL55:
+  82:Src/CustomUserFunctions.c **** 	sprintf((char*)ComBuf,"P0=%d\r", TCPSocket);
+ 615              		.loc 1 82 2 is_stmt 1 view .LVU159
+  82:Src/CustomUserFunctions.c **** 	sprintf((char*)ComBuf,"P0=%d\r", TCPSocket);
+ 616              		.loc 1 82 11 is_stmt 0 view .LVU160
+ 617 0012 3580     		strh	r5, [r6]	@ movhi
+  83:Src/CustomUserFunctions.c **** 	ret = sendATCommand();
+ 618              		.loc 1 83 2 is_stmt 1 view .LVU161
+ 619 0014 0022     		movs	r2, #0
+ 620              	.LVL56:
+  83:Src/CustomUserFunctions.c **** 	ret = sendATCommand();
+ 621              		.loc 1 83 2 is_stmt 0 view .LVU162
+ 622 0016 1749     		ldr	r1, .L58
+ 623 0018 1748     		ldr	r0, .L58+4
+ 624              	.LVL57:
+  83:Src/CustomUserFunctions.c **** 	ret = sendATCommand();
+ 625              		.loc 1 83 2 view .LVU163
+ 626 001a FFF7FEFF 		bl	sprintf
+ 627              	.LVL58:
+  84:Src/CustomUserFunctions.c **** 	if(ret == ES_WIFI_STATUS_OK)
+ 628              		.loc 1 84 2 is_stmt 1 view .LVU164
+  84:Src/CustomUserFunctions.c **** 	if(ret == ES_WIFI_STATUS_OK)
+ 629              		.loc 1 84 8 is_stmt 0 view .LVU165
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 21
+
+
+ 630 001e FFF7FEFF 		bl	sendATCommand
+ 631              	.LVL59:
+  85:Src/CustomUserFunctions.c **** 	{
+ 632              		.loc 1 85 2 is_stmt 1 view .LVU166
+  85:Src/CustomUserFunctions.c **** 	{
+ 633              		.loc 1 85 4 is_stmt 0 view .LVU167
+ 634 0022 10F0FF04 		ands	r4, r0, #255
+ 635 0026 03D0     		beq	.L57
+ 636              	.LVL60:
+ 637              	.L51:
+ 105:Src/CustomUserFunctions.c **** 	{
+ 638              		.loc 1 105 2 is_stmt 1 view .LVU168
+ 105:Src/CustomUserFunctions.c **** 	{
+ 639              		.loc 1 105 5 is_stmt 0 view .LVU169
+ 640 0028 022C     		cmp	r4, #2
+ 641 002a 1FD0     		beq	.L52
+ 642              	.LVL61:
+ 643              	.L53:
+ 109:Src/CustomUserFunctions.c **** }
+ 644              		.loc 1 109 2 is_stmt 1 view .LVU170
+ 110:Src/CustomUserFunctions.c **** 
+ 645              		.loc 1 110 1 is_stmt 0 view .LVU171
+ 646 002c 2046     		mov	r0, r4
+ 647 002e F8BD     		pop	{r3, r4, r5, r6, r7, pc}
+ 648              	.LVL62:
+ 649              	.L57:
+  87:Src/CustomUserFunctions.c **** 		ret = sendATCommand();
+ 650              		.loc 1 87 3 is_stmt 1 view .LVU172
+ 651 0030 124B     		ldr	r3, .L58+8
+ 652 0032 1A68     		ldr	r2, [r3]
+ 653 0034 1249     		ldr	r1, .L58+12
+ 654 0036 1048     		ldr	r0, .L58+4
+ 655              	.LVL63:
+  87:Src/CustomUserFunctions.c **** 		ret = sendATCommand();
+ 656              		.loc 1 87 3 is_stmt 0 view .LVU173
+ 657 0038 FFF7FEFF 		bl	sprintf
+ 658              	.LVL64:
+  88:Src/CustomUserFunctions.c **** 
+ 659              		.loc 1 88 3 is_stmt 1 view .LVU174
+  88:Src/CustomUserFunctions.c **** 
+ 660              		.loc 1 88 9 is_stmt 0 view .LVU175
+ 661 003c FFF7FEFF 		bl	sendATCommand
+ 662              	.LVL65:
+  90:Src/CustomUserFunctions.c **** 		{
+ 663              		.loc 1 90 3 is_stmt 1 view .LVU176
+  90:Src/CustomUserFunctions.c **** 		{
+ 664              		.loc 1 90 5 is_stmt 0 view .LVU177
+ 665 0040 10F0FF04 		ands	r4, r0, #255
+ 666 0044 F0D1     		bne	.L51
+  92:Src/CustomUserFunctions.c **** 			ret = sendATData(dataToSend, Reqlen);
+ 667              		.loc 1 92 4 is_stmt 1 view .LVU178
+ 668 0046 2A46     		mov	r2, r5
+ 669 0048 0E49     		ldr	r1, .L58+16
+ 670 004a 0B48     		ldr	r0, .L58+4
+ 671              	.LVL66:
+  92:Src/CustomUserFunctions.c **** 			ret = sendATData(dataToSend, Reqlen);
+ 672              		.loc 1 92 4 is_stmt 0 view .LVU179
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 22
+
+
+ 673 004c FFF7FEFF 		bl	sprintf
+ 674              	.LVL67:
+  93:Src/CustomUserFunctions.c **** 
+ 675              		.loc 1 93 4 is_stmt 1 view .LVU180
+  93:Src/CustomUserFunctions.c **** 
+ 676              		.loc 1 93 10 is_stmt 0 view .LVU181
+ 677 0050 2946     		mov	r1, r5
+ 678 0052 3846     		mov	r0, r7
+ 679 0054 FFF7FEFF 		bl	sendATData
+ 680              	.LVL68:
+  95:Src/CustomUserFunctions.c **** 			{
+ 681              		.loc 1 95 4 is_stmt 1 view .LVU182
+  95:Src/CustomUserFunctions.c **** 			{
+ 682              		.loc 1 95 6 is_stmt 0 view .LVU183
+ 683 0058 10F0FF04 		ands	r4, r0, #255
+ 684 005c E4D1     		bne	.L51
+  97:Src/CustomUserFunctions.c **** 				{
+ 685              		.loc 1 97 5 is_stmt 1 view .LVU184
+  97:Src/CustomUserFunctions.c **** 				{
+ 686              		.loc 1 97 8 is_stmt 0 view .LVU185
+ 687 005e 0A49     		ldr	r1, .L58+20
+ 688 0060 0A48     		ldr	r0, .L58+24
+ 689              	.LVL69:
+  97:Src/CustomUserFunctions.c **** 				{
+ 690              		.loc 1 97 8 view .LVU186
+ 691 0062 FFF7FEFF 		bl	strstr
+ 692              	.LVL70:
+  97:Src/CustomUserFunctions.c **** 				{
+ 693              		.loc 1 97 7 view .LVU187
+ 694 0066 0028     		cmp	r0, #0
+ 695 0068 DED0     		beq	.L51
+  99:Src/CustomUserFunctions.c **** 				}
+ 696              		.loc 1 99 10 view .LVU188
+ 697 006a 0224     		movs	r4, #2
+ 698              	.L52:
+ 107:Src/CustomUserFunctions.c **** 	}
+ 699              		.loc 1 107 3 is_stmt 1 view .LVU189
+ 107:Src/CustomUserFunctions.c **** 	}
+ 700              		.loc 1 107 12 is_stmt 0 view .LVU190
+ 701 006c 0023     		movs	r3, #0
+ 702 006e 3380     		strh	r3, [r6]	@ movhi
+ 703 0070 DCE7     		b	.L53
+ 704              	.L59:
+ 705 0072 00BF     		.align	2
+ 706              	.L58:
+ 707 0074 00000000 		.word	.LC3
+ 708 0078 00000000 		.word	.LANCHOR0
+ 709 007c 00000000 		.word	.LANCHOR1
+ 710 0080 08000000 		.word	.LC4
+ 711 0084 10000000 		.word	.LC5
+ 712 0088 18000000 		.word	.LC6
+ 713 008c 00000000 		.word	.LANCHOR2
+ 714              		.cfi_endproc
+ 715              	.LFE319:
+ 717              		.section	.rodata.receiveTCPData.str1.4,"aMS",%progbits,1
+ 718              		.align	2
+ 719              	.LC7:
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 23
+
+
+ 720 0000 52313D25 		.ascii	"R1=%d\015\000"
+ 720      640D00
+ 721 0007 00       		.align	2
+ 722              	.LC8:
+ 723 0008 52323D25 		.ascii	"R2=%i\015\000"
+ 723      690D00
+ 724              		.section	.text.receiveTCPData,"ax",%progbits
+ 725              		.align	1
+ 726              		.global	receiveTCPData
+ 727              		.syntax unified
+ 728              		.thumb
+ 729              		.thumb_func
+ 730              		.fpu fpv4-sp-d16
+ 732              	receiveTCPData:
+ 733              	.LVL71:
+ 734              	.LFB320:
+ 113:Src/CustomUserFunctions.c **** 	  ES_WIFI_Status_t ret = ES_WIFI_STATUS_ERROR;
+ 735              		.loc 1 113 1 is_stmt 1 view -0
+ 736              		.cfi_startproc
+ 737              		@ args = 0, pretend = 0, frame = 0
+ 738              		@ frame_needed = 0, uses_anonymous_args = 0
+ 114:Src/CustomUserFunctions.c **** 
+ 739              		.loc 1 114 4 view .LVU192
+ 116:Src/CustomUserFunctions.c **** 	  {
+ 740              		.loc 1 116 4 view .LVU193
+ 116:Src/CustomUserFunctions.c **** 	  {
+ 741              		.loc 1 116 6 is_stmt 0 view .LVU194
+ 742 0000 B0F5966F 		cmp	r0, #1200
+ 743 0004 01D9     		bls	.L70
+ 114:Src/CustomUserFunctions.c **** 
+ 744              		.loc 1 114 21 view .LVU195
+ 745 0006 0220     		movs	r0, #2
+ 746              	.LVL72:
+ 149:Src/CustomUserFunctions.c **** }
+ 747              		.loc 1 149 4 is_stmt 1 view .LVU196
+ 150:Src/CustomUserFunctions.c **** 
+ 748              		.loc 1 150 1 is_stmt 0 view .LVU197
+ 749 0008 7047     		bx	lr
+ 750              	.LVL73:
+ 751              	.L70:
+ 113:Src/CustomUserFunctions.c **** 	  ES_WIFI_Status_t ret = ES_WIFI_STATUS_ERROR;
+ 752              		.loc 1 113 1 view .LVU198
+ 753 000a 70B5     		push	{r4, r5, r6, lr}
+ 754              	.LCFI5:
+ 755              		.cfi_def_cfa_offset 16
+ 756              		.cfi_offset 4, -16
+ 757              		.cfi_offset 5, -12
+ 758              		.cfi_offset 6, -8
+ 759              		.cfi_offset 14, -4
+ 760 000c 0446     		mov	r4, r0
+ 761 000e 0E46     		mov	r6, r1
+ 762 0010 1546     		mov	r5, r2
+ 118:Src/CustomUserFunctions.c **** 		  ret = sendATCommand();
+ 763              		.loc 1 118 5 is_stmt 1 view .LVU199
+ 764 0012 0022     		movs	r2, #0
+ 765              	.LVL74:
+ 118:Src/CustomUserFunctions.c **** 		  ret = sendATCommand();
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 24
+
+
+ 766              		.loc 1 118 5 is_stmt 0 view .LVU200
+ 767 0014 1749     		ldr	r1, .L73
+ 768              	.LVL75:
+ 118:Src/CustomUserFunctions.c **** 		  ret = sendATCommand();
+ 769              		.loc 1 118 5 view .LVU201
+ 770 0016 1848     		ldr	r0, .L73+4
+ 771              	.LVL76:
+ 118:Src/CustomUserFunctions.c **** 		  ret = sendATCommand();
+ 772              		.loc 1 118 5 view .LVU202
+ 773 0018 FFF7FEFF 		bl	sprintf
+ 774              	.LVL77:
+ 119:Src/CustomUserFunctions.c **** 
+ 775              		.loc 1 119 5 is_stmt 1 view .LVU203
+ 119:Src/CustomUserFunctions.c **** 
+ 776              		.loc 1 119 11 is_stmt 0 view .LVU204
+ 777 001c FFF7FEFF 		bl	sendATCommand
+ 778              	.LVL78:
+ 121:Src/CustomUserFunctions.c **** 		  {
+ 779              		.loc 1 121 5 is_stmt 1 view .LVU205
+ 121:Src/CustomUserFunctions.c **** 		  {
+ 780              		.loc 1 121 7 is_stmt 0 view .LVU206
+ 781 0020 10F0FF00 		ands	r0, r0, #255
+ 782              	.LVL79:
+ 121:Src/CustomUserFunctions.c **** 		  {
+ 783              		.loc 1 121 7 view .LVU207
+ 784 0024 00D0     		beq	.L71
+ 785              	.L60:
+ 150:Src/CustomUserFunctions.c **** 
+ 786              		.loc 1 150 1 view .LVU208
+ 787 0026 70BD     		pop	{r4, r5, r6, pc}
+ 788              	.LVL80:
+ 789              	.L71:
+ 123:Src/CustomUserFunctions.c **** 			  ret = sendATCommand();
+ 790              		.loc 1 123 6 is_stmt 1 view .LVU209
+ 791 0028 2246     		mov	r2, r4
+ 792 002a 1449     		ldr	r1, .L73+8
+ 793 002c 1248     		ldr	r0, .L73+4
+ 794 002e FFF7FEFF 		bl	sprintf
+ 795              	.LVL81:
+ 124:Src/CustomUserFunctions.c **** 			  if(ret == ES_WIFI_STATUS_OK)
+ 796              		.loc 1 124 6 view .LVU210
+ 124:Src/CustomUserFunctions.c **** 			  if(ret == ES_WIFI_STATUS_OK)
+ 797              		.loc 1 124 12 is_stmt 0 view .LVU211
+ 798 0032 FFF7FEFF 		bl	sendATCommand
+ 799              	.LVL82:
+ 125:Src/CustomUserFunctions.c **** 			  {
+ 800              		.loc 1 125 6 is_stmt 1 view .LVU212
+ 125:Src/CustomUserFunctions.c **** 			  {
+ 801              		.loc 1 125 8 is_stmt 0 view .LVU213
+ 802 0036 10F0FF00 		ands	r0, r0, #255
+ 803              	.LVL83:
+ 125:Src/CustomUserFunctions.c **** 			  {
+ 804              		.loc 1 125 8 view .LVU214
+ 805 003a 02D0     		beq	.L72
+ 145:Src/CustomUserFunctions.c **** 			  }
+ 806              		.loc 1 145 7 is_stmt 1 view .LVU215
+ 145:Src/CustomUserFunctions.c **** 			  }
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 25
+
+
+ 807              		.loc 1 145 20 is_stmt 0 view .LVU216
+ 808 003c 0023     		movs	r3, #0
+ 809 003e 3380     		strh	r3, [r6]	@ movhi
+ 810 0040 F1E7     		b	.L60
+ 811              	.L72:
+ 128:Src/CustomUserFunctions.c **** 				  ret = sendATCommand();
+ 812              		.loc 1 128 7 is_stmt 1 view .LVU217
+ 813 0042 C822     		movs	r2, #200
+ 814 0044 0E49     		ldr	r1, .L73+12
+ 815 0046 0C48     		ldr	r0, .L73+4
+ 816 0048 FFF7FEFF 		bl	sprintf
+ 817              	.LVL84:
+ 129:Src/CustomUserFunctions.c **** 				  if(ret == ES_WIFI_STATUS_OK)
+ 818              		.loc 1 129 7 view .LVU218
+ 129:Src/CustomUserFunctions.c **** 				  if(ret == ES_WIFI_STATUS_OK)
+ 819              		.loc 1 129 13 is_stmt 0 view .LVU219
+ 820 004c FFF7FEFF 		bl	sendATCommand
+ 821              	.LVL85:
+ 130:Src/CustomUserFunctions.c **** 				  {
+ 822              		.loc 1 130 7 is_stmt 1 view .LVU220
+ 130:Src/CustomUserFunctions.c **** 				  {
+ 823              		.loc 1 130 9 is_stmt 0 view .LVU221
+ 824 0050 10F0FF00 		ands	r0, r0, #255
+ 825              	.LVL86:
+ 130:Src/CustomUserFunctions.c **** 				  {
+ 826              		.loc 1 130 9 view .LVU222
+ 827 0054 E7D1     		bne	.L60
+ 132:Src/CustomUserFunctions.c **** 					  ret = receiveATData(Reqlen, ReceivedLen, msg_arr);
+ 828              		.loc 1 132 8 is_stmt 1 view .LVU223
+ 829 0056 084B     		ldr	r3, .L73+4
+ 830 0058 0A4A     		ldr	r2, .L73+16
+ 831 005a 1A60     		str	r2, [r3]
+ 133:Src/CustomUserFunctions.c **** 					  if (ret != ES_WIFI_STATUS_OK)
+ 832              		.loc 1 133 8 view .LVU224
+ 133:Src/CustomUserFunctions.c **** 					  if (ret != ES_WIFI_STATUS_OK)
+ 833              		.loc 1 133 14 is_stmt 0 view .LVU225
+ 834 005c 2A46     		mov	r2, r5
+ 835 005e 3146     		mov	r1, r6
+ 836 0060 2046     		mov	r0, r4
+ 837 0062 FFF7FEFF 		bl	receiveATData
+ 838              	.LVL87:
+ 134:Src/CustomUserFunctions.c **** 					  {
+ 839              		.loc 1 134 8 is_stmt 1 view .LVU226
+ 134:Src/CustomUserFunctions.c **** 					  {
+ 840              		.loc 1 134 11 is_stmt 0 view .LVU227
+ 841 0066 10F0FF00 		ands	r0, r0, #255
+ 842              	.LVL88:
+ 134:Src/CustomUserFunctions.c **** 					  {
+ 843              		.loc 1 134 11 view .LVU228
+ 844 006a DCD0     		beq	.L60
+ 136:Src/CustomUserFunctions.c **** 						  {
+ 845              		.loc 1 136 9 is_stmt 1 view .LVU229
+ 136:Src/CustomUserFunctions.c **** 						  {
+ 846              		.loc 1 136 12 is_stmt 0 view .LVU230
+ 847 006c 1628     		cmp	r0, #22
+ 848 006e DAD1     		bne	.L60
+ 138:Src/CustomUserFunctions.c **** 						  }
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 26
+
+
+ 849              		.loc 1 138 17 view .LVU231
+ 850 0070 1620     		movs	r0, #22
+ 851 0072 D8E7     		b	.L60
+ 852              	.L74:
+ 853              		.align	2
+ 854              	.L73:
+ 855 0074 00000000 		.word	.LC3
+ 856 0078 00000000 		.word	.LANCHOR0
+ 857 007c 00000000 		.word	.LC7
+ 858 0080 08000000 		.word	.LC8
+ 859 0084 52300D00 		.word	864338
+ 860              		.cfi_endproc
+ 861              	.LFE320:
+ 863              		.section	.rodata.beginClientServerConnection.str1.4,"aMS",%progbits,1
+ 864              		.align	2
+ 865              	.LC9:
+ 866 0000 6F70656E 		.ascii	"opening client (A) /server (B) connection\015\000"
+ 866      696E6720 
+ 866      636C6965 
+ 866      6E742028 
+ 866      4129202F 
+ 867 002b 00       		.align	2
+ 868              	.LC10:
+ 869 002c 73657420 		.ascii	"set socket, setting TCP protocol\015\000"
+ 869      736F636B 
+ 869      65742C20 
+ 869      73657474 
+ 869      696E6720 
+ 870 004e 0000     		.align	2
+ 871              	.LC11:
+ 872 0050 50313D25 		.ascii	"P1=%d\015\000"
+ 872      640D00
+ 873 0057 00       		.align	2
+ 874              	.LC12:
+ 875 0058 73657420 		.ascii	"set TCP protocol, setting destination IP address to"
+ 875      54435020 
+ 875      70726F74 
+ 875      6F636F6C 
+ 875      2C207365 
+ 876 008b 2025642E 		.ascii	" %d.%d.%d.%d\015\012\000"
+ 876      25642E25 
+ 876      642E2564 
+ 876      0D0A00
+ 877 009a 0000     		.align	2
+ 878              	.LC13:
+ 879 009c 50333D25 		.ascii	"P3=%d.%d.%d.%d\015\000"
+ 879      642E2564 
+ 879      2E25642E 
+ 879      25640D00 
+ 880              		.align	2
+ 881              	.LC14:
+ 882 00ac 73657420 		.ascii	"set dest IP addr, setting remote port to %d\015\012"
+ 882      64657374 
+ 882      20495020 
+ 882      61646472 
+ 882      2C207365 
+ 883 00d9 00       		.ascii	"\000"
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 27
+
+
+ 884 00da 0000     		.align	2
+ 885              	.LC15:
+ 886 00dc 50343D25 		.ascii	"P4=%d\015\000"
+ 886      640D00
+ 887 00e3 00       		.align	2
+ 888              	.LC16:
+ 889 00e4 73686F77 		.ascii	"showing transport settings before trying to connect"
+ 889      696E6720 
+ 889      7472616E 
+ 889      73706F72 
+ 889      74207365 
+ 890 0117 0D00     		.ascii	"\015\000"
+ 891 0119 000000   		.align	2
+ 892              	.LC17:
+ 893 011c 25730D00 		.ascii	"%s\015\000"
+ 894              		.align	2
+ 895              	.LC18:
+ 896 0120 73657420 		.ascii	"set dest IP address, setting client mode\015\000"
+ 896      64657374 
+ 896      20495020 
+ 896      61646472 
+ 896      6573732C 
+ 897 014a 0000     		.align	2
+ 898              	.LC19:
+ 899 014c 50363D31 		.ascii	"P6=1\015\000"
+ 899      0D00
+ 900 0152 0000     		.align	2
+ 901              	.LC20:
+ 902 0154 73657276 		.ascii	"server/client connection opened successfully\015\000"
+ 902      65722F63 
+ 902      6C69656E 
+ 902      7420636F 
+ 902      6E6E6563 
+ 903              		.section	.text.beginClientServerConnection,"ax",%progbits
+ 904              		.align	1
+ 905              		.global	beginClientServerConnection
+ 906              		.syntax unified
+ 907              		.thumb
+ 908              		.thumb_func
+ 909              		.fpu fpv4-sp-d16
+ 911              	beginClientServerConnection:
+ 912              	.LFB321:
+ 156:Src/CustomUserFunctions.c **** 	printf("opening client (A) /server (B) connection\r\n");
+ 913              		.loc 1 156 1 is_stmt 1 view -0
+ 914              		.cfi_startproc
+ 915              		@ args = 0, pretend = 0, frame = 0
+ 916              		@ frame_needed = 0, uses_anonymous_args = 0
+ 917 0000 10B5     		push	{r4, lr}
+ 918              	.LCFI6:
+ 919              		.cfi_def_cfa_offset 8
+ 920              		.cfi_offset 4, -8
+ 921              		.cfi_offset 14, -4
+ 922 0002 82B0     		sub	sp, sp, #8
+ 923              	.LCFI7:
+ 924              		.cfi_def_cfa_offset 16
+ 157:Src/CustomUserFunctions.c **** 	ES_WIFI_Status_t ret = ES_WIFI_STATUS_OK;
+ 925              		.loc 1 157 2 view .LVU233
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 28
+
+
+ 926 0004 3548     		ldr	r0, .L90
+ 927 0006 FFF7FEFF 		bl	puts
+ 928              	.LVL89:
+ 158:Src/CustomUserFunctions.c **** 
+ 929              		.loc 1 158 2 view .LVU234
+ 161:Src/CustomUserFunctions.c **** 	ret = sendATCommand();
+ 930              		.loc 1 161 2 view .LVU235
+ 931 000a 0022     		movs	r2, #0
+ 932 000c 3449     		ldr	r1, .L90+4
+ 933 000e 3548     		ldr	r0, .L90+8
+ 934 0010 FFF7FEFF 		bl	sprintf
+ 935              	.LVL90:
+ 162:Src/CustomUserFunctions.c **** 
+ 936              		.loc 1 162 2 view .LVU236
+ 162:Src/CustomUserFunctions.c **** 
+ 937              		.loc 1 162 8 is_stmt 0 view .LVU237
+ 938 0014 FFF7FEFF 		bl	sendATCommand
+ 939              	.LVL91:
+ 165:Src/CustomUserFunctions.c **** 	{
+ 940              		.loc 1 165 2 is_stmt 1 view .LVU238
+ 165:Src/CustomUserFunctions.c **** 	{
+ 941              		.loc 1 165 5 is_stmt 0 view .LVU239
+ 942 0018 10F0FF00 		ands	r0, r0, #255
+ 943              	.LVL92:
+ 165:Src/CustomUserFunctions.c **** 	{
+ 944              		.loc 1 165 5 view .LVU240
+ 945 001c 03D0     		beq	.L84
+ 946              	.L76:
+ 947              	.LVL93:
+ 174:Src/CustomUserFunctions.c **** 	{
+ 948              		.loc 1 174 2 is_stmt 1 view .LVU241
+ 174:Src/CustomUserFunctions.c **** 	{
+ 949              		.loc 1 174 5 is_stmt 0 view .LVU242
+ 950 001e 70B1     		cbz	r0, .L85
+ 184:Src/CustomUserFunctions.c **** 	}
+ 951              		.loc 1 184 10 view .LVU243
+ 952 0020 0120     		movs	r0, #1
+ 953              	.LVL94:
+ 954              	.L75:
+ 259:Src/CustomUserFunctions.c **** 
+ 955              		.loc 1 259 1 view .LVU244
+ 956 0022 02B0     		add	sp, sp, #8
+ 957              	.LCFI8:
+ 958              		.cfi_remember_state
+ 959              		.cfi_def_cfa_offset 8
+ 960              		@ sp needed
+ 961 0024 10BD     		pop	{r4, pc}
+ 962              	.L84:
+ 963              	.LCFI9:
+ 964              		.cfi_restore_state
+ 167:Src/CustomUserFunctions.c **** 		sprintf((char*)ComBuf,"P1=%d\r", 0);
+ 965              		.loc 1 167 3 is_stmt 1 view .LVU245
+ 966 0026 3048     		ldr	r0, .L90+12
+ 967 0028 FFF7FEFF 		bl	puts
+ 968              	.LVL95:
+ 168:Src/CustomUserFunctions.c **** 		ret = sendATCommand();
+ 969              		.loc 1 168 3 view .LVU246
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 29
+
+
+ 970 002c 0022     		movs	r2, #0
+ 971 002e 2F49     		ldr	r1, .L90+16
+ 972 0030 2C48     		ldr	r0, .L90+8
+ 973 0032 FFF7FEFF 		bl	sprintf
+ 974              	.LVL96:
+ 169:Src/CustomUserFunctions.c **** 	}
+ 975              		.loc 1 169 3 view .LVU247
+ 169:Src/CustomUserFunctions.c **** 	}
+ 976              		.loc 1 169 9 is_stmt 0 view .LVU248
+ 977 0036 FFF7FEFF 		bl	sendATCommand
+ 978              	.LVL97:
+ 169:Src/CustomUserFunctions.c **** 	}
+ 979              		.loc 1 169 7 view .LVU249
+ 980 003a C0B2     		uxtb	r0, r0
+ 981              	.LVL98:
+ 169:Src/CustomUserFunctions.c **** 	}
+ 982              		.loc 1 169 7 view .LVU250
+ 983 003c EFE7     		b	.L76
+ 984              	.L85:
+ 176:Src/CustomUserFunctions.c **** 				nodeB_IPAddr[2],nodeB_IPAddr[3]);
+ 985              		.loc 1 176 3 is_stmt 1 view .LVU251
+ 986 003e 0B24     		movs	r4, #11
+ 987 0040 0094     		str	r4, [sp]
+ 988 0042 0423     		movs	r3, #4
+ 989 0044 A822     		movs	r2, #168
+ 990 0046 C021     		movs	r1, #192
+ 991 0048 2948     		ldr	r0, .L90+20
+ 992              	.LVL99:
+ 176:Src/CustomUserFunctions.c **** 				nodeB_IPAddr[2],nodeB_IPAddr[3]);
+ 993              		.loc 1 176 3 is_stmt 0 view .LVU252
+ 994 004a FFF7FEFF 		bl	printf
+ 995              	.LVL100:
+ 178:Src/CustomUserFunctions.c **** 				nodeB_IPAddr[2],nodeB_IPAddr[3]);
+ 996              		.loc 1 178 3 is_stmt 1 view .LVU253
+ 997 004e 0194     		str	r4, [sp, #4]
+ 998 0050 0423     		movs	r3, #4
+ 999 0052 0093     		str	r3, [sp]
+ 1000 0054 A823     		movs	r3, #168
+ 1001 0056 C022     		movs	r2, #192
+ 1002 0058 2649     		ldr	r1, .L90+24
+ 1003 005a 2248     		ldr	r0, .L90+8
+ 1004 005c FFF7FEFF 		bl	sprintf
+ 1005              	.LVL101:
+ 180:Src/CustomUserFunctions.c **** 	}
+ 1006              		.loc 1 180 3 view .LVU254
+ 180:Src/CustomUserFunctions.c **** 	}
+ 1007              		.loc 1 180 9 is_stmt 0 view .LVU255
+ 1008 0060 FFF7FEFF 		bl	sendATCommand
+ 1009              	.LVL102:
+ 188:Src/CustomUserFunctions.c **** 	{
+ 1010              		.loc 1 188 2 is_stmt 1 view .LVU256
+ 188:Src/CustomUserFunctions.c **** 	{
+ 1011              		.loc 1 188 5 is_stmt 0 view .LVU257
+ 1012 0064 10F0FF0F 		tst	r0, #255
+ 1013 0068 01D0     		beq	.L86
+ 196:Src/CustomUserFunctions.c **** 	}
+ 1014              		.loc 1 196 10 view .LVU258
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 30
+
+
+ 1015 006a 0120     		movs	r0, #1
+ 1016              	.LVL103:
+ 196:Src/CustomUserFunctions.c **** 	}
+ 1017              		.loc 1 196 10 view .LVU259
+ 1018 006c D9E7     		b	.L75
+ 1019              	.LVL104:
+ 1020              	.L86:
+ 190:Src/CustomUserFunctions.c **** 		sprintf((char*)ComBuf,"P4=%d\r", remotePort);
+ 1021              		.loc 1 190 3 is_stmt 1 view .LVU260
+ 1022 006e 41F64271 		movw	r1, #8002
+ 1023 0072 2148     		ldr	r0, .L90+28
+ 1024              	.LVL105:
+ 190:Src/CustomUserFunctions.c **** 		sprintf((char*)ComBuf,"P4=%d\r", remotePort);
+ 1025              		.loc 1 190 3 is_stmt 0 view .LVU261
+ 1026 0074 FFF7FEFF 		bl	printf
+ 1027              	.LVL106:
+ 191:Src/CustomUserFunctions.c **** 		ret = sendATCommand();
+ 1028              		.loc 1 191 3 is_stmt 1 view .LVU262
+ 1029 0078 41F64272 		movw	r2, #8002
+ 1030 007c 1F49     		ldr	r1, .L90+32
+ 1031 007e 1948     		ldr	r0, .L90+8
+ 1032 0080 FFF7FEFF 		bl	sprintf
+ 1033              	.LVL107:
+ 192:Src/CustomUserFunctions.c **** 	}
+ 1034              		.loc 1 192 3 view .LVU263
+ 192:Src/CustomUserFunctions.c **** 	}
+ 1035              		.loc 1 192 9 is_stmt 0 view .LVU264
+ 1036 0084 FFF7FEFF 		bl	sendATCommand
+ 1037              	.LVL108:
+ 200:Src/CustomUserFunctions.c **** 	{
+ 1038              		.loc 1 200 2 is_stmt 1 view .LVU265
+ 200:Src/CustomUserFunctions.c **** 	{
+ 1039              		.loc 1 200 5 is_stmt 0 view .LVU266
+ 1040 0088 10F0FF0F 		tst	r0, #255
+ 1041 008c 01D0     		beq	.L87
+ 208:Src/CustomUserFunctions.c **** 	}
+ 1042              		.loc 1 208 10 view .LVU267
+ 1043 008e 0120     		movs	r0, #1
+ 1044              	.LVL109:
+ 208:Src/CustomUserFunctions.c **** 	}
+ 1045              		.loc 1 208 10 view .LVU268
+ 1046 0090 C7E7     		b	.L75
+ 1047              	.LVL110:
+ 1048              	.L87:
+ 202:Src/CustomUserFunctions.c **** 		sprintf((char*)ComBuf,"%s\r", comCheck);
+ 1049              		.loc 1 202 3 is_stmt 1 view .LVU269
+ 1050 0092 1B48     		ldr	r0, .L90+36
+ 1051              	.LVL111:
+ 202:Src/CustomUserFunctions.c **** 		sprintf((char*)ComBuf,"%s\r", comCheck);
+ 1052              		.loc 1 202 3 is_stmt 0 view .LVU270
+ 1053 0094 FFF7FEFF 		bl	puts
+ 1054              	.LVL112:
+ 203:Src/CustomUserFunctions.c **** 		ret = sendATCommand();
+ 1055              		.loc 1 203 3 is_stmt 1 view .LVU271
+ 1056 0098 1A4B     		ldr	r3, .L90+40
+ 1057 009a 1A68     		ldr	r2, [r3]
+ 1058 009c 1A49     		ldr	r1, .L90+44
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 31
+
+
+ 1059 009e 1148     		ldr	r0, .L90+8
+ 1060 00a0 FFF7FEFF 		bl	sprintf
+ 1061              	.LVL113:
+ 204:Src/CustomUserFunctions.c **** 	}
+ 1062              		.loc 1 204 3 view .LVU272
+ 204:Src/CustomUserFunctions.c **** 	}
+ 1063              		.loc 1 204 9 is_stmt 0 view .LVU273
+ 1064 00a4 FFF7FEFF 		bl	sendATCommand
+ 1065              	.LVL114:
+ 212:Src/CustomUserFunctions.c **** 	{
+ 1066              		.loc 1 212 2 is_stmt 1 view .LVU274
+ 212:Src/CustomUserFunctions.c **** 	{
+ 1067              		.loc 1 212 5 is_stmt 0 view .LVU275
+ 1068 00a8 10F0FF0F 		tst	r0, #255
+ 1069 00ac 01D0     		beq	.L88
+ 220:Src/CustomUserFunctions.c **** 	}
+ 1070              		.loc 1 220 10 view .LVU276
+ 1071 00ae 0120     		movs	r0, #1
+ 1072              	.LVL115:
+ 220:Src/CustomUserFunctions.c **** 	}
+ 1073              		.loc 1 220 10 view .LVU277
+ 1074 00b0 B7E7     		b	.L75
+ 1075              	.LVL116:
+ 1076              	.L88:
+ 214:Src/CustomUserFunctions.c **** 		sprintf((char*)ComBuf,"P6=1\r");
+ 1077              		.loc 1 214 3 is_stmt 1 view .LVU278
+ 1078 00b2 1648     		ldr	r0, .L90+48
+ 1079              	.LVL117:
+ 214:Src/CustomUserFunctions.c **** 		sprintf((char*)ComBuf,"P6=1\r");
+ 1080              		.loc 1 214 3 is_stmt 0 view .LVU279
+ 1081 00b4 FFF7FEFF 		bl	puts
+ 1082              	.LVL118:
+ 215:Src/CustomUserFunctions.c **** 		ret = sendATCommand();
+ 1083              		.loc 1 215 3 is_stmt 1 view .LVU280
+ 1084 00b8 0A4B     		ldr	r3, .L90+8
+ 1085 00ba 154A     		ldr	r2, .L90+52
+ 1086 00bc 92E80300 		ldm	r2, {r0, r1}
+ 1087 00c0 1860     		str	r0, [r3]
+ 1088 00c2 9980     		strh	r1, [r3, #4]	@ movhi
+ 216:Src/CustomUserFunctions.c **** 	}
+ 1089              		.loc 1 216 3 view .LVU281
+ 216:Src/CustomUserFunctions.c **** 	}
+ 1090              		.loc 1 216 9 is_stmt 0 view .LVU282
+ 1091 00c4 FFF7FEFF 		bl	sendATCommand
+ 1092              	.LVL119:
+ 1093 00c8 0446     		mov	r4, r0
+ 1094              	.LVL120:
+ 253:Src/CustomUserFunctions.c **** 	{
+ 1095              		.loc 1 253 2 is_stmt 1 view .LVU283
+ 253:Src/CustomUserFunctions.c **** 	{
+ 1096              		.loc 1 253 5 is_stmt 0 view .LVU284
+ 1097 00ca 10F0FF0F 		tst	r0, #255
+ 1098 00ce 01D0     		beq	.L89
+ 1099              	.LVL121:
+ 1100              	.L78:
+ 258:Src/CustomUserFunctions.c **** }
+ 1101              		.loc 1 258 2 is_stmt 1 view .LVU285
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 32
+
+
+ 1102 00d0 E0B2     		uxtb	r0, r4
+ 258:Src/CustomUserFunctions.c **** }
+ 1103              		.loc 1 258 9 is_stmt 0 view .LVU286
+ 1104 00d2 A6E7     		b	.L75
+ 1105              	.LVL122:
+ 1106              	.L89:
+ 255:Src/CustomUserFunctions.c **** 	}
+ 1107              		.loc 1 255 3 is_stmt 1 view .LVU287
+ 1108 00d4 0F48     		ldr	r0, .L90+56
+ 1109              	.LVL123:
+ 255:Src/CustomUserFunctions.c **** 	}
+ 1110              		.loc 1 255 3 is_stmt 0 view .LVU288
+ 1111 00d6 FFF7FEFF 		bl	puts
+ 1112              	.LVL124:
+ 1113 00da F9E7     		b	.L78
+ 1114              	.L91:
+ 1115              		.align	2
+ 1116              	.L90:
+ 1117 00dc 00000000 		.word	.LC9
+ 1118 00e0 00000000 		.word	.LC3
+ 1119 00e4 00000000 		.word	.LANCHOR0
+ 1120 00e8 2C000000 		.word	.LC10
+ 1121 00ec 50000000 		.word	.LC11
+ 1122 00f0 58000000 		.word	.LC12
+ 1123 00f4 9C000000 		.word	.LC13
+ 1124 00f8 AC000000 		.word	.LC14
+ 1125 00fc DC000000 		.word	.LC15
+ 1126 0100 E4000000 		.word	.LC16
+ 1127 0104 00000000 		.word	.LANCHOR3
+ 1128 0108 1C010000 		.word	.LC17
+ 1129 010c 20010000 		.word	.LC18
+ 1130 0110 4C010000 		.word	.LC19
+ 1131 0114 54010000 		.word	.LC20
+ 1132              		.cfi_endproc
+ 1133              	.LFE321:
+ 1135              		.global	comCheck
+ 1136              		.section	.rodata.str1.4,"aMS",%progbits,1
+ 1137              		.align	2
+ 1138              	.LC21:
+ 1139 0000 503F00   		.ascii	"P?\000"
+ 1140              		.global	UNIV_TIMEOUT
+ 1141              		.section	.bss.ComBuf,"aw",%nobits
+ 1142              		.align	2
+ 1143              		.set	.LANCHOR0,. + 0
+ 1146              	ComBuf:
+ 1147 0000 00000000 		.space	1400
+ 1147      00000000 
+ 1147      00000000 
+ 1147      00000000 
+ 1147      00000000 
+ 1148              		.section	.bss.retData,"aw",%nobits
+ 1149              		.align	2
+ 1150              		.set	.LANCHOR2,. + 0
+ 1153              	retData:
+ 1154 0000 00000000 		.space	1400
+ 1154      00000000 
+ 1154      00000000 
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 33
+
+
+ 1154      00000000 
+ 1154      00000000 
+ 1155              		.section	.data.UNIV_TIMEOUT,"aw"
+ 1156              		.align	2
+ 1157              		.set	.LANCHOR1,. + 0
+ 1160              	UNIV_TIMEOUT:
+ 1161 0000 10270000 		.word	10000
+ 1162              		.section	.data.comCheck,"aw"
+ 1163              		.align	2
+ 1164              		.set	.LANCHOR3,. + 0
+ 1167              	comCheck:
+ 1168 0000 00000000 		.word	.LC21
+ 1169              		.text
+ 1170              	.Letext0:
+ 1171              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\inc
+ 1172              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\inc
+ 1173              		.file 4 "Drivers/CMSIS/Include/core_cm4.h"
+ 1174              		.file 5 "Drivers/CMSIS/Device/ST/STM32L4xx/Include/system_stm32l4xx.h"
+ 1175              		.file 6 "Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l475xx.h"
+ 1176              		.file 7 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_def.h"
+ 1177              		.file 8 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_dma.h"
+ 1178              		.file 9 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash.h"
+ 1179              		.file 10 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi.h"
+ 1180              		.file 11 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h"
+ 1181              		.file 12 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\lib\\gcc\\arm-non
+ 1182              		.file 13 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\in
+ 1183              		.file 14 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\in
+ 1184              		.file 15 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\in
+ 1185              		.file 16 "Drivers/STM32CubeL4_libs/Inc/es_wifi.h"
+ 1186              		.file 17 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\in
+ 1187              		.file 18 "Drivers/STM32CubeL4_libs/Inc/net.h"
+ 1188              		.file 19 "Drivers/STM32CubeL4_libs/Inc/iot_flash_config.h"
+ 1189              		.file 20 "Inc/main.h"
+ 1190              		.file 21 "Inc/CustomUserFunctions.h"
+ 1191              		.file 22 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\in
+ 1192              		.file 23 "Drivers/STM32CubeL4_libs/Inc/es_wifi_io.h"
+ 1193              		.file 24 "<built-in>"
+ 1194              		.file 25 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\in
+ 1195              		.file 26 "Drivers/STM32CubeL4_libs/Inc/httpclient.h"
+ARM GAS  C:\cygwin64\tmp\cca3FOA9.s 			page 34
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 CustomUserFunctions.c
+C:\cygwin64\tmp\cca3FOA9.s:18     .rodata.sendATCommand.str1.4:00000000 $d
+C:\cygwin64\tmp\cca3FOA9.s:25     .text.sendATCommand:00000000 $t
+C:\cygwin64\tmp\cca3FOA9.s:32     .text.sendATCommand:00000000 sendATCommand
+C:\cygwin64\tmp\cca3FOA9.s:137    .text.sendATCommand:00000068 $d
+C:\cygwin64\tmp\cca3FOA9.s:146    .text.sendATData:00000000 $t
+C:\cygwin64\tmp\cca3FOA9.s:152    .text.sendATData:00000000 sendATData
+C:\cygwin64\tmp\cca3FOA9.s:300    .text.sendATData:00000084 $d
+C:\cygwin64\tmp\cca3FOA9.s:309    .rodata.receiveATData.str1.4:00000000 $d
+C:\cygwin64\tmp\cca3FOA9.s:313    .text.receiveATData:00000000 $t
+C:\cygwin64\tmp\cca3FOA9.s:319    .text.receiveATData:00000000 receiveATData
+C:\cygwin64\tmp\cca3FOA9.s:530    .text.receiveATData:000000d8 $d
+C:\cygwin64\tmp\cca3FOA9.s:538    .text.connect_nodes:00000000 $t
+C:\cygwin64\tmp\cca3FOA9.s:545    .text.connect_nodes:00000000 connect_nodes
+C:\cygwin64\tmp\cca3FOA9.s:565    .rodata.sendTCPData.str1.4:00000000 $d
+C:\cygwin64\tmp\cca3FOA9.s:578    .text.sendTCPData:00000000 $t
+C:\cygwin64\tmp\cca3FOA9.s:585    .text.sendTCPData:00000000 sendTCPData
+C:\cygwin64\tmp\cca3FOA9.s:707    .text.sendTCPData:00000074 $d
+C:\cygwin64\tmp\cca3FOA9.s:718    .rodata.receiveTCPData.str1.4:00000000 $d
+C:\cygwin64\tmp\cca3FOA9.s:725    .text.receiveTCPData:00000000 $t
+C:\cygwin64\tmp\cca3FOA9.s:732    .text.receiveTCPData:00000000 receiveTCPData
+C:\cygwin64\tmp\cca3FOA9.s:855    .text.receiveTCPData:00000074 $d
+C:\cygwin64\tmp\cca3FOA9.s:864    .rodata.beginClientServerConnection.str1.4:00000000 $d
+C:\cygwin64\tmp\cca3FOA9.s:904    .text.beginClientServerConnection:00000000 $t
+C:\cygwin64\tmp\cca3FOA9.s:911    .text.beginClientServerConnection:00000000 beginClientServerConnection
+C:\cygwin64\tmp\cca3FOA9.s:1117   .text.beginClientServerConnection:000000dc $d
+C:\cygwin64\tmp\cca3FOA9.s:1167   .data.comCheck:00000000 comCheck
+C:\cygwin64\tmp\cca3FOA9.s:1137   .rodata.str1.4:00000000 $d
+C:\cygwin64\tmp\cca3FOA9.s:1160   .data.UNIV_TIMEOUT:00000000 UNIV_TIMEOUT
+C:\cygwin64\tmp\cca3FOA9.s:1142   .bss.ComBuf:00000000 $d
+C:\cygwin64\tmp\cca3FOA9.s:1146   .bss.ComBuf:00000000 ComBuf
+C:\cygwin64\tmp\cca3FOA9.s:1149   .bss.retData:00000000 $d
+C:\cygwin64\tmp\cca3FOA9.s:1153   .bss.retData:00000000 retData
+C:\cygwin64\tmp\cca3FOA9.s:1156   .data.UNIV_TIMEOUT:00000000 $d
+C:\cygwin64\tmp\cca3FOA9.s:1163   .data.comCheck:00000000 $d
+
+UNDEFINED SYMBOLS
+strlen
+SPI_WIFI_SendData
+SPI_WIFI_ReceiveData
+strstr
+memcpy
+memcmp
+httpclient_init
+sprintf
+puts
+printf

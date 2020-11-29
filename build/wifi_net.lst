@@ -1,0 +1,947 @@
+ARM GAS  C:\cygwin64\tmp\ccSKWLLf.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"wifi_net.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.rodata.net_if_init.str1.4,"aMS",%progbits,1
+  18              		.align	2
+  19              	.LC0:
+  20 0000 696E645F 		.ascii	"ind_study_pi\000"
+  20      73747564 
+  20      795F7069 
+  20      00
+  21 000d 000000   		.align	2
+  22              	.LC1:
+  23 0010 6C616D70 		.ascii	"lamp_password\000"
+  23      5F706173 
+  23      73776F72 
+  23      6400
+  24 001e 0000     		.align	2
+  25              	.LC2:
+  26 0020 0A2A2A2A 		.ascii	"\012*** WIFI connection ***\012\000"
+  26      20574946 
+  26      4920636F 
+  26      6E6E6563 
+  26      74696F6E 
+  27 003a 0000     		.align	2
+  28              	.LC3:
+  29 003c 50757368 		.ascii	"Push the User button (Blue) within the next 2 secon"
+  29      20746865 
+  29      20557365 
+  29      72206275 
+  29      74746F6E 
+  30 006f 64732069 		.ascii	"ds if you want to update the WiFi network configura"
+  30      6620796F 
+  30      75207761 
+  30      6E742074 
+  30      6F207570 
+  31 00a2 74696F6E 		.ascii	"tion.\012\000"
+  31      2E0A00
+  32 00a9 000000   		.align	2
+  33              	.LC4:
+  34 00ac 596F7572 		.ascii	"Your WiFi parameters need to be entered to proceed."
+  34      20576946 
+  34      69207061 
+  34      72616D65 
+  34      74657273 
+ARM GAS  C:\cygwin64\tmp\ccSKWLLf.s 			page 2
+
+
+  35 00df 00       		.ascii	"\000"
+  36              		.align	2
+  37              	.LC5:
+  38 00e0 496E6974 		.ascii	"Initializing the WiFi module\000"
+  38      69616C69 
+  38      7A696E67 
+  38      20746865 
+  38      20576946 
+  39 00fd 000000   		.align	2
+  40              	.LC6:
+  41 0100 4661696C 		.ascii	"Failed to initialize WIFI module\000"
+  41      65642074 
+  41      6F20696E 
+  41      69746961 
+  41      6C697A65 
+  42 0121 000000   		.align	2
+  43              	.LC7:
+  44 0124 4D6F6475 		.ascii	"Module initialized successfully: %s\000"
+  44      6C652069 
+  44      6E697469 
+  44      616C697A 
+  44      65642073 
+  45              		.align	2
+  46              	.LC8:
+  47 0148 20257300 		.ascii	" %s\000"
+  48              		.align	2
+  49              	.LC9:
+  50 014c 2025730A 		.ascii	" %s\012\000"
+  50      00
+  51 0151 000000   		.align	2
+  52              	.LC10:
+  53 0154 52657472 		.ascii	"Retrieving the WiFi module MAC address:\000"
+  53      69657669 
+  53      6E672074 
+  53      68652057 
+  53      69466920 
+  54              		.align	2
+  55              	.LC11:
+  56 017c 20253032 		.ascii	" %02x:%02x:%02x:%02x:%02x:%02x\012\000"
+  56      783A2530 
+  56      32783A25 
+  56      3032783A 
+  56      25303278 
+  57              		.align	2
+  58              	.LC12:
+  59 019c 4661696C 		.ascii	"Failed to get MAC address\000"
+  59      65642074 
+  59      6F206765 
+  59      74204D41 
+  59      43206164 
+  60 01b6 0000     		.align	2
+  61              	.LC13:
+  62 01b8 0D436F6E 		.ascii	"\015Connecting to AP: %s  Attempt %d/%d ...\000"
+  62      6E656374 
+  62      696E6720 
+  62      746F2041 
+  62      503A2025 
+ARM GAS  C:\cygwin64\tmp\ccSKWLLf.s 			page 3
+
+
+  63 01e1 000000   		.align	2
+  64              	.LC14:
+  65 01e4 0A436F6E 		.ascii	"\012Connected to AP %s\012\000"
+  65      6E656374 
+  65      65642074 
+  65      6F204150 
+  65      2025730A 
+  66 01f9 000000   		.align	2
+  67              	.LC15:
+  68 01fc 0A466169 		.ascii	"\012Failed to connect to AP %s\012\000"
+  68      6C656420 
+  68      746F2063 
+  68      6F6E6E65 
+  68      63742074 
+  69              		.section	.text.net_if_init,"ax",%progbits
+  70              		.align	1
+  71              		.global	net_if_init
+  72              		.arch armv7e-m
+  73              		.syntax unified
+  74              		.thumb
+  75              		.thumb_func
+  76              		.fpu fpv4-sp-d16
+  78              	net_if_init:
+  79              	.LVL0:
+  80              	.LFB318:
+  81              		.file 1 "Drivers/STM32CubeL4_libs/Src/wifi_net.c"
+   1:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** /**
+   2:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   ******************************************************************************
+   3:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   * @file    wifi_net.c
+   4:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   * @author  MCD Application Team
+   5:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   * @brief   Wifi-specific NET initialization.
+   6:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   ******************************************************************************
+   7:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   * @attention
+   8:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   *
+   9:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   * <h2><center>&copy; Copyright (c) 2017 STMicroelectronics International N.V. 
+  10:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   * All rights reserved.</center></h2>
+  11:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   *
+  12:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   * Redistribution and use in source and binary forms, with or without 
+  13:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   * modification, are permitted, provided that the following conditions are met:
+  14:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   *
+  15:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   * 1. Redistribution of source code must retain the above copyright notice, 
+  16:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   *    this list of conditions and the following disclaimer.
+  17:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   * 2. Redistributions in binary form must reproduce the above copyright notice,
+  18:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   *    this list of conditions and the following disclaimer in the documentation
+  19:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   *    and/or other materials provided with the distribution.
+  20:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   * 3. Neither the name of STMicroelectronics nor the names of other 
+  21:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   *    contributors to this software may be used to endorse or promote products 
+  22:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   *    derived from this software without specific written permission.
+  23:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   * 4. This software, including modifications and/or derivative works of this 
+  24:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   *    software, must execute solely and exclusively on microcontroller or
+  25:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   *    microprocessor devices manufactured by or for STMicroelectronics.
+  26:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   * 5. Redistribution and use of this software other than as permitted under 
+  27:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   *    this license is void and will automatically terminate your rights under 
+  28:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   *    this license. 
+  29:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   *
+  30:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   * THIS SOFTWARE IS PROVIDED BY STMICROELECTRONICS AND CONTRIBUTORS "AS IS" 
+  31:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   * AND ANY EXPRESS, IMPLIED OR STATUTORY WARRANTIES, INCLUDING, BUT NOT 
+ARM GAS  C:\cygwin64\tmp\ccSKWLLf.s 			page 4
+
+
+  32:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+  33:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   * PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY INTELLECTUAL PROPERTY
+  34:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   * RIGHTS ARE DISCLAIMED TO THE FULLEST EXTENT PERMITTED BY LAW. IN NO EVENT 
+  35:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   * SHALL STMICROELECTRONICS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+  36:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+  37:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, 
+  38:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
+  39:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
+  40:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+  41:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  42:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   *
+  43:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   ******************************************************************************
+  44:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   */
+  45:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** 
+  46:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** #define USE_WIFI
+  47:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** #ifdef USE_WIFI
+  48:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** 
+  49:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** /* Includes ------------------------------------------------------------------*/
+  50:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** #include "main.h"
+  51:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** #include "wifi.h"
+  52:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** #include "iot_flash_config.h"
+  53:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** 
+  54:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** /* Private defines -----------------------------------------------------------*/
+  55:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** #define  WIFI_CONNECT_MAX_ATTEMPT_COUNT  3
+  56:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** 
+  57:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** #ifdef ES_WIFI_PRODUCT_NAME_SIZE
+  58:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** #define WIFI_PRODUCT_INFO_SIZE                      ES_WIFI_PRODUCT_NAME_SIZE
+  59:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** #define WIFI_PAYLOAD_SIZE                           ES_WIFI_PAYLOAD_SIZE
+  60:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** #endif
+  61:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** 
+  62:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** /* Private typedef -----------------------------------------------------------*/
+  63:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** /* Private variables ---------------------------------------------------------*/
+  64:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** 
+  65:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** 
+  66:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** 
+  67:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** 
+  68:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** /* Private function prototypes -----------------------------------------------*/
+  69:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** int net_if_init(void * if_ctxt);
+  70:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** int net_if_deinit(void * if_ctxt);
+  71:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** int net_if_reinit(void * if_ctxt);
+  72:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** 
+  73:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** /* Functions Definition ------------------------------------------------------*/
+  74:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** int net_if_init(void * if_ctxt)
+  75:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** {
+  82              		.loc 1 75 1 view -0
+  83              		.cfi_startproc
+  84              		@ args = 0, pretend = 0, frame = 56
+  85              		@ frame_needed = 0, uses_anonymous_args = 0
+  86              		.loc 1 75 1 is_stmt 0 view .LVU1
+  87 0000 30B5     		push	{r4, r5, lr}
+  88              	.LCFI0:
+  89              		.cfi_def_cfa_offset 12
+  90              		.cfi_offset 4, -12
+  91              		.cfi_offset 5, -8
+  92              		.cfi_offset 14, -4
+  93 0002 93B0     		sub	sp, sp, #76
+  94              	.LCFI1:
+ARM GAS  C:\cygwin64\tmp\ccSKWLLf.s 			page 5
+
+
+  95              		.cfi_def_cfa_offset 88
+  76:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   //const char *ssid;
+  77:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   //const char  *psk;
+  78:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   //WIFI_Ecn_t security_mode;
+  79:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** 
+  80:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   const char *ssid = "ind_study_pi";
+  96              		.loc 1 80 3 is_stmt 1 view .LVU2
+  97              		.loc 1 80 15 is_stmt 0 view .LVU3
+  98 0004 4A4B     		ldr	r3, .L18
+  99 0006 1193     		str	r3, [sp, #68]
+  81:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   const char *psk = "lamp_password";
+ 100              		.loc 1 81 3 is_stmt 1 view .LVU4
+ 101              		.loc 1 81 15 is_stmt 0 view .LVU5
+ 102 0008 4A4B     		ldr	r3, .L18+4
+ 103 000a 1093     		str	r3, [sp, #64]
+  82:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   WIFI_Ecn_t security_mode = 3;
+ 104              		.loc 1 82 3 is_stmt 1 view .LVU6
+ 105              		.loc 1 82 14 is_stmt 0 view .LVU7
+ 106 000c 0323     		movs	r3, #3
+ 107 000e 8DF83F30 		strb	r3, [sp, #63]
+  83:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** 
+  84:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   char moduleinfo[WIFI_PRODUCT_INFO_SIZE];
+ 108              		.loc 1 84 3 is_stmt 1 view .LVU8
+  85:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   WIFI_Status_t wifiRes;
+ 109              		.loc 1 85 3 view .LVU9
+  86:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   uint8_t macAddress[6];
+ 110              		.loc 1 86 3 view .LVU10
+  87:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   int wifiConnectCounter = 0;
+ 111              		.loc 1 87 3 view .LVU11
+ 112              	.LVL1:
+  88:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   bool skip_reconf = false;
+ 113              		.loc 1 88 3 view .LVU12
+  89:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** 
+  90:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   printf("\n*** WIFI connection ***\n\n");
+ 114              		.loc 1 90 3 view .LVU13
+ 115 0012 4948     		ldr	r0, .L18+8
+ 116              	.LVL2:
+ 117              		.loc 1 90 3 is_stmt 0 view .LVU14
+ 118 0014 FFF7FEFF 		bl	puts
+ 119              	.LVL3:
+  91:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** 
+  92:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   skip_reconf = (checkWiFiCredentials(&ssid, &psk, (uint8_t *) &security_mode) == HAL_OK);
+ 120              		.loc 1 92 3 is_stmt 1 view .LVU15
+ 121              		.loc 1 92 18 is_stmt 0 view .LVU16
+ 122 0018 0DF13F02 		add	r2, sp, #63
+ 123 001c 10A9     		add	r1, sp, #64
+ 124 001e 11A8     		add	r0, sp, #68
+ 125 0020 FFF7FEFF 		bl	checkWiFiCredentials
+ 126              	.LVL4:
+ 127              		.loc 1 92 15 view .LVU17
+ 128 0024 0028     		cmp	r0, #0
+ 129 0026 0CBF     		ite	eq
+ 130 0028 0120     		moveq	r0, #1
+ 131 002a 0020     		movne	r0, #0
+ 132              	.LVL5:
+  93:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   if (skip_reconf == true)
+ 133              		.loc 1 93 3 is_stmt 1 view .LVU18
+ARM GAS  C:\cygwin64\tmp\ccSKWLLf.s 			page 6
+
+
+ 134              		.loc 1 93 6 is_stmt 0 view .LVU19
+ 135 002c 55D0     		beq	.L15
+ 136              	.L2:
+  94:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   {
+  95:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     printf("Push the User button (Blue) within the next 2 seconds if you want to update"
+  96:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****            " the WiFi network configuration.\n\n");
+  97:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** 
+  98:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     skip_reconf = (Button_WaitForPush(2000) == BP_NOT_PUSHED);
+  99:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   }
+ 100:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   
+ 101:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   if (skip_reconf == false)
+ 137              		.loc 1 101 3 is_stmt 1 view .LVU20
+ 138              		.loc 1 101 6 is_stmt 0 view .LVU21
+ 139 002e 0028     		cmp	r0, #0
+ 140 0030 5ED0     		beq	.L16
+ 141              	.LVL6:
+ 142              	.L3:
+ 102:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   {
+ 103:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     printf("Your WiFi parameters need to be entered to proceed.\n");
+ 104:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     do
+ 105:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     {
+ 106:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****       updateWiFiCredentials();
+ 107:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     } while (checkWiFiCredentials(&ssid, &psk, (uint8_t *) &security_mode) != HAL_OK);
+ 108:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   }
+ 109:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   
+ 110:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   /*  Wifi Module initialization */
+ 111:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   printf("Initializing the WiFi module\n");
+ 143              		.loc 1 111 3 is_stmt 1 view .LVU22
+ 144 0032 4248     		ldr	r0, .L18+12
+ 145 0034 FFF7FEFF 		bl	puts
+ 146              	.LVL7:
+ 112:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   
+ 113:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   wifiRes = WIFI_Init();
+ 147              		.loc 1 113 3 view .LVU23
+ 148              		.loc 1 113 13 is_stmt 0 view .LVU24
+ 149 0038 FFF7FEFF 		bl	WIFI_Init
+ 150              	.LVL8:
+ 114:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   if ( WIFI_STATUS_OK != wifiRes )
+ 151              		.loc 1 114 3 is_stmt 1 view .LVU25
+ 152              		.loc 1 114 6 is_stmt 0 view .LVU26
+ 153 003c 0028     		cmp	r0, #0
+ 154 003e 65D1     		bne	.L17
+ 115:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   {
+ 116:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     printf("Failed to initialize WIFI module\n");
+ 117:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     return -1;
+ 118:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   }
+ 119:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     
+ 120:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   /* Retrieve the WiFi module mac address to confirm that it is detected and communicating. */
+ 121:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   WIFI_GetModuleName(moduleinfo);
+ 155              		.loc 1 121 3 is_stmt 1 view .LVU27
+ 156 0040 07A8     		add	r0, sp, #28
+ 157              	.LVL9:
+ 158              		.loc 1 121 3 is_stmt 0 view .LVU28
+ 159 0042 FFF7FEFF 		bl	WIFI_GetModuleName
+ 160              	.LVL10:
+ 122:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   printf("Module initialized successfully: %s",moduleinfo);
+ 161              		.loc 1 122 3 is_stmt 1 view .LVU29
+ARM GAS  C:\cygwin64\tmp\ccSKWLLf.s 			page 7
+
+
+ 162 0046 07A9     		add	r1, sp, #28
+ 163 0048 3D48     		ldr	r0, .L18+16
+ 164 004a FFF7FEFF 		bl	printf
+ 165              	.LVL11:
+ 123:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   
+ 124:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   WIFI_GetModuleID(moduleinfo);
+ 166              		.loc 1 124 3 view .LVU30
+ 167 004e 07A8     		add	r0, sp, #28
+ 168 0050 FFF7FEFF 		bl	WIFI_GetModuleID
+ 169              	.LVL12:
+ 125:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   printf(" %s",moduleinfo);
+ 170              		.loc 1 125 3 view .LVU31
+ 171 0054 07A9     		add	r1, sp, #28
+ 172 0056 3B48     		ldr	r0, .L18+20
+ 173 0058 FFF7FEFF 		bl	printf
+ 174              	.LVL13:
+ 126:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   
+ 127:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   WIFI_GetModuleFwRevision(moduleinfo);
+ 175              		.loc 1 127 3 view .LVU32
+ 176 005c 07A8     		add	r0, sp, #28
+ 177 005e FFF7FEFF 		bl	WIFI_GetModuleFwRevision
+ 178              	.LVL14:
+ 128:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   printf(" %s\n",moduleinfo);
+ 179              		.loc 1 128 3 view .LVU33
+ 180 0062 07A9     		add	r1, sp, #28
+ 181 0064 3848     		ldr	r0, .L18+24
+ 182 0066 FFF7FEFF 		bl	printf
+ 183              	.LVL15:
+ 129:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   
+ 130:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   printf("Retrieving the WiFi module MAC address:");
+ 184              		.loc 1 130 3 view .LVU34
+ 185 006a 3848     		ldr	r0, .L18+28
+ 186 006c FFF7FEFF 		bl	printf
+ 187              	.LVL16:
+ 131:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   wifiRes = WIFI_GetMAC_Address( (uint8_t*)macAddress);
+ 188              		.loc 1 131 3 view .LVU35
+ 189              		.loc 1 131 13 is_stmt 0 view .LVU36
+ 190 0070 05A8     		add	r0, sp, #20
+ 191 0072 FFF7FEFF 		bl	WIFI_GetMAC_Address
+ 192              	.LVL17:
+ 132:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   if ( WIFI_STATUS_OK == wifiRes)
+ 193              		.loc 1 132 3 is_stmt 1 view .LVU37
+ 194              		.loc 1 132 6 is_stmt 0 view .LVU38
+ 195 0076 0028     		cmp	r0, #0
+ 196 0078 4ED1     		bne	.L7
+ 133:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   {
+ 134:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     printf(" %02x:%02x:%02x:%02x:%02x:%02x\n",
+ 197              		.loc 1 134 5 is_stmt 1 view .LVU39
+ 135:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****          macAddress[0], macAddress[1], macAddress[2],
+ 136:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****          macAddress[3], macAddress[4], macAddress[5]);
+ 198              		.loc 1 136 20 is_stmt 0 view .LVU40
+ 199 007a 9DF81730 		ldrb	r3, [sp, #23]	@ zero_extendqisi2
+ 200              		.loc 1 136 35 view .LVU41
+ 201 007e 9DF81820 		ldrb	r2, [sp, #24]	@ zero_extendqisi2
+ 202              		.loc 1 136 50 view .LVU42
+ 203 0082 9DF81910 		ldrb	r1, [sp, #25]	@ zero_extendqisi2
+ 134:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****          macAddress[0], macAddress[1], macAddress[2],
+ARM GAS  C:\cygwin64\tmp\ccSKWLLf.s 			page 8
+
+
+ 204              		.loc 1 134 5 view .LVU43
+ 205 0086 0291     		str	r1, [sp, #8]
+ 206 0088 0192     		str	r2, [sp, #4]
+ 207 008a 0093     		str	r3, [sp]
+ 208 008c 9DF81630 		ldrb	r3, [sp, #22]	@ zero_extendqisi2
+ 209 0090 9DF81520 		ldrb	r2, [sp, #21]	@ zero_extendqisi2
+ 210 0094 9DF81410 		ldrb	r1, [sp, #20]	@ zero_extendqisi2
+ 211 0098 2D48     		ldr	r0, .L18+32
+ 212              	.LVL18:
+ 134:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****          macAddress[0], macAddress[1], macAddress[2],
+ 213              		.loc 1 134 5 view .LVU44
+ 214 009a FFF7FEFF 		bl	printf
+ 215              	.LVL19:
+ 216              	.L8:
+ 137:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   }
+ 138:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   else
+ 139:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   {
+ 140:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****        printf("Failed to get MAC address\n");
+ 141:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   }
+ 142:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   /* Connect to the specified SSID. */
+ 143:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** 
+ 144:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   printf("\n");
+ 217              		.loc 1 144 3 is_stmt 1 view .LVU45
+ 218 009e 0A20     		movs	r0, #10
+ 219 00a0 FFF7FEFF 		bl	putchar
+ 220              	.LVL20:
+  87:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   bool skip_reconf = false;
+ 221              		.loc 1 87 7 is_stmt 0 view .LVU46
+ 222 00a4 0024     		movs	r4, #0
+ 223              	.LVL21:
+ 224              	.L10:
+ 145:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   do 
+ 225              		.loc 1 145 3 is_stmt 1 view .LVU47
+ 146:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   {
+ 147:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     printf("\rConnecting to AP: %s  Attempt %d/%d ...",ssid, ++wifiConnectCounter,WIFI_CONNECT_MAX_
+ 226              		.loc 1 147 5 view .LVU48
+ 227 00a6 0134     		adds	r4, r4, #1
+ 228              	.LVL22:
+ 229              		.loc 1 147 5 is_stmt 0 view .LVU49
+ 230 00a8 0323     		movs	r3, #3
+ 231 00aa 2246     		mov	r2, r4
+ 232 00ac 1199     		ldr	r1, [sp, #68]
+ 233 00ae 2948     		ldr	r0, .L18+36
+ 234 00b0 FFF7FEFF 		bl	printf
+ 235              	.LVL23:
+ 148:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     wifiRes = WIFI_Connect(ssid, psk, security_mode);
+ 236              		.loc 1 148 5 is_stmt 1 view .LVU50
+ 237              		.loc 1 148 15 is_stmt 0 view .LVU51
+ 238 00b4 9DF83F20 		ldrb	r2, [sp, #63]	@ zero_extendqisi2
+ 239 00b8 1099     		ldr	r1, [sp, #64]
+ 240 00ba 1198     		ldr	r0, [sp, #68]
+ 241 00bc FFF7FEFF 		bl	WIFI_Connect
+ 242              	.LVL24:
+ 149:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     if (wifiRes == WIFI_STATUS_OK) break;
+ 243              		.loc 1 149 5 is_stmt 1 view .LVU52
+ 244              		.loc 1 149 8 is_stmt 0 view .LVU53
+ 245 00c0 0546     		mov	r5, r0
+ARM GAS  C:\cygwin64\tmp\ccSKWLLf.s 			page 9
+
+
+ 246 00c2 08B1     		cbz	r0, .L9
+ 150:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   } 
+ 151:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   while (wifiConnectCounter < WIFI_CONNECT_MAX_ATTEMPT_COUNT);
+ 247              		.loc 1 151 9 is_stmt 1 view .LVU54
+ 248              		.loc 1 151 3 is_stmt 0 view .LVU55
+ 249 00c4 022C     		cmp	r4, #2
+ 250 00c6 EEDD     		ble	.L10
+ 251              	.L9:
+ 152:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   
+ 153:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   if (wifiRes == WIFI_STATUS_OK)
+ 252              		.loc 1 153 3 is_stmt 1 view .LVU56
+ 253              		.loc 1 153 6 is_stmt 0 view .LVU57
+ 254 00c8 55BB     		cbnz	r5, .L11
+ 154:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   {
+ 155:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     printf("\nConnected to AP %s\n",ssid);
+ 255              		.loc 1 155 5 is_stmt 1 view .LVU58
+ 256 00ca 1199     		ldr	r1, [sp, #68]
+ 257 00cc 2248     		ldr	r0, .L18+40
+ 258              	.LVL25:
+ 259              		.loc 1 155 5 is_stmt 0 view .LVU59
+ 260 00ce FFF7FEFF 		bl	printf
+ 261              	.LVL26:
+ 262              	.L12:
+ 156:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   }
+ 157:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   else
+ 158:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   {
+ 159:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     printf("\nFailed to connect to AP %s\n",ssid);
+ 160:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   }
+ 161:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   
+ 162:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   return (wifiRes == WIFI_STATUS_OK)?0:-1;
+ 263              		.loc 1 162 3 is_stmt 1 view .LVU60
+ 264              		.loc 1 162 39 is_stmt 0 view .LVU61
+ 265 00d2 55BB     		cbnz	r5, .L13
+ 266 00d4 0020     		movs	r0, #0
+ 267              	.LVL27:
+ 268              	.L1:
+ 163:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** }
+ 269              		.loc 1 163 1 view .LVU62
+ 270 00d6 13B0     		add	sp, sp, #76
+ 271              	.LCFI2:
+ 272              		.cfi_remember_state
+ 273              		.cfi_def_cfa_offset 12
+ 274              		@ sp needed
+ 275 00d8 30BD     		pop	{r4, r5, pc}
+ 276              	.LVL28:
+ 277              	.L15:
+ 278              	.LCFI3:
+ 279              		.cfi_restore_state
+  95:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****            " the WiFi network configuration.\n\n");
+ 280              		.loc 1 95 5 is_stmt 1 view .LVU63
+ 281 00da 2048     		ldr	r0, .L18+44
+ 282              	.LVL29:
+  95:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****            " the WiFi network configuration.\n\n");
+ 283              		.loc 1 95 5 is_stmt 0 view .LVU64
+ 284 00dc FFF7FEFF 		bl	puts
+ 285              	.LVL30:
+  98:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   }
+ARM GAS  C:\cygwin64\tmp\ccSKWLLf.s 			page 10
+
+
+ 286              		.loc 1 98 5 is_stmt 1 view .LVU65
+  98:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   }
+ 287              		.loc 1 98 20 is_stmt 0 view .LVU66
+ 288 00e0 4FF4FA60 		mov	r0, #2000
+ 289 00e4 FFF7FEFF 		bl	Button_WaitForPush
+ 290              	.LVL31:
+  98:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   }
+ 291              		.loc 1 98 17 view .LVU67
+ 292 00e8 B0FA80F0 		clz	r0, r0
+ 293 00ec 4009     		lsrs	r0, r0, #5
+ 294              	.LVL32:
+  98:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   }
+ 295              		.loc 1 98 17 view .LVU68
+ 296 00ee 9EE7     		b	.L2
+ 297              	.L16:
+ 103:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     do
+ 298              		.loc 1 103 5 is_stmt 1 view .LVU69
+ 299 00f0 1B48     		ldr	r0, .L18+48
+ 300              	.LVL33:
+ 103:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     do
+ 301              		.loc 1 103 5 is_stmt 0 view .LVU70
+ 302 00f2 FFF7FEFF 		bl	puts
+ 303              	.LVL34:
+ 304              	.L4:
+ 104:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     {
+ 305              		.loc 1 104 5 is_stmt 1 discriminator 1 view .LVU71
+ 106:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     } while (checkWiFiCredentials(&ssid, &psk, (uint8_t *) &security_mode) != HAL_OK);
+ 306              		.loc 1 106 7 discriminator 1 view .LVU72
+ 307 00f6 FFF7FEFF 		bl	updateWiFiCredentials
+ 308              	.LVL35:
+ 107:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   }
+ 309              		.loc 1 107 13 discriminator 1 view .LVU73
+ 107:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   }
+ 310              		.loc 1 107 14 is_stmt 0 discriminator 1 view .LVU74
+ 311 00fa 0DF13F02 		add	r2, sp, #63
+ 312 00fe 10A9     		add	r1, sp, #64
+ 313 0100 11A8     		add	r0, sp, #68
+ 314 0102 FFF7FEFF 		bl	checkWiFiCredentials
+ 315              	.LVL36:
+ 107:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   }
+ 316              		.loc 1 107 5 discriminator 1 view .LVU75
+ 317 0106 0028     		cmp	r0, #0
+ 318 0108 F5D1     		bne	.L4
+ 319 010a 92E7     		b	.L3
+ 320              	.LVL37:
+ 321              	.L17:
+ 116:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     return -1;
+ 322              		.loc 1 116 5 is_stmt 1 view .LVU76
+ 323 010c 1548     		ldr	r0, .L18+52
+ 324              	.LVL38:
+ 116:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     return -1;
+ 325              		.loc 1 116 5 is_stmt 0 view .LVU77
+ 326 010e FFF7FEFF 		bl	puts
+ 327              	.LVL39:
+ 117:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   }
+ 328              		.loc 1 117 5 is_stmt 1 view .LVU78
+ 117:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   }
+ARM GAS  C:\cygwin64\tmp\ccSKWLLf.s 			page 11
+
+
+ 329              		.loc 1 117 12 is_stmt 0 view .LVU79
+ 330 0112 4FF0FF30 		mov	r0, #-1
+ 331 0116 DEE7     		b	.L1
+ 332              	.LVL40:
+ 333              	.L7:
+ 140:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   }
+ 334              		.loc 1 140 8 is_stmt 1 view .LVU80
+ 335 0118 1348     		ldr	r0, .L18+56
+ 336              	.LVL41:
+ 140:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   }
+ 337              		.loc 1 140 8 is_stmt 0 view .LVU81
+ 338 011a FFF7FEFF 		bl	puts
+ 339              	.LVL42:
+ 340 011e BEE7     		b	.L8
+ 341              	.LVL43:
+ 342              	.L11:
+ 159:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   }
+ 343              		.loc 1 159 5 is_stmt 1 view .LVU82
+ 344 0120 1199     		ldr	r1, [sp, #68]
+ 345 0122 1248     		ldr	r0, .L18+60
+ 346              	.LVL44:
+ 159:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   }
+ 347              		.loc 1 159 5 is_stmt 0 view .LVU83
+ 348 0124 FFF7FEFF 		bl	printf
+ 349              	.LVL45:
+ 350 0128 D3E7     		b	.L12
+ 351              	.L13:
+ 162:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** }
+ 352              		.loc 1 162 39 view .LVU84
+ 353 012a 4FF0FF30 		mov	r0, #-1
+ 354 012e D2E7     		b	.L1
+ 355              	.L19:
+ 356              		.align	2
+ 357              	.L18:
+ 358 0130 00000000 		.word	.LC0
+ 359 0134 10000000 		.word	.LC1
+ 360 0138 20000000 		.word	.LC2
+ 361 013c E0000000 		.word	.LC5
+ 362 0140 24010000 		.word	.LC7
+ 363 0144 48010000 		.word	.LC8
+ 364 0148 4C010000 		.word	.LC9
+ 365 014c 54010000 		.word	.LC10
+ 366 0150 7C010000 		.word	.LC11
+ 367 0154 B8010000 		.word	.LC13
+ 368 0158 E4010000 		.word	.LC14
+ 369 015c 3C000000 		.word	.LC3
+ 370 0160 AC000000 		.word	.LC4
+ 371 0164 00010000 		.word	.LC6
+ 372 0168 9C010000 		.word	.LC12
+ 373 016c FC010000 		.word	.LC15
+ 374              		.cfi_endproc
+ 375              	.LFE318:
+ 377              		.section	.text.net_if_deinit,"ax",%progbits
+ 378              		.align	1
+ 379              		.global	net_if_deinit
+ 380              		.syntax unified
+ 381              		.thumb
+ARM GAS  C:\cygwin64\tmp\ccSKWLLf.s 			page 12
+
+
+ 382              		.thumb_func
+ 383              		.fpu fpv4-sp-d16
+ 385              	net_if_deinit:
+ 386              	.LVL46:
+ 387              	.LFB319:
+ 164:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** 
+ 165:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** 
+ 166:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** int net_if_deinit(void * if_ctxt)
+ 167:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** {
+ 388              		.loc 1 167 1 is_stmt 1 view -0
+ 389              		.cfi_startproc
+ 390              		@ args = 0, pretend = 0, frame = 0
+ 391              		@ frame_needed = 0, uses_anonymous_args = 0
+ 392              		@ link register save eliminated.
+ 168:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   return 0;
+ 393              		.loc 1 168 3 view .LVU86
+ 169:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** }
+ 394              		.loc 1 169 1 is_stmt 0 view .LVU87
+ 395 0000 0020     		movs	r0, #0
+ 396              	.LVL47:
+ 397              		.loc 1 169 1 view .LVU88
+ 398 0002 7047     		bx	lr
+ 399              		.cfi_endproc
+ 400              	.LFE319:
+ 402              		.section	.rodata.net_if_reinit.str1.4,"aMS",%progbits,1
+ 403              		.align	2
+ 404              	.LC16:
+ 405 0000 0A52652D 		.ascii	"\012Re-connected to AP %s\012\000"
+ 405      636F6E6E 
+ 405      65637465 
+ 405      6420746F 
+ 405      20415020 
+ 406              		.align	2
+ 407              	.LC17:
+ 408 0018 0A466169 		.ascii	"\012Failed to re-connect to AP %s\012\000"
+ 408      6C656420 
+ 408      746F2072 
+ 408      652D636F 
+ 408      6E6E6563 
+ 409              		.section	.text.net_if_reinit,"ax",%progbits
+ 410              		.align	1
+ 411              		.global	net_if_reinit
+ 412              		.syntax unified
+ 413              		.thumb
+ 414              		.thumb_func
+ 415              		.fpu fpv4-sp-d16
+ 417              	net_if_reinit:
+ 418              	.LVL48:
+ 419              	.LFB320:
+ 170:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** 
+ 171:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** 
+ 172:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** int net_if_reinit(void * if_ctxt)
+ 173:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** {
+ 420              		.loc 1 173 1 is_stmt 1 view -0
+ 421              		.cfi_startproc
+ 422              		@ args = 0, pretend = 0, frame = 16
+ 423              		@ frame_needed = 0, uses_anonymous_args = 0
+ARM GAS  C:\cygwin64\tmp\ccSKWLLf.s 			page 13
+
+
+ 424              		.loc 1 173 1 is_stmt 0 view .LVU90
+ 425 0000 30B5     		push	{r4, r5, lr}
+ 426              	.LCFI4:
+ 427              		.cfi_def_cfa_offset 12
+ 428              		.cfi_offset 4, -12
+ 429              		.cfi_offset 5, -8
+ 430              		.cfi_offset 14, -4
+ 431 0002 85B0     		sub	sp, sp, #20
+ 432              	.LCFI5:
+ 433              		.cfi_def_cfa_offset 32
+ 174:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   int ret = 0;
+ 434              		.loc 1 174 3 is_stmt 1 view .LVU91
+ 435              	.LVL49:
+ 175:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   const char *ssid;
+ 436              		.loc 1 175 3 view .LVU92
+ 176:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   const char  *psk;
+ 437              		.loc 1 176 3 view .LVU93
+ 177:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   WIFI_Ecn_t security_mode;
+ 438              		.loc 1 177 3 view .LVU94
+ 178:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   WIFI_Status_t wifiRes;
+ 439              		.loc 1 178 3 view .LVU95
+ 179:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   int wifiConnectCounter = 0;
+ 440              		.loc 1 179 3 view .LVU96
+ 180:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   
+ 181:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   // wifiRes = WIFI_Disconnect(); // Disconnect() is not enough for the Inventek module which does 
+ 182:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   wifiRes = WIFI_Init();
+ 441              		.loc 1 182 3 view .LVU97
+ 442              		.loc 1 182 13 is_stmt 0 view .LVU98
+ 443 0004 FFF7FEFF 		bl	WIFI_Init
+ 444              	.LVL50:
+ 183:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   if (wifiRes != WIFI_STATUS_OK)
+ 445              		.loc 1 183 3 is_stmt 1 view .LVU99
+ 184:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   {
+ 185:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     msg_error("WIFI_Init() failed.\n");
+ 446              		.loc 1 185 39 view .LVU100
+ 186:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   }
+ 187:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   
+ 188:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   if (checkWiFiCredentials(&ssid, &psk, (uint8_t *) &security_mode) != HAL_OK)
+ 447              		.loc 1 188 3 view .LVU101
+ 448              		.loc 1 188 7 is_stmt 0 view .LVU102
+ 449 0008 0DF10702 		add	r2, sp, #7
+ 450 000c 02A9     		add	r1, sp, #8
+ 451 000e 03A8     		add	r0, sp, #12
+ 452 0010 FFF7FEFF 		bl	checkWiFiCredentials
+ 453              	.LVL51:
+ 454              		.loc 1 188 6 view .LVU103
+ 455 0014 08BB     		cbnz	r0, .L26
+ 456 0016 0546     		mov	r5, r0
+ 179:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   
+ 457              		.loc 1 179 7 view .LVU104
+ 458 0018 0446     		mov	r4, r0
+ 459              	.LVL52:
+ 460              	.L24:
+ 189:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   {
+ 190:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     ret = -1;
+ 191:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   }
+ 192:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   else
+ARM GAS  C:\cygwin64\tmp\ccSKWLLf.s 			page 14
+
+
+ 193:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   {
+ 194:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     do 
+ 461              		.loc 1 194 5 is_stmt 1 view .LVU105
+ 195:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     {
+ 196:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****       printf("\rConnecting to AP: %s  Attempt %d/%d ...",ssid, ++wifiConnectCounter,WIFI_CONNECT_MA
+ 462              		.loc 1 196 7 view .LVU106
+ 463 001a 0134     		adds	r4, r4, #1
+ 464              	.LVL53:
+ 465              		.loc 1 196 7 is_stmt 0 view .LVU107
+ 466 001c 0323     		movs	r3, #3
+ 467 001e 2246     		mov	r2, r4
+ 468 0020 0399     		ldr	r1, [sp, #12]
+ 469 0022 0F48     		ldr	r0, .L28
+ 470 0024 FFF7FEFF 		bl	printf
+ 471              	.LVL54:
+ 197:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****       wifiRes = WIFI_Connect(ssid, psk, security_mode);
+ 472              		.loc 1 197 7 is_stmt 1 view .LVU108
+ 473              		.loc 1 197 17 is_stmt 0 view .LVU109
+ 474 0028 9DF80720 		ldrb	r2, [sp, #7]	@ zero_extendqisi2
+ 475 002c 0299     		ldr	r1, [sp, #8]
+ 476 002e 0398     		ldr	r0, [sp, #12]
+ 477 0030 FFF7FEFF 		bl	WIFI_Connect
+ 478              	.LVL55:
+ 198:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****       if (wifiRes == WIFI_STATUS_OK) break;
+ 479              		.loc 1 198 7 is_stmt 1 view .LVU110
+ 480              		.loc 1 198 10 is_stmt 0 view .LVU111
+ 481 0034 0346     		mov	r3, r0
+ 482 0036 08B1     		cbz	r0, .L23
+ 199:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     } 
+ 200:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     while (wifiConnectCounter < WIFI_CONNECT_MAX_ATTEMPT_COUNT);
+ 483              		.loc 1 200 11 is_stmt 1 view .LVU112
+ 484              		.loc 1 200 5 is_stmt 0 view .LVU113
+ 485 0038 022C     		cmp	r4, #2
+ 486 003a EEDD     		ble	.L24
+ 487              	.L23:
+ 201:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     
+ 202:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     if (wifiRes == WIFI_STATUS_OK)
+ 488              		.loc 1 202 5 is_stmt 1 view .LVU114
+ 489              		.loc 1 202 8 is_stmt 0 view .LVU115
+ 490 003c 33B9     		cbnz	r3, .L25
+ 203:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     {
+ 204:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****       printf("\nRe-connected to AP %s\n",ssid);
+ 491              		.loc 1 204 7 is_stmt 1 view .LVU116
+ 492 003e 0399     		ldr	r1, [sp, #12]
+ 493 0040 0848     		ldr	r0, .L28+4
+ 494              	.LVL56:
+ 495              		.loc 1 204 7 is_stmt 0 view .LVU117
+ 496 0042 FFF7FEFF 		bl	printf
+ 497              	.LVL57:
+ 498              	.L21:
+ 205:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     }
+ 206:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     else
+ 207:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     {
+ 208:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****       printf("\nFailed to re-connect to AP %s\n",ssid);
+ 209:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****       ret = -1;
+ 210:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     }
+ 211:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   }
+ARM GAS  C:\cygwin64\tmp\ccSKWLLf.s 			page 15
+
+
+ 212:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     
+ 213:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   return ret;
+ 214:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** }
+ 499              		.loc 1 214 1 view .LVU118
+ 500 0046 2846     		mov	r0, r5
+ 501 0048 05B0     		add	sp, sp, #20
+ 502              	.LCFI6:
+ 503              		.cfi_remember_state
+ 504              		.cfi_def_cfa_offset 12
+ 505              		@ sp needed
+ 506 004a 30BD     		pop	{r4, r5, pc}
+ 507              	.LVL58:
+ 508              	.L25:
+ 509              	.LCFI7:
+ 510              		.cfi_restore_state
+ 208:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****       ret = -1;
+ 511              		.loc 1 208 7 is_stmt 1 view .LVU119
+ 512 004c 0399     		ldr	r1, [sp, #12]
+ 513 004e 0648     		ldr	r0, .L28+8
+ 514              	.LVL59:
+ 208:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****       ret = -1;
+ 515              		.loc 1 208 7 is_stmt 0 view .LVU120
+ 516 0050 FFF7FEFF 		bl	printf
+ 517              	.LVL60:
+ 209:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     }
+ 518              		.loc 1 209 7 is_stmt 1 view .LVU121
+ 209:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****     }
+ 519              		.loc 1 209 11 is_stmt 0 view .LVU122
+ 520 0054 4FF0FF35 		mov	r5, #-1
+ 521 0058 F5E7     		b	.L21
+ 522              	.LVL61:
+ 523              	.L26:
+ 190:Drivers/STM32CubeL4_libs/Src/wifi_net.c ****   }
+ 524              		.loc 1 190 9 view .LVU123
+ 525 005a 4FF0FF35 		mov	r5, #-1
+ 526              	.LVL62:
+ 213:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** }
+ 527              		.loc 1 213 3 is_stmt 1 view .LVU124
+ 213:Drivers/STM32CubeL4_libs/Src/wifi_net.c **** }
+ 528              		.loc 1 213 10 is_stmt 0 view .LVU125
+ 529 005e F2E7     		b	.L21
+ 530              	.L29:
+ 531              		.align	2
+ 532              	.L28:
+ 533 0060 B8010000 		.word	.LC13
+ 534 0064 00000000 		.word	.LC16
+ 535 0068 18000000 		.word	.LC17
+ 536              		.cfi_endproc
+ 537              	.LFE320:
+ 539              		.text
+ 540              	.Letext0:
+ 541              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\inc
+ 542              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\inc
+ 543              		.file 4 "Drivers/CMSIS/Include/core_cm4.h"
+ 544              		.file 5 "Drivers/CMSIS/Device/ST/STM32L4xx/Include/system_stm32l4xx.h"
+ 545              		.file 6 "Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l475xx.h"
+ 546              		.file 7 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_def.h"
+ARM GAS  C:\cygwin64\tmp\ccSKWLLf.s 			page 16
+
+
+ 547              		.file 8 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_dma.h"
+ 548              		.file 9 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash.h"
+ 549              		.file 10 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi.h"
+ 550              		.file 11 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h"
+ 551              		.file 12 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\lib\\gcc\\arm-non
+ 552              		.file 13 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\in
+ 553              		.file 14 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\in
+ 554              		.file 15 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\in
+ 555              		.file 16 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\in
+ 556              		.file 17 "Drivers/STM32CubeL4_libs/Inc/net.h"
+ 557              		.file 18 "Drivers/STM32CubeL4_libs/Inc/iot_flash_config.h"
+ 558              		.file 19 "Inc/main.h"
+ 559              		.file 20 "Drivers/STM32CubeL4_libs/Inc/wifi.h"
+ 560              		.file 21 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\in
+ 561              		.file 22 "<built-in>"
+ARM GAS  C:\cygwin64\tmp\ccSKWLLf.s 			page 17
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 wifi_net.c
+C:\cygwin64\tmp\ccSKWLLf.s:18     .rodata.net_if_init.str1.4:00000000 $d
+C:\cygwin64\tmp\ccSKWLLf.s:70     .text.net_if_init:00000000 $t
+C:\cygwin64\tmp\ccSKWLLf.s:78     .text.net_if_init:00000000 net_if_init
+C:\cygwin64\tmp\ccSKWLLf.s:358    .text.net_if_init:00000130 $d
+C:\cygwin64\tmp\ccSKWLLf.s:378    .text.net_if_deinit:00000000 $t
+C:\cygwin64\tmp\ccSKWLLf.s:385    .text.net_if_deinit:00000000 net_if_deinit
+C:\cygwin64\tmp\ccSKWLLf.s:403    .rodata.net_if_reinit.str1.4:00000000 $d
+C:\cygwin64\tmp\ccSKWLLf.s:410    .text.net_if_reinit:00000000 $t
+C:\cygwin64\tmp\ccSKWLLf.s:417    .text.net_if_reinit:00000000 net_if_reinit
+C:\cygwin64\tmp\ccSKWLLf.s:533    .text.net_if_reinit:00000060 $d
+
+UNDEFINED SYMBOLS
+puts
+checkWiFiCredentials
+WIFI_Init
+WIFI_GetModuleName
+printf
+WIFI_GetModuleID
+WIFI_GetModuleFwRevision
+WIFI_GetMAC_Address
+putchar
+WIFI_Connect
+Button_WaitForPush
+updateWiFiCredentials

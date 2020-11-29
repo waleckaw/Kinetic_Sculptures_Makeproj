@@ -1,0 +1,2807 @@
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"es_wifi_io.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.SPI_WIFI_DelayUs,"ax",%progbits
+  18              		.align	1
+  19              		.arch armv7e-m
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	SPI_WIFI_DelayUs:
+  26              	.LVL0:
+  27              	.LFB333:
+  28              		.file 1 "Drivers/STM32CubeL4_libs/Src/es_wifi_io.c"
+   1:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** /**
+   2:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   ******************************************************************************
+   3:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @file    es_wifi_io.c
+   4:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @author  MCD Application Team
+   5:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @brief   This file implments the IO operations to deal with the es-wifi
+   6:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   *          module. It mainly Inits and Deinits the SPI interface. Send and
+   7:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   *          receive data over it.
+   8:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   ******************************************************************************
+   9:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @attention
+  10:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   *
+  11:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * <h2><center>&copy; Copyright (c) 2017 STMicroelectronics International N.V. 
+  12:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * All rights reserved.</center></h2>
+  13:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   *
+  14:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * Redistribution and use in source and binary forms, with or without 
+  15:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * modification, are permitted, provided that the following conditions are met:
+  16:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   *
+  17:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * 1. Redistribution of source code must retain the above copyright notice, 
+  18:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   *    this list of conditions and the following disclaimer.
+  19:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * 2. Redistributions in binary form must reproduce the above copyright notice,
+  20:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   *    this list of conditions and the following disclaimer in the documentation
+  21:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   *    and/or other materials provided with the distribution.
+  22:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * 3. Neither the name of STMicroelectronics nor the names of other 
+  23:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   *    contributors to this software may be used to endorse or promote products 
+  24:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   *    derived from this software without specific written permission.
+  25:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * 4. This software, including modifications and/or derivative works of this 
+  26:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   *    software, must execute solely and exclusively on microcontroller or
+  27:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   *    microprocessor devices manufactured by or for STMicroelectronics.
+  28:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * 5. Redistribution and use of this software other than as permitted under 
+  29:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   *    this license is void and will automatically terminate your rights under 
+  30:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   *    this license. 
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 2
+
+
+  31:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   *
+  32:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * THIS SOFTWARE IS PROVIDED BY STMICROELECTRONICS AND CONTRIBUTORS "AS IS" 
+  33:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * AND ANY EXPRESS, IMPLIED OR STATUTORY WARRANTIES, INCLUDING, BUT NOT 
+  34:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
+  35:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * PARTICULAR PURPOSE AND NON-INFRINGEMENT OF THIRD PARTY INTELLECTUAL PROPERTY
+  36:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * RIGHTS ARE DISCLAIMED TO THE FULLEST EXTENT PERMITTED BY LAW. IN NO EVENT 
+  37:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * SHALL STMICROELECTRONICS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+  38:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+  39:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, 
+  40:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
+  41:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
+  42:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+  43:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  44:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   *
+  45:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   ******************************************************************************
+  46:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   */
+  47:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+  48:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** /* Includes ------------------------------------------------------------------*/
+  49:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #include "es_wifi.h"
+  50:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #include "es_wifi_io.h"
+  51:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #include <string.h>
+  52:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #include "es_wifi_conf.h"
+  53:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #include <core_cm4.h>
+  54:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #include "cmsis_os.h"
+  55:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+  56:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** /* Private define ------------------------------------------------------------*/
+  57:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #define MIN(a, b)  ((a) < (b) ? (a) : (b))
+  58:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** /* Private typedef -----------------------------------------------------------*/
+  59:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** /* Private macro -------------------------------------------------------------*/
+  60:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** /* Private variables ---------------------------------------------------------*/
+  61:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** SPI_HandleTypeDef hspi;
+  62:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** static  int volatile spi_rx_event=0;
+  63:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** static  int volatile spi_tx_event=0;
+  64:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** static  int volatile cmddata_rdy_rising_event=0;
+  65:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+  66:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #ifdef WIFI_USE_CMSIS_OS
+  67:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** osMutexId es_wifi_mutex;
+  68:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** osMutexDef(es_wifi_mutex);
+  69:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+  70:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** static	osMutexId spi_mutex;
+  71:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** osMutexDef(spi_mutex);
+  72:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+  73:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** static	osSemaphoreId spi_rx_sem;
+  74:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** osSemaphoreDef(spi_rx_sem);
+  75:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+  76:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** static	osSemaphoreId spi_tx_sem;
+  77:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** osSemaphoreDef(spi_tx_sem);
+  78:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+  79:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** static	osSemaphoreId cmddata_rdy_rising_sem;
+  80:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** osSemaphoreDef(cmddata_rdy_rising_sem);
+  81:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+  82:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #endif
+  83:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+  84:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+  85:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** /* Private function prototypes -----------------------------------------------*/
+  86:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** static  int wait_cmddata_rdy_high(int timeout);
+  87:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** static  int wait_cmddata_rdy_rising_event(int timeout);
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 3
+
+
+  88:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** static  int wait_spi_tx_event(int timeout);
+  89:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** static  int wait_spi_rx_event(int timeout);
+  90:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** static  void SPI_WIFI_DelayUs(uint32_t);
+  91:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** /* Private functions ---------------------------------------------------------*/
+  92:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** /*******************************************************************************
+  93:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****                        COM Driver Interface (SPI)
+  94:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** *******************************************************************************/
+  95:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** /**
+  96:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @brief  Initialize SPI MSP
+  97:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @param  hspi: SPI handle
+  98:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @retval None
+  99:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   */
+ 100:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** void SPI_WIFI_MspInit(SPI_HandleTypeDef* hspi)
+ 101:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** {
+ 102:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ 103:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_InitTypeDef GPIO_Init;
+ 104:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ 105:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   __HAL_RCC_SPI3_CLK_ENABLE();
+ 106:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 107:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     __HAL_RCC_GPIOB_CLK_ENABLE();
+ 108:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   __HAL_RCC_GPIOC_CLK_ENABLE();
+ 109:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   __HAL_RCC_GPIOE_CLK_ENABLE();
+ 110:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     
+ 111:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   /* configure Wake up pin */
+ 112:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_GPIO_WritePin(GPIOB,GPIO_PIN_13, GPIO_PIN_RESET ); 
+ 113:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pin       = GPIO_PIN_13;
+ 114:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Mode      = GPIO_MODE_OUTPUT_PP;
+ 115:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pull      = GPIO_NOPULL;
+ 116:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Speed     = GPIO_SPEED_FREQ_LOW;
+ 117:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_GPIO_Init(GPIOB, &GPIO_Init );
+ 118:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 119:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   /* configure Data ready pin */
+ 120:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pin       = GPIO_PIN_1;
+ 121:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Mode      = GPIO_MODE_IT_RISING;
+ 122:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pull      = GPIO_NOPULL;
+ 123:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Speed     = GPIO_SPEED_FREQ_LOW;
+ 124:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_GPIO_Init(GPIOE, &GPIO_Init );
+ 125:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 126:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   /* configure Reset pin */
+ 127:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pin       = GPIO_PIN_8;
+ 128:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Mode      = GPIO_MODE_OUTPUT_PP;
+ 129:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pull      = GPIO_NOPULL;
+ 130:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Speed     = GPIO_SPEED_FREQ_LOW;
+ 131:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Alternate = 0;
+ 132:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_GPIO_Init(GPIOE, &GPIO_Init );
+ 133:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ 134:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   /* configure SPI NSS pin pin */
+ 135:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_GPIO_WritePin( GPIOE , GPIO_PIN_0, GPIO_PIN_SET ); 
+ 136:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pin       =  GPIO_PIN_0;
+ 137:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Mode      = GPIO_MODE_OUTPUT_PP;
+ 138:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pull      = GPIO_NOPULL;
+ 139:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Speed     = GPIO_SPEED_FREQ_MEDIUM;
+ 140:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_GPIO_Init( GPIOE, &GPIO_Init );
+ 141:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ 142:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   /* configure SPI CLK pin */
+ 143:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pin       =  GPIO_PIN_10;
+ 144:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Mode      = GPIO_MODE_AF_PP;
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 4
+
+
+ 145:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pull      = GPIO_NOPULL;
+ 146:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Speed     = GPIO_SPEED_FREQ_MEDIUM;
+ 147:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Alternate = GPIO_AF6_SPI3;
+ 148:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_GPIO_Init(GPIOC, &GPIO_Init );
+ 149:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ 150:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   /* configure SPI MOSI pin */
+ 151:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pin       = GPIO_PIN_12;
+ 152:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Mode      = GPIO_MODE_AF_PP;
+ 153:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pull      = GPIO_NOPULL;
+ 154:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Speed     = GPIO_SPEED_FREQ_MEDIUM;
+ 155:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Alternate = GPIO_AF6_SPI3;
+ 156:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_GPIO_Init( GPIOC, &GPIO_Init );
+ 157:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ 158:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   /* configure SPI MISO pin */
+ 159:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pin       = GPIO_PIN_11;
+ 160:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Mode      = GPIO_MODE_AF_PP;
+ 161:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pull      = GPIO_PULLUP;
+ 162:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Speed     = GPIO_SPEED_FREQ_MEDIUM;
+ 163:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Alternate = GPIO_AF6_SPI3;
+ 164:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_GPIO_Init( GPIOC,&GPIO_Init );
+ 165:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** }
+ 166:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 167:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** /**
+ 168:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @brief  Initialize the SPI3
+ 169:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @param  None
+ 170:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @retval None
+ 171:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   */
+ 172:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** int8_t SPI_WIFI_Init(uint16_t mode)
+ 173:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** {
+ 174:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   int8_t  rc=0;
+ 175:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ 176:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   if (mode == ES_WIFI_INIT)
+ 177:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 178:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Instance               = SPI3;
+ 179:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     SPI_WIFI_MspInit(&hspi);
+ 180:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ 181:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.Mode              = SPI_MODE_MASTER;
+ 182:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.Direction         = SPI_DIRECTION_2LINES;
+ 183:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.DataSize          = SPI_DATASIZE_16BIT;
+ 184:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.CLKPolarity       = SPI_POLARITY_LOW;
+ 185:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.CLKPhase          = SPI_PHASE_1EDGE;
+ 186:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.NSS               = SPI_NSS_SOFT;
+ 187:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8; /* 80/8= 10MHz (Inventek WIFI module sup
+ 188:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.FirstBit          = SPI_FIRSTBIT_MSB;
+ 189:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.TIMode            = SPI_TIMODE_DISABLE;
+ 190:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.CRCCalculation    = SPI_CRCCALCULATION_DISABLE;
+ 191:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.CRCPolynomial     = 0;
+ 192:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ 193:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     if(HAL_SPI_Init( &hspi ) != HAL_OK)
+ 194:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 195:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       return -1;
+ 196:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     }
+ 197:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 198:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 	 // Enable Interrupt for Data Ready pin , GPIO_PIN1
+ 199:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      HAL_NVIC_SetPriority((IRQn_Type)EXTI1_IRQn, 0x0F, 0x00);
+ 200:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      HAL_NVIC_EnableIRQ((IRQn_Type)EXTI1_IRQn);
+ 201:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 	 
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 5
+
+
+ 202:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 	 // Enable Interrupt for SPI tx and rx
+ 203:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      HAL_NVIC_SetPriority((IRQn_Type)SPI3_IRQn, 1, 0);
+ 204:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      HAL_NVIC_EnableIRQ((IRQn_Type)SPI3_IRQn);
+ 205:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 206:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #ifdef WIFI_USE_CMSIS_OS  
+ 207:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     es_wifi_mutex = osMutexCreate(osMutex(es_wifi_mutex));
+ 208:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     spi_mutex = osMutexCreate(osMutex(spi_mutex));
+ 209:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     spi_rx_sem = osSemaphoreCreate(osSemaphore(spi_rx_sem) , 1 );
+ 210:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     spi_tx_sem = osSemaphoreCreate(osSemaphore(spi_tx_sem) , 1 );
+ 211:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     cmddata_rdy_rising_sem = osSemaphoreCreate(osSemaphore(cmddata_rdy_rising_sem) , 1 );
+ 212:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #endif
+ 213:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     // first call used for calibration
+ 214:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     SPI_WIFI_DelayUs(10);
+ 215:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   }
+ 216:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ 217:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   rc= SPI_WIFI_ResetModule();
+ 218:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 219:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   return rc;
+ 220:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** }
+ 221:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 222:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 223:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** int8_t SPI_WIFI_ResetModule(void)
+ 224:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** {
+ 225:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   uint32_t tickstart = HAL_GetTick();
+ 226:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   uint8_t Prompt[6];
+ 227:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   uint8_t count = 0;
+ 228:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_StatusTypeDef  Status;
+ 229:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 230:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   //WIFI_RESET_MODULE();
+ 231:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_GPIO_WritePin(GPIOE, GPIO_PIN_8, GPIO_PIN_RESET);
+ 232:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_Delay(10);
+ 233:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_GPIO_WritePin(GPIOE, GPIO_PIN_8, GPIO_PIN_SET);
+ 234:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   /*for (int i = 0; i<50; i++)
+ 235:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 236:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 	  HAL_Delay(10);
+ 237:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   }*/
+ 238:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   //weird stuff starts happening around 255-257 range
+ 239:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_Delay(500);
+ 240:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 241:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   //WIFI_ENABLE_NSS();
+ 242:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_GPIO_WritePin( GPIOE, GPIO_PIN_0, GPIO_PIN_RESET );
+ 243:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 244:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   SPI_WIFI_DelayUs(15);
+ 245:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 246:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   //while (WIFI_IS_CMDDATA_READY())
+ 247:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   while ((HAL_GPIO_ReadPin(GPIOE, GPIO_PIN_1) == GPIO_PIN_SET))
+ 248:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 249:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     Status = HAL_SPI_Receive(&hspi , &Prompt[count], 1, 0xFFFF);  
+ 250:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     count += 2;
+ 251:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     if(((HAL_GetTick() - tickstart ) > 0xFFFF) || (Status != HAL_OK))
+ 252:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 253:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       //WIFI_DISABLE_NSS();
+ 254:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       HAL_GPIO_WritePin( GPIOE, GPIO_PIN_0, GPIO_PIN_SET );
+ 255:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       return -1;
+ 256:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     }    
+ 257:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   }
+ 258:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 6
+
+
+ 259:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   WIFI_DISABLE_NSS(); 
+ 260:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   if((Prompt[0] != 0x15) ||(Prompt[1] != 0x15) ||(Prompt[2] != '\r')||
+ 261:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****        (Prompt[3] != '\n') ||(Prompt[4] != '>') ||(Prompt[5] != ' '))
+ 262:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 263:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     return -1;
+ 264:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   }    
+ 265:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   return 0;
+ 266:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** }
+ 267:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 268:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** /**
+ 269:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @brief  DeInitialize the SPI
+ 270:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @param  None
+ 271:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @retval None
+ 272:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   */
+ 273:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** int8_t SPI_WIFI_DeInit(void)
+ 274:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** {
+ 275:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_SPI_DeInit( &hspi );
+ 276:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #ifdef  WIFI_USE_CMSIS_OS
+ 277:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   osMutexDelete(spi_mutex);
+ 278:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   osMutexDelete(es_wifi_mutex);
+ 279:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   osSemaphoreDelete(spi_tx_sem);
+ 280:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   osSemaphoreDelete(spi_rx_sem);
+ 281:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   osSemaphoreDelete(cmddata_rdy_rising_sem);
+ 282:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #endif
+ 283:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   return 0;
+ 284:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** }
+ 285:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 286:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 287:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 288:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** /**
+ 289:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @brief  Receive wifi Data from SPI
+ 290:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @param  pdata : pointer to data
+ 291:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @param  len : Data length
+ 292:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @param  timeout : send timeout in mS
+ 293:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @retval Length of received data (payload)
+ 294:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   */
+ 295:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 296:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** int wait_cmddata_rdy_high(int timeout)
+ 297:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** {
+ 298:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   int tickstart = HAL_GetTick();
+ 299:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   while (WIFI_IS_CMDDATA_READY()==0)
+ 300:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 301:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     if((HAL_GetTick() - tickstart ) > timeout)
+ 302:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 303:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       return -1;
+ 304:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     }
+ 305:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   }
+ 306:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   return 0;
+ 307:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** }
+ 308:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 309:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 310:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 311:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** int wait_cmddata_rdy_rising_event(int timeout)
+ 312:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** {
+ 313:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #ifdef SEM_WAIT
+ 314:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****    return SEM_WAIT(cmddata_rdy_rising_sem, timeout); 
+ 315:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #else
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 7
+
+
+ 316:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   int tickstart = HAL_GetTick();
+ 317:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   while (cmddata_rdy_rising_event==1)
+ 318:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 319:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     if((HAL_GetTick() - tickstart ) > timeout)
+ 320:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 321:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       return -1;
+ 322:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     }
+ 323:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   }
+ 324:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   return 0; 
+ 325:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #endif
+ 326:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** }
+ 327:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 328:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** int wait_spi_rx_event(int timeout)
+ 329:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** {
+ 330:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #ifdef SEM_WAIT
+ 331:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****    return SEM_WAIT(spi_rx_sem, timeout); 
+ 332:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #else
+ 333:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   int tickstart = HAL_GetTick();
+ 334:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   while (spi_rx_event==1)
+ 335:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 336:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     if((HAL_GetTick() - tickstart ) > timeout)
+ 337:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 338:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       return -1;
+ 339:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     }
+ 340:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   }
+ 341:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   return 0; 
+ 342:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #endif
+ 343:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** }
+ 344:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 345:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** int wait_spi_tx_event(int timeout)
+ 346:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** {
+ 347:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #ifdef SEM_WAIT
+ 348:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****    return SEM_WAIT(spi_tx_sem, timeout); 
+ 349:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #else
+ 350:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   int tickstart = HAL_GetTick();
+ 351:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   while (spi_tx_event==1)
+ 352:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 353:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     if((HAL_GetTick() - tickstart ) > timeout)
+ 354:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 355:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       return -1;
+ 356:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     }
+ 357:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   }
+ 358:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   return 0; 
+ 359:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #endif
+ 360:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** }
+ 361:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 362:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 363:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 364:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** int16_t SPI_WIFI_ReceiveData(uint8_t *pData, uint16_t len, uint32_t timeout)
+ 365:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** {
+ 366:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   int16_t length = 0;
+ 367:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   uint8_t tmp[2];
+ 368:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ 369:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   WIFI_DISABLE_NSS(); 
+ 370:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   UNLOCK_SPI();
+ 371:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   SPI_WIFI_DelayUs(3);
+ 372:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 8
+
+
+ 373:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 374:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   if (wait_cmddata_rdy_rising_event(timeout)<0)
+ 375:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 376:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       return ES_WIFI_ERROR_WAITING_DRDY_FALLING;
+ 377:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   }
+ 378:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 379:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   LOCK_SPI();  
+ 380:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   WIFI_ENABLE_NSS(); 
+ 381:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   SPI_WIFI_DelayUs(15);
+ 382:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   while (WIFI_IS_CMDDATA_READY())
+ 383:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 384:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     if((length < len) || (!len))
+ 385:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 386:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       spi_rx_event=1;
+ 387:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       if (HAL_SPI_Receive_IT(&hspi, tmp, 1) != HAL_OK) {
+ 388:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****         WIFI_DISABLE_NSS();
+ 389:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****         UNLOCK_SPI();
+ 390:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****         return ES_WIFI_ERROR_SPI_FAILED;
+ 391:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       }
+ 392:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ 393:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       wait_spi_rx_event(timeout);
+ 394:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 395:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       pData[0] = tmp[0];
+ 396:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       pData[1] = tmp[1];
+ 397:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       length += 2;
+ 398:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       pData  += 2;
+ 399:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       
+ 400:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       if (length >= ES_WIFI_DATA_SIZE) {
+ 401:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****         WIFI_DISABLE_NSS();
+ 402:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****         SPI_WIFI_ResetModule();    
+ 403:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****         UNLOCK_SPI();
+ 404:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****         return ES_WIFI_ERROR_STUFFING_FOREVER;
+ 405:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       }     
+ 406:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     }
+ 407:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     else
+ 408:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 409:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       break;
+ 410:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     }
+ 411:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   }
+ 412:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   WIFI_DISABLE_NSS(); 
+ 413:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   UNLOCK_SPI();
+ 414:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   return length;
+ 415:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** }
+ 416:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** /**
+ 417:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @brief  Send wifi Data thru SPI
+ 418:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @param  pdata : pointer to data
+ 419:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @param  len : Data length
+ 420:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @param  timeout : send timeout in mS
+ 421:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @retval Length of sent data
+ 422:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   */
+ 423:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** int16_t SPI_WIFI_SendData( uint8_t *pdata,  uint16_t len, uint32_t timeout)
+ 424:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** {
+ 425:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   uint8_t Padding[2];
+ 426:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ 427:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   if (wait_cmddata_rdy_high(timeout)<0)
+ 428:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 429:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     return ES_WIFI_ERROR_SPI_FAILED;
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 9
+
+
+ 430:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   }
+ 431:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     
+ 432:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   // arm to detect rising event
+ 433:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   cmddata_rdy_rising_event=1;
+ 434:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   LOCK_SPI();
+ 435:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   WIFI_ENABLE_NSS();
+ 436:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   SPI_WIFI_DelayUs(15);
+ 437:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   if (len > 1)
+ 438:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 439:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     spi_tx_event=1;
+ 440:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     if( HAL_SPI_Transmit_IT(&hspi, (uint8_t *)pdata , len/2) != HAL_OK)
+ 441:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 442:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       WIFI_DISABLE_NSS();
+ 443:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       UNLOCK_SPI();
+ 444:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       return ES_WIFI_ERROR_SPI_FAILED;
+ 445:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     }
+ 446:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     wait_spi_tx_event(timeout);
+ 447:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   }
+ 448:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ 449:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   if ( len & 1)
+ 450:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 451:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     Padding[0] = pdata[len-1];
+ 452:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     Padding[1] = '\n';
+ 453:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 454:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     spi_tx_event=1;
+ 455:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     if( HAL_SPI_Transmit_IT(&hspi, Padding, 1) != HAL_OK)
+ 456:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 457:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       WIFI_DISABLE_NSS();
+ 458:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       UNLOCK_SPI();
+ 459:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       return ES_WIFI_ERROR_SPI_FAILED;
+ 460:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     }  
+ 461:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     wait_spi_tx_event(timeout);
+ 462:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     
+ 463:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   }
+ 464:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   return len;
+ 465:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** }
+ 466:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 467:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** /**
+ 468:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @brief  Delay
+ 469:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @param  Delay in ms
+ 470:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @retval None
+ 471:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   */
+ 472:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** void SPI_WIFI_Delay(uint32_t Delay)
+ 473:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** {
+ 474:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_Delay(Delay);
+ 475:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** }
+ 476:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 477:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** /**
+ 478:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****    * @brief  Delay
+ 479:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @param  Delay in us
+ 480:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @retval None
+ 481:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   */
+ 482:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** void SPI_WIFI_DelayUs(uint32_t n)
+ 483:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** {
+  29              		.loc 1 483 1 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 8
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 10
+
+
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		.loc 1 483 1 is_stmt 0 view .LVU1
+  34 0000 30B5     		push	{r4, r5, lr}
+  35              	.LCFI0:
+  36              		.cfi_def_cfa_offset 12
+  37              		.cfi_offset 4, -12
+  38              		.cfi_offset 5, -8
+  39              		.cfi_offset 14, -4
+  40 0002 83B0     		sub	sp, sp, #12
+  41              	.LCFI1:
+  42              		.cfi_def_cfa_offset 24
+  43 0004 0446     		mov	r4, r0
+ 484:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   volatile      uint32_t ct;
+  44              		.loc 1 484 3 is_stmt 1 view .LVU2
+ 485:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   uint32_t       loop_per_us;
+  45              		.loc 1 485 3 view .LVU3
+ 486:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   static  uint32_t cycle_per_loop=0;
+  46              		.loc 1 486 3 view .LVU4
+ 487:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 488:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   // calibration happen on first call for a duration of 1 ms * nbcycle per loop 
+ 489:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   // 10 cycle for STM32L4
+ 490:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   if (cycle_per_loop == 0 ) 
+  47              		.loc 1 490 3 view .LVU5
+  48              		.loc 1 490 22 is_stmt 0 view .LVU6
+  49 0006 194B     		ldr	r3, .L10
+  50 0008 1B68     		ldr	r3, [r3]
+  51              		.loc 1 490 6 view .LVU7
+  52 000a 6BB1     		cbz	r3, .L8
+  53              	.LVL1:
+  54              	.L2:
+ 491:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 492:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      uint32_t cycle_per_ms = (SystemCoreClock/1000L);
+ 493:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      uint32_t   t; 
+ 494:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      ct=cycle_per_ms;
+ 495:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      t=HAL_GetTick();
+ 496:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      while(ct) ct--;
+ 497:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      cycle_per_loop=HAL_GetTick()-t;  
+ 498:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      if (cycle_per_loop==0) cycle_per_loop=1;
+ 499:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   }
+ 500:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 501:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   loop_per_us = SystemCoreClock/1000000/cycle_per_loop;
+  55              		.loc 1 501 3 is_stmt 1 view .LVU8
+  56              		.loc 1 501 32 is_stmt 0 view .LVU9
+  57 000c 184B     		ldr	r3, .L10+4
+  58 000e 1B68     		ldr	r3, [r3]
+  59 0010 184A     		ldr	r2, .L10+8
+  60 0012 A2FB0323 		umull	r2, r3, r2, r3
+  61 0016 9B0C     		lsrs	r3, r3, #18
+  62              		.loc 1 501 40 view .LVU10
+  63 0018 144A     		ldr	r2, .L10
+  64 001a 1268     		ldr	r2, [r2]
+  65              		.loc 1 501 15 view .LVU11
+  66 001c B3FBF2F3 		udiv	r3, r3, r2
+  67              	.LVL2:
+ 502:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   ct = n * loop_per_us;
+  68              		.loc 1 502 3 is_stmt 1 view .LVU12
+  69              		.loc 1 502 10 is_stmt 0 view .LVU13
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 11
+
+
+  70 0020 04FB03F3 		mul	r3, r4, r3
+  71              	.LVL3:
+  72              		.loc 1 502 6 view .LVU14
+  73 0024 0193     		str	r3, [sp, #4]
+ 503:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   while(ct) ct--;
+  74              		.loc 1 503 3 is_stmt 1 view .LVU15
+  75              		.loc 1 503 8 is_stmt 0 view .LVU16
+  76 0026 1CE0     		b	.L5
+  77              	.LVL4:
+  78              	.L8:
+  79              	.LBB2:
+ 492:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      uint32_t   t; 
+  80              		.loc 1 492 6 is_stmt 1 view .LVU17
+ 492:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      uint32_t   t; 
+  81              		.loc 1 492 46 is_stmt 0 view .LVU18
+  82 0028 114B     		ldr	r3, .L10+4
+  83 002a 1B68     		ldr	r3, [r3]
+ 492:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      uint32_t   t; 
+  84              		.loc 1 492 15 view .LVU19
+  85 002c 124A     		ldr	r2, .L10+12
+  86 002e A2FB0323 		umull	r2, r3, r2, r3
+  87 0032 9B09     		lsrs	r3, r3, #6
+  88              	.LVL5:
+ 493:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      ct=cycle_per_ms;
+  89              		.loc 1 493 6 is_stmt 1 view .LVU20
+ 494:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      t=HAL_GetTick();
+  90              		.loc 1 494 6 view .LVU21
+ 494:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      t=HAL_GetTick();
+  91              		.loc 1 494 8 is_stmt 0 view .LVU22
+  92 0034 0193     		str	r3, [sp, #4]
+ 495:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      while(ct) ct--;
+  93              		.loc 1 495 6 is_stmt 1 view .LVU23
+ 495:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      while(ct) ct--;
+  94              		.loc 1 495 8 is_stmt 0 view .LVU24
+  95 0036 FFF7FEFF 		bl	HAL_GetTick
+  96              	.LVL6:
+ 495:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      while(ct) ct--;
+  97              		.loc 1 495 8 view .LVU25
+  98 003a 0546     		mov	r5, r0
+  99              	.LVL7:
+ 496:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      cycle_per_loop=HAL_GetTick()-t;  
+ 100              		.loc 1 496 6 is_stmt 1 view .LVU26
+ 101              	.L3:
+ 496:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      cycle_per_loop=HAL_GetTick()-t;  
+ 102              		.loc 1 496 11 discriminator 1 view .LVU27
+ 496:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      cycle_per_loop=HAL_GetTick()-t;  
+ 103              		.loc 1 496 12 is_stmt 0 discriminator 1 view .LVU28
+ 104 003c 019B     		ldr	r3, [sp, #4]
+ 496:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      cycle_per_loop=HAL_GetTick()-t;  
+ 105              		.loc 1 496 11 discriminator 1 view .LVU29
+ 106 003e 1BB1     		cbz	r3, .L9
+ 496:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      cycle_per_loop=HAL_GetTick()-t;  
+ 107              		.loc 1 496 16 is_stmt 1 discriminator 2 view .LVU30
+ 496:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      cycle_per_loop=HAL_GetTick()-t;  
+ 108              		.loc 1 496 18 is_stmt 0 discriminator 2 view .LVU31
+ 109 0040 019B     		ldr	r3, [sp, #4]
+ 110 0042 013B     		subs	r3, r3, #1
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 12
+
+
+ 111 0044 0193     		str	r3, [sp, #4]
+ 112 0046 F9E7     		b	.L3
+ 113              	.L9:
+ 497:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      if (cycle_per_loop==0) cycle_per_loop=1;
+ 114              		.loc 1 497 6 is_stmt 1 view .LVU32
+ 497:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      if (cycle_per_loop==0) cycle_per_loop=1;
+ 115              		.loc 1 497 21 is_stmt 0 view .LVU33
+ 116 0048 FFF7FEFF 		bl	HAL_GetTick
+ 117              	.LVL8:
+ 497:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      if (cycle_per_loop==0) cycle_per_loop=1;
+ 118              		.loc 1 497 34 view .LVU34
+ 119 004c 401B     		subs	r0, r0, r5
+ 497:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      if (cycle_per_loop==0) cycle_per_loop=1;
+ 120              		.loc 1 497 20 view .LVU35
+ 121 004e 074B     		ldr	r3, .L10
+ 122 0050 1860     		str	r0, [r3]
+ 498:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   }
+ 123              		.loc 1 498 6 is_stmt 1 view .LVU36
+ 498:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   }
+ 124              		.loc 1 498 9 is_stmt 0 view .LVU37
+ 125 0052 0028     		cmp	r0, #0
+ 126 0054 DAD1     		bne	.L2
+ 498:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   }
+ 127              		.loc 1 498 29 is_stmt 1 discriminator 1 view .LVU38
+ 498:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   }
+ 128              		.loc 1 498 43 is_stmt 0 discriminator 1 view .LVU39
+ 129 0056 0122     		movs	r2, #1
+ 130 0058 1A60     		str	r2, [r3]
+ 131 005a D7E7     		b	.L2
+ 132              	.LVL9:
+ 133              	.L6:
+ 498:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   }
+ 134              		.loc 1 498 43 discriminator 1 view .LVU40
+ 135              	.LBE2:
+ 136              		.loc 1 503 13 is_stmt 1 discriminator 2 view .LVU41
+ 137              		.loc 1 503 15 is_stmt 0 discriminator 2 view .LVU42
+ 138 005c 019B     		ldr	r3, [sp, #4]
+ 139 005e 013B     		subs	r3, r3, #1
+ 140 0060 0193     		str	r3, [sp, #4]
+ 141              	.L5:
+ 142              		.loc 1 503 8 is_stmt 1 discriminator 1 view .LVU43
+ 143              		.loc 1 503 9 is_stmt 0 discriminator 1 view .LVU44
+ 144 0062 019B     		ldr	r3, [sp, #4]
+ 145              		.loc 1 503 8 discriminator 1 view .LVU45
+ 146 0064 002B     		cmp	r3, #0
+ 147 0066 F9D1     		bne	.L6
+ 504:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   return;
+ 505:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** }
+ 148              		.loc 1 505 1 view .LVU46
+ 149 0068 03B0     		add	sp, sp, #12
+ 150              	.LCFI2:
+ 151              		.cfi_def_cfa_offset 12
+ 152              		@ sp needed
+ 153 006a 30BD     		pop	{r4, r5, pc}
+ 154              	.LVL10:
+ 155              	.L11:
+ 156              		.loc 1 505 1 view .LVU47
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 13
+
+
+ 157              		.align	2
+ 158              	.L10:
+ 159 006c 00000000 		.word	.LANCHOR0
+ 160 0070 00000000 		.word	SystemCoreClock
+ 161 0074 83DE1B43 		.word	1125899907
+ 162 0078 D34D6210 		.word	274877907
+ 163              		.cfi_endproc
+ 164              	.LFE333:
+ 166              		.section	.text.wait_cmddata_rdy_rising_event,"ax",%progbits
+ 167              		.align	1
+ 168              		.syntax unified
+ 169              		.thumb
+ 170              		.thumb_func
+ 171              		.fpu fpv4-sp-d16
+ 173              	wait_cmddata_rdy_rising_event:
+ 174              	.LVL11:
+ 175              	.LFB327:
+ 312:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #ifdef SEM_WAIT
+ 176              		.loc 1 312 1 is_stmt 1 view -0
+ 177              		.cfi_startproc
+ 178              		@ args = 0, pretend = 0, frame = 0
+ 179              		@ frame_needed = 0, uses_anonymous_args = 0
+ 312:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #ifdef SEM_WAIT
+ 180              		.loc 1 312 1 is_stmt 0 view .LVU49
+ 181 0000 38B5     		push	{r3, r4, r5, lr}
+ 182              	.LCFI3:
+ 183              		.cfi_def_cfa_offset 16
+ 184              		.cfi_offset 3, -16
+ 185              		.cfi_offset 4, -12
+ 186              		.cfi_offset 5, -8
+ 187              		.cfi_offset 14, -4
+ 188 0002 0546     		mov	r5, r0
+ 316:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   while (cmddata_rdy_rising_event==1)
+ 189              		.loc 1 316 3 is_stmt 1 view .LVU50
+ 316:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   while (cmddata_rdy_rising_event==1)
+ 190              		.loc 1 316 19 is_stmt 0 view .LVU51
+ 191 0004 FFF7FEFF 		bl	HAL_GetTick
+ 192              	.LVL12:
+ 316:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   while (cmddata_rdy_rising_event==1)
+ 193              		.loc 1 316 19 view .LVU52
+ 194 0008 0446     		mov	r4, r0
+ 195              	.LVL13:
+ 317:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 196              		.loc 1 317 3 is_stmt 1 view .LVU53
+ 197              	.L13:
+ 317:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 198              		.loc 1 317 9 view .LVU54
+ 317:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 199              		.loc 1 317 34 is_stmt 0 view .LVU55
+ 200 000a 074B     		ldr	r3, .L19
+ 201 000c 1B68     		ldr	r3, [r3]
+ 317:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 202              		.loc 1 317 9 view .LVU56
+ 203 000e 012B     		cmp	r3, #1
+ 204 0010 07D1     		bne	.L18
+ 319:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 205              		.loc 1 319 5 is_stmt 1 view .LVU57
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 14
+
+
+ 319:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 206              		.loc 1 319 9 is_stmt 0 view .LVU58
+ 207 0012 FFF7FEFF 		bl	HAL_GetTick
+ 208              	.LVL14:
+ 319:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 209              		.loc 1 319 23 view .LVU59
+ 210 0016 001B     		subs	r0, r0, r4
+ 319:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 211              		.loc 1 319 7 view .LVU60
+ 212 0018 A842     		cmp	r0, r5
+ 213 001a F6D9     		bls	.L13
+ 321:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     }
+ 214              		.loc 1 321 14 view .LVU61
+ 215 001c 4FF0FF30 		mov	r0, #-1
+ 216 0020 00E0     		b	.L12
+ 217              	.L18:
+ 324:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #endif
+ 218              		.loc 1 324 10 view .LVU62
+ 219 0022 0020     		movs	r0, #0
+ 220              	.L12:
+ 326:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 221              		.loc 1 326 1 view .LVU63
+ 222 0024 38BD     		pop	{r3, r4, r5, pc}
+ 223              	.LVL15:
+ 224              	.L20:
+ 326:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 225              		.loc 1 326 1 view .LVU64
+ 226 0026 00BF     		.align	2
+ 227              	.L19:
+ 228 0028 00000000 		.word	.LANCHOR1
+ 229              		.cfi_endproc
+ 230              	.LFE327:
+ 232              		.section	.text.wait_spi_rx_event,"ax",%progbits
+ 233              		.align	1
+ 234              		.syntax unified
+ 235              		.thumb
+ 236              		.thumb_func
+ 237              		.fpu fpv4-sp-d16
+ 239              	wait_spi_rx_event:
+ 240              	.LVL16:
+ 241              	.LFB328:
+ 329:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #ifdef SEM_WAIT
+ 242              		.loc 1 329 1 is_stmt 1 view -0
+ 243              		.cfi_startproc
+ 244              		@ args = 0, pretend = 0, frame = 0
+ 245              		@ frame_needed = 0, uses_anonymous_args = 0
+ 329:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #ifdef SEM_WAIT
+ 246              		.loc 1 329 1 is_stmt 0 view .LVU66
+ 247 0000 38B5     		push	{r3, r4, r5, lr}
+ 248              	.LCFI4:
+ 249              		.cfi_def_cfa_offset 16
+ 250              		.cfi_offset 3, -16
+ 251              		.cfi_offset 4, -12
+ 252              		.cfi_offset 5, -8
+ 253              		.cfi_offset 14, -4
+ 254 0002 0546     		mov	r5, r0
+ 333:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   while (spi_rx_event==1)
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 15
+
+
+ 255              		.loc 1 333 3 is_stmt 1 view .LVU67
+ 333:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   while (spi_rx_event==1)
+ 256              		.loc 1 333 19 is_stmt 0 view .LVU68
+ 257 0004 FFF7FEFF 		bl	HAL_GetTick
+ 258              	.LVL17:
+ 333:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   while (spi_rx_event==1)
+ 259              		.loc 1 333 19 view .LVU69
+ 260 0008 0446     		mov	r4, r0
+ 261              	.LVL18:
+ 334:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 262              		.loc 1 334 3 is_stmt 1 view .LVU70
+ 263              	.L22:
+ 334:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 264              		.loc 1 334 9 view .LVU71
+ 334:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 265              		.loc 1 334 22 is_stmt 0 view .LVU72
+ 266 000a 074B     		ldr	r3, .L28
+ 267 000c 1B68     		ldr	r3, [r3]
+ 334:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 268              		.loc 1 334 9 view .LVU73
+ 269 000e 012B     		cmp	r3, #1
+ 270 0010 07D1     		bne	.L27
+ 336:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 271              		.loc 1 336 5 is_stmt 1 view .LVU74
+ 336:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 272              		.loc 1 336 9 is_stmt 0 view .LVU75
+ 273 0012 FFF7FEFF 		bl	HAL_GetTick
+ 274              	.LVL19:
+ 336:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 275              		.loc 1 336 23 view .LVU76
+ 276 0016 001B     		subs	r0, r0, r4
+ 336:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 277              		.loc 1 336 7 view .LVU77
+ 278 0018 A842     		cmp	r0, r5
+ 279 001a F6D9     		bls	.L22
+ 338:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     }
+ 280              		.loc 1 338 14 view .LVU78
+ 281 001c 4FF0FF30 		mov	r0, #-1
+ 282 0020 00E0     		b	.L21
+ 283              	.L27:
+ 341:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #endif
+ 284              		.loc 1 341 10 view .LVU79
+ 285 0022 0020     		movs	r0, #0
+ 286              	.L21:
+ 343:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 287              		.loc 1 343 1 view .LVU80
+ 288 0024 38BD     		pop	{r3, r4, r5, pc}
+ 289              	.LVL20:
+ 290              	.L29:
+ 343:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 291              		.loc 1 343 1 view .LVU81
+ 292 0026 00BF     		.align	2
+ 293              	.L28:
+ 294 0028 00000000 		.word	.LANCHOR2
+ 295              		.cfi_endproc
+ 296              	.LFE328:
+ 298              		.section	.text.wait_spi_tx_event,"ax",%progbits
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 16
+
+
+ 299              		.align	1
+ 300              		.syntax unified
+ 301              		.thumb
+ 302              		.thumb_func
+ 303              		.fpu fpv4-sp-d16
+ 305              	wait_spi_tx_event:
+ 306              	.LVL21:
+ 307              	.LFB329:
+ 346:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #ifdef SEM_WAIT
+ 308              		.loc 1 346 1 is_stmt 1 view -0
+ 309              		.cfi_startproc
+ 310              		@ args = 0, pretend = 0, frame = 0
+ 311              		@ frame_needed = 0, uses_anonymous_args = 0
+ 346:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #ifdef SEM_WAIT
+ 312              		.loc 1 346 1 is_stmt 0 view .LVU83
+ 313 0000 38B5     		push	{r3, r4, r5, lr}
+ 314              	.LCFI5:
+ 315              		.cfi_def_cfa_offset 16
+ 316              		.cfi_offset 3, -16
+ 317              		.cfi_offset 4, -12
+ 318              		.cfi_offset 5, -8
+ 319              		.cfi_offset 14, -4
+ 320 0002 0546     		mov	r5, r0
+ 350:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   while (spi_tx_event==1)
+ 321              		.loc 1 350 3 is_stmt 1 view .LVU84
+ 350:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   while (spi_tx_event==1)
+ 322              		.loc 1 350 19 is_stmt 0 view .LVU85
+ 323 0004 FFF7FEFF 		bl	HAL_GetTick
+ 324              	.LVL22:
+ 350:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   while (spi_tx_event==1)
+ 325              		.loc 1 350 19 view .LVU86
+ 326 0008 0446     		mov	r4, r0
+ 327              	.LVL23:
+ 351:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 328              		.loc 1 351 3 is_stmt 1 view .LVU87
+ 329              	.L31:
+ 351:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 330              		.loc 1 351 9 view .LVU88
+ 351:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 331              		.loc 1 351 22 is_stmt 0 view .LVU89
+ 332 000a 074B     		ldr	r3, .L37
+ 333 000c 1B68     		ldr	r3, [r3]
+ 351:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 334              		.loc 1 351 9 view .LVU90
+ 335 000e 012B     		cmp	r3, #1
+ 336 0010 07D1     		bne	.L36
+ 353:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 337              		.loc 1 353 5 is_stmt 1 view .LVU91
+ 353:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 338              		.loc 1 353 9 is_stmt 0 view .LVU92
+ 339 0012 FFF7FEFF 		bl	HAL_GetTick
+ 340              	.LVL24:
+ 353:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 341              		.loc 1 353 23 view .LVU93
+ 342 0016 001B     		subs	r0, r0, r4
+ 353:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 343              		.loc 1 353 7 view .LVU94
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 17
+
+
+ 344 0018 A842     		cmp	r0, r5
+ 345 001a F6D9     		bls	.L31
+ 355:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     }
+ 346              		.loc 1 355 14 view .LVU95
+ 347 001c 4FF0FF30 		mov	r0, #-1
+ 348 0020 00E0     		b	.L30
+ 349              	.L36:
+ 358:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #endif
+ 350              		.loc 1 358 10 view .LVU96
+ 351 0022 0020     		movs	r0, #0
+ 352              	.L30:
+ 360:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 353              		.loc 1 360 1 view .LVU97
+ 354 0024 38BD     		pop	{r3, r4, r5, pc}
+ 355              	.LVL25:
+ 356              	.L38:
+ 360:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 357              		.loc 1 360 1 view .LVU98
+ 358 0026 00BF     		.align	2
+ 359              	.L37:
+ 360 0028 00000000 		.word	.LANCHOR3
+ 361              		.cfi_endproc
+ 362              	.LFE329:
+ 364              		.section	.text.wait_cmddata_rdy_high,"ax",%progbits
+ 365              		.align	1
+ 366              		.syntax unified
+ 367              		.thumb
+ 368              		.thumb_func
+ 369              		.fpu fpv4-sp-d16
+ 371              	wait_cmddata_rdy_high:
+ 372              	.LVL26:
+ 373              	.LFB326:
+ 297:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   int tickstart = HAL_GetTick();
+ 374              		.loc 1 297 1 is_stmt 1 view -0
+ 375              		.cfi_startproc
+ 376              		@ args = 0, pretend = 0, frame = 0
+ 377              		@ frame_needed = 0, uses_anonymous_args = 0
+ 297:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   int tickstart = HAL_GetTick();
+ 378              		.loc 1 297 1 is_stmt 0 view .LVU100
+ 379 0000 38B5     		push	{r3, r4, r5, lr}
+ 380              	.LCFI6:
+ 381              		.cfi_def_cfa_offset 16
+ 382              		.cfi_offset 3, -16
+ 383              		.cfi_offset 4, -12
+ 384              		.cfi_offset 5, -8
+ 385              		.cfi_offset 14, -4
+ 386 0002 0546     		mov	r5, r0
+ 298:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   while (WIFI_IS_CMDDATA_READY()==0)
+ 387              		.loc 1 298 3 is_stmt 1 view .LVU101
+ 298:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   while (WIFI_IS_CMDDATA_READY()==0)
+ 388              		.loc 1 298 19 is_stmt 0 view .LVU102
+ 389 0004 FFF7FEFF 		bl	HAL_GetTick
+ 390              	.LVL27:
+ 298:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   while (WIFI_IS_CMDDATA_READY()==0)
+ 391              		.loc 1 298 19 view .LVU103
+ 392 0008 0446     		mov	r4, r0
+ 393              	.LVL28:
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 18
+
+
+ 299:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 394              		.loc 1 299 3 is_stmt 1 view .LVU104
+ 395              	.L40:
+ 299:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 396              		.loc 1 299 9 view .LVU105
+ 299:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 397              		.loc 1 299 10 is_stmt 0 view .LVU106
+ 398 000a 0221     		movs	r1, #2
+ 399 000c 0748     		ldr	r0, .L46
+ 400 000e FFF7FEFF 		bl	HAL_GPIO_ReadPin
+ 401              	.LVL29:
+ 299:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 402              		.loc 1 299 9 view .LVU107
+ 403 0012 0128     		cmp	r0, #1
+ 404 0014 07D0     		beq	.L45
+ 301:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 405              		.loc 1 301 5 is_stmt 1 view .LVU108
+ 301:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 406              		.loc 1 301 9 is_stmt 0 view .LVU109
+ 407 0016 FFF7FEFF 		bl	HAL_GetTick
+ 408              	.LVL30:
+ 301:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 409              		.loc 1 301 23 view .LVU110
+ 410 001a 001B     		subs	r0, r0, r4
+ 301:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 411              		.loc 1 301 7 view .LVU111
+ 412 001c A842     		cmp	r0, r5
+ 413 001e F4D9     		bls	.L40
+ 303:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     }
+ 414              		.loc 1 303 14 view .LVU112
+ 415 0020 4FF0FF30 		mov	r0, #-1
+ 416 0024 00E0     		b	.L39
+ 417              	.L45:
+ 306:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** }
+ 418              		.loc 1 306 10 view .LVU113
+ 419 0026 0020     		movs	r0, #0
+ 420              	.L39:
+ 307:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 421              		.loc 1 307 1 view .LVU114
+ 422 0028 38BD     		pop	{r3, r4, r5, pc}
+ 423              	.LVL31:
+ 424              	.L47:
+ 307:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 425              		.loc 1 307 1 view .LVU115
+ 426 002a 00BF     		.align	2
+ 427              	.L46:
+ 428 002c 00100048 		.word	1207963648
+ 429              		.cfi_endproc
+ 430              	.LFE326:
+ 432              		.section	.text.SPI_WIFI_MspInit,"ax",%progbits
+ 433              		.align	1
+ 434              		.global	SPI_WIFI_MspInit
+ 435              		.syntax unified
+ 436              		.thumb
+ 437              		.thumb_func
+ 438              		.fpu fpv4-sp-d16
+ 440              	SPI_WIFI_MspInit:
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 19
+
+
+ 441              	.LVL32:
+ 442              	.LFB322:
+ 101:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ 443              		.loc 1 101 1 is_stmt 1 view -0
+ 444              		.cfi_startproc
+ 445              		@ args = 0, pretend = 0, frame = 40
+ 446              		@ frame_needed = 0, uses_anonymous_args = 0
+ 101:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ 447              		.loc 1 101 1 is_stmt 0 view .LVU117
+ 448 0000 2DE9F041 		push	{r4, r5, r6, r7, r8, lr}
+ 449              	.LCFI7:
+ 450              		.cfi_def_cfa_offset 24
+ 451              		.cfi_offset 4, -24
+ 452              		.cfi_offset 5, -20
+ 453              		.cfi_offset 6, -16
+ 454              		.cfi_offset 7, -12
+ 455              		.cfi_offset 8, -8
+ 456              		.cfi_offset 14, -4
+ 457 0004 8AB0     		sub	sp, sp, #40
+ 458              	.LCFI8:
+ 459              		.cfi_def_cfa_offset 64
+ 103:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ 460              		.loc 1 103 3 is_stmt 1 view .LVU118
+ 105:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 461              		.loc 1 105 3 view .LVU119
+ 462              	.LBB3:
+ 105:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 463              		.loc 1 105 3 view .LVU120
+ 105:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 464              		.loc 1 105 3 view .LVU121
+ 465 0006 434B     		ldr	r3, .L50
+ 466 0008 9A6D     		ldr	r2, [r3, #88]
+ 467 000a 42F40042 		orr	r2, r2, #32768
+ 468 000e 9A65     		str	r2, [r3, #88]
+ 105:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 469              		.loc 1 105 3 view .LVU122
+ 470 0010 9A6D     		ldr	r2, [r3, #88]
+ 471 0012 02F40042 		and	r2, r2, #32768
+ 472 0016 0192     		str	r2, [sp, #4]
+ 105:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 473              		.loc 1 105 3 view .LVU123
+ 474 0018 019A     		ldr	r2, [sp, #4]
+ 475              	.LBE3:
+ 105:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 476              		.loc 1 105 3 view .LVU124
+ 107:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   __HAL_RCC_GPIOC_CLK_ENABLE();
+ 477              		.loc 1 107 5 view .LVU125
+ 478              	.LBB4:
+ 107:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   __HAL_RCC_GPIOC_CLK_ENABLE();
+ 479              		.loc 1 107 5 view .LVU126
+ 107:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   __HAL_RCC_GPIOC_CLK_ENABLE();
+ 480              		.loc 1 107 5 view .LVU127
+ 481 001a DA6C     		ldr	r2, [r3, #76]
+ 482 001c 42F00202 		orr	r2, r2, #2
+ 483 0020 DA64     		str	r2, [r3, #76]
+ 107:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   __HAL_RCC_GPIOC_CLK_ENABLE();
+ 484              		.loc 1 107 5 view .LVU128
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 20
+
+
+ 485 0022 DA6C     		ldr	r2, [r3, #76]
+ 486 0024 02F00202 		and	r2, r2, #2
+ 487 0028 0292     		str	r2, [sp, #8]
+ 107:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   __HAL_RCC_GPIOC_CLK_ENABLE();
+ 488              		.loc 1 107 5 view .LVU129
+ 489 002a 029A     		ldr	r2, [sp, #8]
+ 490              	.LBE4:
+ 107:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   __HAL_RCC_GPIOC_CLK_ENABLE();
+ 491              		.loc 1 107 5 view .LVU130
+ 108:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   __HAL_RCC_GPIOE_CLK_ENABLE();
+ 492              		.loc 1 108 3 view .LVU131
+ 493              	.LBB5:
+ 108:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   __HAL_RCC_GPIOE_CLK_ENABLE();
+ 494              		.loc 1 108 3 view .LVU132
+ 108:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   __HAL_RCC_GPIOE_CLK_ENABLE();
+ 495              		.loc 1 108 3 view .LVU133
+ 496 002c DA6C     		ldr	r2, [r3, #76]
+ 497 002e 42F00402 		orr	r2, r2, #4
+ 498 0032 DA64     		str	r2, [r3, #76]
+ 108:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   __HAL_RCC_GPIOE_CLK_ENABLE();
+ 499              		.loc 1 108 3 view .LVU134
+ 500 0034 DA6C     		ldr	r2, [r3, #76]
+ 501 0036 02F00402 		and	r2, r2, #4
+ 502 003a 0392     		str	r2, [sp, #12]
+ 108:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   __HAL_RCC_GPIOE_CLK_ENABLE();
+ 503              		.loc 1 108 3 view .LVU135
+ 504 003c 039A     		ldr	r2, [sp, #12]
+ 505              	.LBE5:
+ 108:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   __HAL_RCC_GPIOE_CLK_ENABLE();
+ 506              		.loc 1 108 3 view .LVU136
+ 109:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     
+ 507              		.loc 1 109 3 view .LVU137
+ 508              	.LBB6:
+ 109:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     
+ 509              		.loc 1 109 3 view .LVU138
+ 109:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     
+ 510              		.loc 1 109 3 view .LVU139
+ 511 003e DA6C     		ldr	r2, [r3, #76]
+ 512 0040 42F01002 		orr	r2, r2, #16
+ 513 0044 DA64     		str	r2, [r3, #76]
+ 109:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     
+ 514              		.loc 1 109 3 view .LVU140
+ 515 0046 DB6C     		ldr	r3, [r3, #76]
+ 516 0048 03F01003 		and	r3, r3, #16
+ 517 004c 0493     		str	r3, [sp, #16]
+ 109:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     
+ 518              		.loc 1 109 3 view .LVU141
+ 519 004e 049B     		ldr	r3, [sp, #16]
+ 520              	.LBE6:
+ 109:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     
+ 521              		.loc 1 109 3 view .LVU142
+ 112:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pin       = GPIO_PIN_13;
+ 522              		.loc 1 112 3 view .LVU143
+ 523 0050 314E     		ldr	r6, .L50+4
+ 524 0052 0022     		movs	r2, #0
+ 525 0054 4FF40051 		mov	r1, #8192
+ 526 0058 3046     		mov	r0, r6
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 21
+
+
+ 527              	.LVL33:
+ 112:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pin       = GPIO_PIN_13;
+ 528              		.loc 1 112 3 is_stmt 0 view .LVU144
+ 529 005a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 530              	.LVL34:
+ 113:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Mode      = GPIO_MODE_OUTPUT_PP;
+ 531              		.loc 1 113 3 is_stmt 1 view .LVU145
+ 113:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Mode      = GPIO_MODE_OUTPUT_PP;
+ 532              		.loc 1 113 23 is_stmt 0 view .LVU146
+ 533 005e 4FF40053 		mov	r3, #8192
+ 534 0062 0593     		str	r3, [sp, #20]
+ 114:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pull      = GPIO_NOPULL;
+ 535              		.loc 1 114 3 is_stmt 1 view .LVU147
+ 114:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pull      = GPIO_NOPULL;
+ 536              		.loc 1 114 23 is_stmt 0 view .LVU148
+ 537 0064 0124     		movs	r4, #1
+ 538 0066 0694     		str	r4, [sp, #24]
+ 115:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Speed     = GPIO_SPEED_FREQ_LOW;
+ 539              		.loc 1 115 3 is_stmt 1 view .LVU149
+ 115:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Speed     = GPIO_SPEED_FREQ_LOW;
+ 540              		.loc 1 115 23 is_stmt 0 view .LVU150
+ 541 0068 0025     		movs	r5, #0
+ 542 006a 0795     		str	r5, [sp, #28]
+ 116:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_GPIO_Init(GPIOB, &GPIO_Init );
+ 543              		.loc 1 116 3 is_stmt 1 view .LVU151
+ 116:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_GPIO_Init(GPIOB, &GPIO_Init );
+ 544              		.loc 1 116 23 is_stmt 0 view .LVU152
+ 545 006c 0895     		str	r5, [sp, #32]
+ 117:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 546              		.loc 1 117 3 is_stmt 1 view .LVU153
+ 547 006e 05A9     		add	r1, sp, #20
+ 548 0070 3046     		mov	r0, r6
+ 549 0072 FFF7FEFF 		bl	HAL_GPIO_Init
+ 550              	.LVL35:
+ 120:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Mode      = GPIO_MODE_IT_RISING;
+ 551              		.loc 1 120 3 view .LVU154
+ 120:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Mode      = GPIO_MODE_IT_RISING;
+ 552              		.loc 1 120 23 is_stmt 0 view .LVU155
+ 553 0076 0226     		movs	r6, #2
+ 554 0078 0596     		str	r6, [sp, #20]
+ 121:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pull      = GPIO_NOPULL;
+ 555              		.loc 1 121 3 is_stmt 1 view .LVU156
+ 121:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pull      = GPIO_NOPULL;
+ 556              		.loc 1 121 23 is_stmt 0 view .LVU157
+ 557 007a 284B     		ldr	r3, .L50+8
+ 558 007c 0693     		str	r3, [sp, #24]
+ 122:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Speed     = GPIO_SPEED_FREQ_LOW;
+ 559              		.loc 1 122 3 is_stmt 1 view .LVU158
+ 122:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Speed     = GPIO_SPEED_FREQ_LOW;
+ 560              		.loc 1 122 23 is_stmt 0 view .LVU159
+ 561 007e 0795     		str	r5, [sp, #28]
+ 123:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_GPIO_Init(GPIOE, &GPIO_Init );
+ 562              		.loc 1 123 3 is_stmt 1 view .LVU160
+ 123:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_GPIO_Init(GPIOE, &GPIO_Init );
+ 563              		.loc 1 123 23 is_stmt 0 view .LVU161
+ 564 0080 0895     		str	r5, [sp, #32]
+ 124:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 22
+
+
+ 565              		.loc 1 124 3 is_stmt 1 view .LVU162
+ 566 0082 274F     		ldr	r7, .L50+12
+ 567 0084 05A9     		add	r1, sp, #20
+ 568 0086 3846     		mov	r0, r7
+ 569 0088 FFF7FEFF 		bl	HAL_GPIO_Init
+ 570              	.LVL36:
+ 127:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Mode      = GPIO_MODE_OUTPUT_PP;
+ 571              		.loc 1 127 3 view .LVU163
+ 127:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Mode      = GPIO_MODE_OUTPUT_PP;
+ 572              		.loc 1 127 23 is_stmt 0 view .LVU164
+ 573 008c 4FF48073 		mov	r3, #256
+ 574 0090 0593     		str	r3, [sp, #20]
+ 128:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pull      = GPIO_NOPULL;
+ 575              		.loc 1 128 3 is_stmt 1 view .LVU165
+ 128:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pull      = GPIO_NOPULL;
+ 576              		.loc 1 128 23 is_stmt 0 view .LVU166
+ 577 0092 0694     		str	r4, [sp, #24]
+ 129:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Speed     = GPIO_SPEED_FREQ_LOW;
+ 578              		.loc 1 129 3 is_stmt 1 view .LVU167
+ 129:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Speed     = GPIO_SPEED_FREQ_LOW;
+ 579              		.loc 1 129 23 is_stmt 0 view .LVU168
+ 580 0094 0795     		str	r5, [sp, #28]
+ 130:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Alternate = 0;
+ 581              		.loc 1 130 3 is_stmt 1 view .LVU169
+ 130:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Alternate = 0;
+ 582              		.loc 1 130 23 is_stmt 0 view .LVU170
+ 583 0096 0895     		str	r5, [sp, #32]
+ 131:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_GPIO_Init(GPIOE, &GPIO_Init );
+ 584              		.loc 1 131 3 is_stmt 1 view .LVU171
+ 131:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_GPIO_Init(GPIOE, &GPIO_Init );
+ 585              		.loc 1 131 23 is_stmt 0 view .LVU172
+ 586 0098 0995     		str	r5, [sp, #36]
+ 132:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ 587              		.loc 1 132 3 is_stmt 1 view .LVU173
+ 588 009a 05A9     		add	r1, sp, #20
+ 589 009c 3846     		mov	r0, r7
+ 590 009e FFF7FEFF 		bl	HAL_GPIO_Init
+ 591              	.LVL37:
+ 135:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pin       =  GPIO_PIN_0;
+ 592              		.loc 1 135 3 view .LVU174
+ 593 00a2 2246     		mov	r2, r4
+ 594 00a4 2146     		mov	r1, r4
+ 595 00a6 3846     		mov	r0, r7
+ 596 00a8 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 597              	.LVL38:
+ 136:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Mode      = GPIO_MODE_OUTPUT_PP;
+ 598              		.loc 1 136 3 view .LVU175
+ 136:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Mode      = GPIO_MODE_OUTPUT_PP;
+ 599              		.loc 1 136 23 is_stmt 0 view .LVU176
+ 600 00ac 0594     		str	r4, [sp, #20]
+ 137:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pull      = GPIO_NOPULL;
+ 601              		.loc 1 137 3 is_stmt 1 view .LVU177
+ 137:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pull      = GPIO_NOPULL;
+ 602              		.loc 1 137 23 is_stmt 0 view .LVU178
+ 603 00ae 0694     		str	r4, [sp, #24]
+ 138:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Speed     = GPIO_SPEED_FREQ_MEDIUM;
+ 604              		.loc 1 138 3 is_stmt 1 view .LVU179
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 23
+
+
+ 138:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Speed     = GPIO_SPEED_FREQ_MEDIUM;
+ 605              		.loc 1 138 23 is_stmt 0 view .LVU180
+ 606 00b0 0795     		str	r5, [sp, #28]
+ 139:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_GPIO_Init( GPIOE, &GPIO_Init );
+ 607              		.loc 1 139 3 is_stmt 1 view .LVU181
+ 139:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_GPIO_Init( GPIOE, &GPIO_Init );
+ 608              		.loc 1 139 23 is_stmt 0 view .LVU182
+ 609 00b2 0894     		str	r4, [sp, #32]
+ 140:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ 610              		.loc 1 140 3 is_stmt 1 view .LVU183
+ 611 00b4 05A9     		add	r1, sp, #20
+ 612 00b6 3846     		mov	r0, r7
+ 613 00b8 FFF7FEFF 		bl	HAL_GPIO_Init
+ 614              	.LVL39:
+ 143:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Mode      = GPIO_MODE_AF_PP;
+ 615              		.loc 1 143 3 view .LVU184
+ 143:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Mode      = GPIO_MODE_AF_PP;
+ 616              		.loc 1 143 23 is_stmt 0 view .LVU185
+ 617 00bc 4FF48063 		mov	r3, #1024
+ 618 00c0 0593     		str	r3, [sp, #20]
+ 144:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pull      = GPIO_NOPULL;
+ 619              		.loc 1 144 3 is_stmt 1 view .LVU186
+ 144:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pull      = GPIO_NOPULL;
+ 620              		.loc 1 144 23 is_stmt 0 view .LVU187
+ 621 00c2 0696     		str	r6, [sp, #24]
+ 145:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Speed     = GPIO_SPEED_FREQ_MEDIUM;
+ 622              		.loc 1 145 3 is_stmt 1 view .LVU188
+ 145:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Speed     = GPIO_SPEED_FREQ_MEDIUM;
+ 623              		.loc 1 145 23 is_stmt 0 view .LVU189
+ 624 00c4 0795     		str	r5, [sp, #28]
+ 146:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Alternate = GPIO_AF6_SPI3;
+ 625              		.loc 1 146 3 is_stmt 1 view .LVU190
+ 146:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Alternate = GPIO_AF6_SPI3;
+ 626              		.loc 1 146 23 is_stmt 0 view .LVU191
+ 627 00c6 0894     		str	r4, [sp, #32]
+ 147:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_GPIO_Init(GPIOC, &GPIO_Init );
+ 628              		.loc 1 147 3 is_stmt 1 view .LVU192
+ 147:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_GPIO_Init(GPIOC, &GPIO_Init );
+ 629              		.loc 1 147 23 is_stmt 0 view .LVU193
+ 630 00c8 4FF00608 		mov	r8, #6
+ 631 00cc CDF82480 		str	r8, [sp, #36]
+ 148:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ 632              		.loc 1 148 3 is_stmt 1 view .LVU194
+ 633 00d0 A7F50067 		sub	r7, r7, #2048
+ 634 00d4 05A9     		add	r1, sp, #20
+ 635 00d6 3846     		mov	r0, r7
+ 636 00d8 FFF7FEFF 		bl	HAL_GPIO_Init
+ 637              	.LVL40:
+ 151:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Mode      = GPIO_MODE_AF_PP;
+ 638              		.loc 1 151 3 view .LVU195
+ 151:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Mode      = GPIO_MODE_AF_PP;
+ 639              		.loc 1 151 23 is_stmt 0 view .LVU196
+ 640 00dc 4FF48053 		mov	r3, #4096
+ 641 00e0 0593     		str	r3, [sp, #20]
+ 152:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pull      = GPIO_NOPULL;
+ 642              		.loc 1 152 3 is_stmt 1 view .LVU197
+ 152:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pull      = GPIO_NOPULL;
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 24
+
+
+ 643              		.loc 1 152 23 is_stmt 0 view .LVU198
+ 644 00e2 0696     		str	r6, [sp, #24]
+ 153:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Speed     = GPIO_SPEED_FREQ_MEDIUM;
+ 645              		.loc 1 153 3 is_stmt 1 view .LVU199
+ 153:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Speed     = GPIO_SPEED_FREQ_MEDIUM;
+ 646              		.loc 1 153 23 is_stmt 0 view .LVU200
+ 647 00e4 0795     		str	r5, [sp, #28]
+ 154:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Alternate = GPIO_AF6_SPI3;
+ 648              		.loc 1 154 3 is_stmt 1 view .LVU201
+ 154:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Alternate = GPIO_AF6_SPI3;
+ 649              		.loc 1 154 23 is_stmt 0 view .LVU202
+ 650 00e6 0894     		str	r4, [sp, #32]
+ 155:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_GPIO_Init( GPIOC, &GPIO_Init );
+ 651              		.loc 1 155 3 is_stmt 1 view .LVU203
+ 155:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_GPIO_Init( GPIOC, &GPIO_Init );
+ 652              		.loc 1 155 23 is_stmt 0 view .LVU204
+ 653 00e8 CDF82480 		str	r8, [sp, #36]
+ 156:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ 654              		.loc 1 156 3 is_stmt 1 view .LVU205
+ 655 00ec 05A9     		add	r1, sp, #20
+ 656 00ee 3846     		mov	r0, r7
+ 657 00f0 FFF7FEFF 		bl	HAL_GPIO_Init
+ 658              	.LVL41:
+ 159:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Mode      = GPIO_MODE_AF_PP;
+ 659              		.loc 1 159 3 view .LVU206
+ 159:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Mode      = GPIO_MODE_AF_PP;
+ 660              		.loc 1 159 23 is_stmt 0 view .LVU207
+ 661 00f4 4FF40063 		mov	r3, #2048
+ 662 00f8 0593     		str	r3, [sp, #20]
+ 160:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pull      = GPIO_PULLUP;
+ 663              		.loc 1 160 3 is_stmt 1 view .LVU208
+ 160:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Pull      = GPIO_PULLUP;
+ 664              		.loc 1 160 23 is_stmt 0 view .LVU209
+ 665 00fa 0696     		str	r6, [sp, #24]
+ 161:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Speed     = GPIO_SPEED_FREQ_MEDIUM;
+ 666              		.loc 1 161 3 is_stmt 1 view .LVU210
+ 161:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Speed     = GPIO_SPEED_FREQ_MEDIUM;
+ 667              		.loc 1 161 23 is_stmt 0 view .LVU211
+ 668 00fc 0794     		str	r4, [sp, #28]
+ 162:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Alternate = GPIO_AF6_SPI3;
+ 669              		.loc 1 162 3 is_stmt 1 view .LVU212
+ 162:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   GPIO_Init.Alternate = GPIO_AF6_SPI3;
+ 670              		.loc 1 162 23 is_stmt 0 view .LVU213
+ 671 00fe 0894     		str	r4, [sp, #32]
+ 163:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_GPIO_Init( GPIOC,&GPIO_Init );
+ 672              		.loc 1 163 3 is_stmt 1 view .LVU214
+ 163:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_GPIO_Init( GPIOC,&GPIO_Init );
+ 673              		.loc 1 163 23 is_stmt 0 view .LVU215
+ 674 0100 CDF82480 		str	r8, [sp, #36]
+ 164:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** }
+ 675              		.loc 1 164 3 is_stmt 1 view .LVU216
+ 676 0104 05A9     		add	r1, sp, #20
+ 677 0106 3846     		mov	r0, r7
+ 678 0108 FFF7FEFF 		bl	HAL_GPIO_Init
+ 679              	.LVL42:
+ 165:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 680              		.loc 1 165 1 is_stmt 0 view .LVU217
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 25
+
+
+ 681 010c 0AB0     		add	sp, sp, #40
+ 682              	.LCFI9:
+ 683              		.cfi_def_cfa_offset 24
+ 684              		@ sp needed
+ 685 010e BDE8F081 		pop	{r4, r5, r6, r7, r8, pc}
+ 686              	.L51:
+ 687 0112 00BF     		.align	2
+ 688              	.L50:
+ 689 0114 00100240 		.word	1073876992
+ 690 0118 00040048 		.word	1207960576
+ 691 011c 00001110 		.word	269549568
+ 692 0120 00100048 		.word	1207963648
+ 693              		.cfi_endproc
+ 694              	.LFE322:
+ 696              		.section	.text.SPI_WIFI_ResetModule,"ax",%progbits
+ 697              		.align	1
+ 698              		.global	SPI_WIFI_ResetModule
+ 699              		.syntax unified
+ 700              		.thumb
+ 701              		.thumb_func
+ 702              		.fpu fpv4-sp-d16
+ 704              	SPI_WIFI_ResetModule:
+ 705              	.LFB324:
+ 224:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   uint32_t tickstart = HAL_GetTick();
+ 706              		.loc 1 224 1 is_stmt 1 view -0
+ 707              		.cfi_startproc
+ 708              		@ args = 0, pretend = 0, frame = 8
+ 709              		@ frame_needed = 0, uses_anonymous_args = 0
+ 710 0000 70B5     		push	{r4, r5, r6, lr}
+ 711              	.LCFI10:
+ 712              		.cfi_def_cfa_offset 16
+ 713              		.cfi_offset 4, -16
+ 714              		.cfi_offset 5, -12
+ 715              		.cfi_offset 6, -8
+ 716              		.cfi_offset 14, -4
+ 717 0002 82B0     		sub	sp, sp, #8
+ 718              	.LCFI11:
+ 719              		.cfi_def_cfa_offset 24
+ 225:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   uint8_t Prompt[6];
+ 720              		.loc 1 225 3 view .LVU219
+ 225:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   uint8_t Prompt[6];
+ 721              		.loc 1 225 24 is_stmt 0 view .LVU220
+ 722 0004 FFF7FEFF 		bl	HAL_GetTick
+ 723              	.LVL43:
+ 724 0008 0646     		mov	r6, r0
+ 725              	.LVL44:
+ 226:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   uint8_t count = 0;
+ 726              		.loc 1 226 3 is_stmt 1 view .LVU221
+ 227:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_StatusTypeDef  Status;
+ 727              		.loc 1 227 3 view .LVU222
+ 228:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 728              		.loc 1 228 3 view .LVU223
+ 231:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_Delay(10);
+ 729              		.loc 1 231 3 view .LVU224
+ 730 000a 384C     		ldr	r4, .L65
+ 731 000c 0022     		movs	r2, #0
+ 732 000e 4FF48071 		mov	r1, #256
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 26
+
+
+ 733 0012 2046     		mov	r0, r4
+ 734              	.LVL45:
+ 231:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_Delay(10);
+ 735              		.loc 1 231 3 is_stmt 0 view .LVU225
+ 736 0014 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 737              	.LVL46:
+ 232:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_GPIO_WritePin(GPIOE, GPIO_PIN_8, GPIO_PIN_SET);
+ 738              		.loc 1 232 3 is_stmt 1 view .LVU226
+ 739 0018 0A20     		movs	r0, #10
+ 740 001a FFF7FEFF 		bl	HAL_Delay
+ 741              	.LVL47:
+ 233:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   /*for (int i = 0; i<50; i++)
+ 742              		.loc 1 233 3 view .LVU227
+ 743 001e 0122     		movs	r2, #1
+ 744 0020 4FF48071 		mov	r1, #256
+ 745 0024 2046     		mov	r0, r4
+ 746 0026 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 747              	.LVL48:
+ 239:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 748              		.loc 1 239 3 view .LVU228
+ 749 002a 4FF4FA70 		mov	r0, #500
+ 750 002e FFF7FEFF 		bl	HAL_Delay
+ 751              	.LVL49:
+ 242:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 752              		.loc 1 242 3 view .LVU229
+ 753 0032 0022     		movs	r2, #0
+ 754 0034 0121     		movs	r1, #1
+ 755 0036 2046     		mov	r0, r4
+ 756 0038 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 757              	.LVL50:
+ 244:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 758              		.loc 1 244 3 view .LVU230
+ 759 003c 0F20     		movs	r0, #15
+ 760 003e FFF7FEFF 		bl	SPI_WIFI_DelayUs
+ 761              	.LVL51:
+ 247:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 762              		.loc 1 247 3 view .LVU231
+ 227:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_StatusTypeDef  Status;
+ 763              		.loc 1 227 11 is_stmt 0 view .LVU232
+ 764 0042 0024     		movs	r4, #0
+ 765              	.LVL52:
+ 766              	.L53:
+ 247:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 767              		.loc 1 247 9 is_stmt 1 view .LVU233
+ 247:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 768              		.loc 1 247 11 is_stmt 0 view .LVU234
+ 769 0044 0221     		movs	r1, #2
+ 770 0046 2948     		ldr	r0, .L65
+ 771 0048 FFF7FEFF 		bl	HAL_GPIO_ReadPin
+ 772              	.LVL53:
+ 247:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 773              		.loc 1 247 9 view .LVU235
+ 774 004c 0128     		cmp	r0, #1
+ 775 004e 1BD1     		bne	.L64
+ 249:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     count += 2;
+ 776              		.loc 1 249 5 is_stmt 1 view .LVU236
+ 249:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     count += 2;
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 27
+
+
+ 777              		.loc 1 249 14 is_stmt 0 view .LVU237
+ 778 0050 4FF6FF73 		movw	r3, #65535
+ 779 0054 0122     		movs	r2, #1
+ 780 0056 0DEB0401 		add	r1, sp, r4
+ 781 005a 2548     		ldr	r0, .L65+4
+ 782 005c FFF7FEFF 		bl	HAL_SPI_Receive
+ 783              	.LVL54:
+ 784 0060 0546     		mov	r5, r0
+ 785              	.LVL55:
+ 250:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     if(((HAL_GetTick() - tickstart ) > 0xFFFF) || (Status != HAL_OK))
+ 786              		.loc 1 250 5 is_stmt 1 view .LVU238
+ 250:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     if(((HAL_GetTick() - tickstart ) > 0xFFFF) || (Status != HAL_OK))
+ 787              		.loc 1 250 11 is_stmt 0 view .LVU239
+ 788 0062 0234     		adds	r4, r4, #2
+ 789              	.LVL56:
+ 250:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     if(((HAL_GetTick() - tickstart ) > 0xFFFF) || (Status != HAL_OK))
+ 790              		.loc 1 250 11 view .LVU240
+ 791 0064 E4B2     		uxtb	r4, r4
+ 792              	.LVL57:
+ 251:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 793              		.loc 1 251 5 is_stmt 1 view .LVU241
+ 251:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 794              		.loc 1 251 10 is_stmt 0 view .LVU242
+ 795 0066 FFF7FEFF 		bl	HAL_GetTick
+ 796              	.LVL58:
+ 251:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 797              		.loc 1 251 24 view .LVU243
+ 798 006a 831B     		subs	r3, r0, r6
+ 251:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 799              		.loc 1 251 7 view .LVU244
+ 800 006c B3F5803F 		cmp	r3, #65536
+ 801 0070 01D2     		bcs	.L54
+ 251:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 802              		.loc 1 251 48 discriminator 1 view .LVU245
+ 803 0072 002D     		cmp	r5, #0
+ 804 0074 E6D0     		beq	.L53
+ 805              	.L54:
+ 254:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       return -1;
+ 806              		.loc 1 254 7 is_stmt 1 view .LVU246
+ 807 0076 0122     		movs	r2, #1
+ 808 0078 1146     		mov	r1, r2
+ 809 007a 1C48     		ldr	r0, .L65
+ 810 007c FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 811              	.LVL59:
+ 255:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     }    
+ 812              		.loc 1 255 7 view .LVU247
+ 255:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     }    
+ 813              		.loc 1 255 14 is_stmt 0 view .LVU248
+ 814 0080 4FF0FF30 		mov	r0, #-1
+ 815              	.LVL60:
+ 816              	.L55:
+ 266:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 817              		.loc 1 266 1 view .LVU249
+ 818 0084 02B0     		add	sp, sp, #8
+ 819              	.LCFI12:
+ 820              		.cfi_remember_state
+ 821              		.cfi_def_cfa_offset 16
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 28
+
+
+ 822              		@ sp needed
+ 823 0086 70BD     		pop	{r4, r5, r6, pc}
+ 824              	.LVL61:
+ 825              	.L64:
+ 826              	.LCFI13:
+ 827              		.cfi_restore_state
+ 259:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   if((Prompt[0] != 0x15) ||(Prompt[1] != 0x15) ||(Prompt[2] != '\r')||
+ 828              		.loc 1 259 3 is_stmt 1 view .LVU250
+ 259:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   if((Prompt[0] != 0x15) ||(Prompt[1] != 0x15) ||(Prompt[2] != '\r')||
+ 829              		.loc 1 259 3 view .LVU251
+ 830 0088 0122     		movs	r2, #1
+ 831 008a 1146     		mov	r1, r2
+ 832 008c 1748     		ldr	r0, .L65
+ 833 008e FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 834              	.LVL62:
+ 259:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   if((Prompt[0] != 0x15) ||(Prompt[1] != 0x15) ||(Prompt[2] != '\r')||
+ 835              		.loc 1 259 3 view .LVU252
+ 259:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   if((Prompt[0] != 0x15) ||(Prompt[1] != 0x15) ||(Prompt[2] != '\r')||
+ 836              		.loc 1 259 21 view .LVU253
+ 260:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****        (Prompt[3] != '\n') ||(Prompt[4] != '>') ||(Prompt[5] != ' '))
+ 837              		.loc 1 260 3 view .LVU254
+ 260:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****        (Prompt[3] != '\n') ||(Prompt[4] != '>') ||(Prompt[5] != ' '))
+ 838              		.loc 1 260 13 is_stmt 0 view .LVU255
+ 839 0092 9DF80030 		ldrb	r3, [sp]	@ zero_extendqisi2
+ 260:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****        (Prompt[3] != '\n') ||(Prompt[4] != '>') ||(Prompt[5] != ' '))
+ 840              		.loc 1 260 5 view .LVU256
+ 841 0096 152B     		cmp	r3, #21
+ 842 0098 15D1     		bne	.L57
+ 260:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****        (Prompt[3] != '\n') ||(Prompt[4] != '>') ||(Prompt[5] != ' '))
+ 843              		.loc 1 260 35 discriminator 1 view .LVU257
+ 844 009a 9DF80130 		ldrb	r3, [sp, #1]	@ zero_extendqisi2
+ 260:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****        (Prompt[3] != '\n') ||(Prompt[4] != '>') ||(Prompt[5] != ' '))
+ 845              		.loc 1 260 26 discriminator 1 view .LVU258
+ 846 009e 152B     		cmp	r3, #21
+ 847 00a0 14D1     		bne	.L58
+ 260:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****        (Prompt[3] != '\n') ||(Prompt[4] != '>') ||(Prompt[5] != ' '))
+ 848              		.loc 1 260 57 discriminator 2 view .LVU259
+ 849 00a2 9DF80230 		ldrb	r3, [sp, #2]	@ zero_extendqisi2
+ 260:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****        (Prompt[3] != '\n') ||(Prompt[4] != '>') ||(Prompt[5] != ' '))
+ 850              		.loc 1 260 48 discriminator 2 view .LVU260
+ 851 00a6 0D2B     		cmp	r3, #13
+ 852 00a8 13D1     		bne	.L59
+ 261:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 853              		.loc 1 261 15 discriminator 3 view .LVU261
+ 854 00aa 9DF80330 		ldrb	r3, [sp, #3]	@ zero_extendqisi2
+ 260:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****        (Prompt[3] != '\n') ||(Prompt[4] != '>') ||(Prompt[5] != ' '))
+ 855              		.loc 1 260 69 discriminator 3 view .LVU262
+ 856 00ae 0A2B     		cmp	r3, #10
+ 857 00b0 12D1     		bne	.L60
+ 261:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 858              		.loc 1 261 37 view .LVU263
+ 859 00b2 9DF80430 		ldrb	r3, [sp, #4]	@ zero_extendqisi2
+ 261:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 860              		.loc 1 261 28 view .LVU264
+ 861 00b6 3E2B     		cmp	r3, #62
+ 862 00b8 11D1     		bne	.L61
+ 261:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 29
+
+
+ 863              		.loc 1 261 58 discriminator 1 view .LVU265
+ 864 00ba 9DF80530 		ldrb	r3, [sp, #5]	@ zero_extendqisi2
+ 261:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 865              		.loc 1 261 49 discriminator 1 view .LVU266
+ 866 00be 202B     		cmp	r3, #32
+ 867 00c0 10D1     		bne	.L62
+ 265:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** }
+ 868              		.loc 1 265 10 view .LVU267
+ 869 00c2 0020     		movs	r0, #0
+ 870 00c4 DEE7     		b	.L55
+ 871              	.L57:
+ 263:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   }    
+ 872              		.loc 1 263 12 view .LVU268
+ 873 00c6 4FF0FF30 		mov	r0, #-1
+ 874 00ca DBE7     		b	.L55
+ 875              	.L58:
+ 876 00cc 4FF0FF30 		mov	r0, #-1
+ 877 00d0 D8E7     		b	.L55
+ 878              	.L59:
+ 879 00d2 4FF0FF30 		mov	r0, #-1
+ 880 00d6 D5E7     		b	.L55
+ 881              	.L60:
+ 882 00d8 4FF0FF30 		mov	r0, #-1
+ 883 00dc D2E7     		b	.L55
+ 884              	.L61:
+ 885 00de 4FF0FF30 		mov	r0, #-1
+ 886 00e2 CFE7     		b	.L55
+ 887              	.L62:
+ 888 00e4 4FF0FF30 		mov	r0, #-1
+ 889 00e8 CCE7     		b	.L55
+ 890              	.L66:
+ 891 00ea 00BF     		.align	2
+ 892              	.L65:
+ 893 00ec 00100048 		.word	1207963648
+ 894 00f0 00000000 		.word	hspi
+ 895              		.cfi_endproc
+ 896              	.LFE324:
+ 898              		.section	.text.SPI_WIFI_Init,"ax",%progbits
+ 899              		.align	1
+ 900              		.global	SPI_WIFI_Init
+ 901              		.syntax unified
+ 902              		.thumb
+ 903              		.thumb_func
+ 904              		.fpu fpv4-sp-d16
+ 906              	SPI_WIFI_Init:
+ 907              	.LVL63:
+ 908              	.LFB323:
+ 173:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   int8_t  rc=0;
+ 909              		.loc 1 173 1 is_stmt 1 view -0
+ 910              		.cfi_startproc
+ 911              		@ args = 0, pretend = 0, frame = 0
+ 912              		@ frame_needed = 0, uses_anonymous_args = 0
+ 173:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   int8_t  rc=0;
+ 913              		.loc 1 173 1 is_stmt 0 view .LVU270
+ 914 0000 10B5     		push	{r4, lr}
+ 915              	.LCFI14:
+ 916              		.cfi_def_cfa_offset 8
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 30
+
+
+ 917              		.cfi_offset 4, -8
+ 918              		.cfi_offset 14, -4
+ 174:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ 919              		.loc 1 174 3 is_stmt 1 view .LVU271
+ 920              	.LVL64:
+ 176:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 921              		.loc 1 176 3 view .LVU272
+ 176:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 922              		.loc 1 176 6 is_stmt 0 view .LVU273
+ 923 0002 78BB     		cbnz	r0, .L68
+ 178:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     SPI_WIFI_MspInit(&hspi);
+ 924              		.loc 1 178 5 is_stmt 1 view .LVU274
+ 178:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     SPI_WIFI_MspInit(&hspi);
+ 925              		.loc 1 178 33 is_stmt 0 view .LVU275
+ 926 0004 1A4C     		ldr	r4, .L72
+ 927 0006 1B4B     		ldr	r3, .L72+4
+ 928 0008 2360     		str	r3, [r4]
+ 179:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ 929              		.loc 1 179 5 is_stmt 1 view .LVU276
+ 930 000a 2046     		mov	r0, r4
+ 931              	.LVL65:
+ 179:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ 932              		.loc 1 179 5 is_stmt 0 view .LVU277
+ 933 000c FFF7FEFF 		bl	SPI_WIFI_MspInit
+ 934              	.LVL66:
+ 181:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.Direction         = SPI_DIRECTION_2LINES;
+ 935              		.loc 1 181 5 is_stmt 1 view .LVU278
+ 181:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.Direction         = SPI_DIRECTION_2LINES;
+ 936              		.loc 1 181 33 is_stmt 0 view .LVU279
+ 937 0010 4FF48273 		mov	r3, #260
+ 938 0014 6360     		str	r3, [r4, #4]
+ 182:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.DataSize          = SPI_DATASIZE_16BIT;
+ 939              		.loc 1 182 5 is_stmt 1 view .LVU280
+ 182:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.DataSize          = SPI_DATASIZE_16BIT;
+ 940              		.loc 1 182 33 is_stmt 0 view .LVU281
+ 941 0016 0023     		movs	r3, #0
+ 942 0018 A360     		str	r3, [r4, #8]
+ 183:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.CLKPolarity       = SPI_POLARITY_LOW;
+ 943              		.loc 1 183 5 is_stmt 1 view .LVU282
+ 183:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.CLKPolarity       = SPI_POLARITY_LOW;
+ 944              		.loc 1 183 33 is_stmt 0 view .LVU283
+ 945 001a 4FF47062 		mov	r2, #3840
+ 946 001e E260     		str	r2, [r4, #12]
+ 184:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.CLKPhase          = SPI_PHASE_1EDGE;
+ 947              		.loc 1 184 5 is_stmt 1 view .LVU284
+ 184:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.CLKPhase          = SPI_PHASE_1EDGE;
+ 948              		.loc 1 184 33 is_stmt 0 view .LVU285
+ 949 0020 2361     		str	r3, [r4, #16]
+ 185:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.NSS               = SPI_NSS_SOFT;
+ 950              		.loc 1 185 5 is_stmt 1 view .LVU286
+ 185:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.NSS               = SPI_NSS_SOFT;
+ 951              		.loc 1 185 33 is_stmt 0 view .LVU287
+ 952 0022 6361     		str	r3, [r4, #20]
+ 186:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8; /* 80/8= 10MHz (Inventek WIFI module sup
+ 953              		.loc 1 186 5 is_stmt 1 view .LVU288
+ 186:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8; /* 80/8= 10MHz (Inventek WIFI module sup
+ 954              		.loc 1 186 33 is_stmt 0 view .LVU289
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 31
+
+
+ 955 0024 4FF40072 		mov	r2, #512
+ 956 0028 A261     		str	r2, [r4, #24]
+ 187:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.FirstBit          = SPI_FIRSTBIT_MSB;
+ 957              		.loc 1 187 5 is_stmt 1 view .LVU290
+ 187:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.FirstBit          = SPI_FIRSTBIT_MSB;
+ 958              		.loc 1 187 33 is_stmt 0 view .LVU291
+ 959 002a 1022     		movs	r2, #16
+ 960 002c E261     		str	r2, [r4, #28]
+ 188:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.TIMode            = SPI_TIMODE_DISABLE;
+ 961              		.loc 1 188 5 is_stmt 1 view .LVU292
+ 188:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.TIMode            = SPI_TIMODE_DISABLE;
+ 962              		.loc 1 188 33 is_stmt 0 view .LVU293
+ 963 002e 2362     		str	r3, [r4, #32]
+ 189:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.CRCCalculation    = SPI_CRCCALCULATION_DISABLE;
+ 964              		.loc 1 189 5 is_stmt 1 view .LVU294
+ 189:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.CRCCalculation    = SPI_CRCCALCULATION_DISABLE;
+ 965              		.loc 1 189 33 is_stmt 0 view .LVU295
+ 966 0030 6362     		str	r3, [r4, #36]
+ 190:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.CRCPolynomial     = 0;
+ 967              		.loc 1 190 5 is_stmt 1 view .LVU296
+ 190:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     hspi.Init.CRCPolynomial     = 0;
+ 968              		.loc 1 190 33 is_stmt 0 view .LVU297
+ 969 0032 A362     		str	r3, [r4, #40]
+ 191:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ 970              		.loc 1 191 5 is_stmt 1 view .LVU298
+ 191:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ 971              		.loc 1 191 33 is_stmt 0 view .LVU299
+ 972 0034 E362     		str	r3, [r4, #44]
+ 193:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 973              		.loc 1 193 5 is_stmt 1 view .LVU300
+ 193:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 974              		.loc 1 193 8 is_stmt 0 view .LVU301
+ 975 0036 2046     		mov	r0, r4
+ 976 0038 FFF7FEFF 		bl	HAL_SPI_Init
+ 977              	.LVL67:
+ 193:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 978              		.loc 1 193 7 view .LVU302
+ 979 003c A8B9     		cbnz	r0, .L70
+ 199:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      HAL_NVIC_EnableIRQ((IRQn_Type)EXTI1_IRQn);
+ 980              		.loc 1 199 6 is_stmt 1 view .LVU303
+ 981 003e 0022     		movs	r2, #0
+ 982 0040 0F21     		movs	r1, #15
+ 983 0042 0720     		movs	r0, #7
+ 984 0044 FFF7FEFF 		bl	HAL_NVIC_SetPriority
+ 985              	.LVL68:
+ 200:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 	 
+ 986              		.loc 1 200 6 view .LVU304
+ 987 0048 0720     		movs	r0, #7
+ 988 004a FFF7FEFF 		bl	HAL_NVIC_EnableIRQ
+ 989              	.LVL69:
+ 203:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      HAL_NVIC_EnableIRQ((IRQn_Type)SPI3_IRQn);
+ 990              		.loc 1 203 6 view .LVU305
+ 991 004e 0022     		movs	r2, #0
+ 992 0050 0121     		movs	r1, #1
+ 993 0052 3320     		movs	r0, #51
+ 994 0054 FFF7FEFF 		bl	HAL_NVIC_SetPriority
+ 995              	.LVL70:
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 32
+
+
+ 204:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 996              		.loc 1 204 6 view .LVU306
+ 997 0058 3320     		movs	r0, #51
+ 998 005a FFF7FEFF 		bl	HAL_NVIC_EnableIRQ
+ 999              	.LVL71:
+ 214:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   }
+ 1000              		.loc 1 214 5 view .LVU307
+ 1001 005e 0A20     		movs	r0, #10
+ 1002 0060 FFF7FEFF 		bl	SPI_WIFI_DelayUs
+ 1003              	.LVL72:
+ 1004              	.L68:
+ 217:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 1005              		.loc 1 217 3 view .LVU308
+ 217:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 1006              		.loc 1 217 7 is_stmt 0 view .LVU309
+ 1007 0064 FFF7FEFF 		bl	SPI_WIFI_ResetModule
+ 1008              	.LVL73:
+ 219:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** }
+ 1009              		.loc 1 219 3 is_stmt 1 view .LVU310
+ 1010              	.L69:
+ 220:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 1011              		.loc 1 220 1 is_stmt 0 view .LVU311
+ 1012 0068 10BD     		pop	{r4, pc}
+ 1013              	.LVL74:
+ 1014              	.L70:
+ 195:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     }
+ 1015              		.loc 1 195 14 view .LVU312
+ 1016 006a 4FF0FF30 		mov	r0, #-1
+ 1017 006e FBE7     		b	.L69
+ 1018              	.L73:
+ 1019              		.align	2
+ 1020              	.L72:
+ 1021 0070 00000000 		.word	hspi
+ 1022 0074 003C0040 		.word	1073757184
+ 1023              		.cfi_endproc
+ 1024              	.LFE323:
+ 1026              		.section	.text.SPI_WIFI_DeInit,"ax",%progbits
+ 1027              		.align	1
+ 1028              		.global	SPI_WIFI_DeInit
+ 1029              		.syntax unified
+ 1030              		.thumb
+ 1031              		.thumb_func
+ 1032              		.fpu fpv4-sp-d16
+ 1034              	SPI_WIFI_DeInit:
+ 1035              	.LFB325:
+ 274:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_SPI_DeInit( &hspi );
+ 1036              		.loc 1 274 1 is_stmt 1 view -0
+ 1037              		.cfi_startproc
+ 1038              		@ args = 0, pretend = 0, frame = 0
+ 1039              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1040 0000 08B5     		push	{r3, lr}
+ 1041              	.LCFI15:
+ 1042              		.cfi_def_cfa_offset 8
+ 1043              		.cfi_offset 3, -8
+ 1044              		.cfi_offset 14, -4
+ 275:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** #ifdef  WIFI_USE_CMSIS_OS
+ 1045              		.loc 1 275 3 view .LVU314
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 33
+
+
+ 1046 0002 0248     		ldr	r0, .L76
+ 1047 0004 FFF7FEFF 		bl	HAL_SPI_DeInit
+ 1048              	.LVL75:
+ 283:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** }
+ 1049              		.loc 1 283 3 view .LVU315
+ 284:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 1050              		.loc 1 284 1 is_stmt 0 view .LVU316
+ 1051 0008 0020     		movs	r0, #0
+ 1052 000a 08BD     		pop	{r3, pc}
+ 1053              	.L77:
+ 1054              		.align	2
+ 1055              	.L76:
+ 1056 000c 00000000 		.word	hspi
+ 1057              		.cfi_endproc
+ 1058              	.LFE325:
+ 1060              		.section	.text.SPI_WIFI_ReceiveData,"ax",%progbits
+ 1061              		.align	1
+ 1062              		.global	SPI_WIFI_ReceiveData
+ 1063              		.syntax unified
+ 1064              		.thumb
+ 1065              		.thumb_func
+ 1066              		.fpu fpv4-sp-d16
+ 1068              	SPI_WIFI_ReceiveData:
+ 1069              	.LVL76:
+ 1070              	.LFB330:
+ 365:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   int16_t length = 0;
+ 1071              		.loc 1 365 1 is_stmt 1 view -0
+ 1072              		.cfi_startproc
+ 1073              		@ args = 0, pretend = 0, frame = 8
+ 1074              		@ frame_needed = 0, uses_anonymous_args = 0
+ 365:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   int16_t length = 0;
+ 1075              		.loc 1 365 1 is_stmt 0 view .LVU318
+ 1076 0000 F0B5     		push	{r4, r5, r6, r7, lr}
+ 1077              	.LCFI16:
+ 1078              		.cfi_def_cfa_offset 20
+ 1079              		.cfi_offset 4, -20
+ 1080              		.cfi_offset 5, -16
+ 1081              		.cfi_offset 6, -12
+ 1082              		.cfi_offset 7, -8
+ 1083              		.cfi_offset 14, -4
+ 1084 0002 83B0     		sub	sp, sp, #12
+ 1085              	.LCFI17:
+ 1086              		.cfi_def_cfa_offset 32
+ 1087 0004 0546     		mov	r5, r0
+ 1088 0006 0E46     		mov	r6, r1
+ 1089 0008 1446     		mov	r4, r2
+ 366:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   uint8_t tmp[2];
+ 1090              		.loc 1 366 3 is_stmt 1 view .LVU319
+ 1091              	.LVL77:
+ 367:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ 1092              		.loc 1 367 3 view .LVU320
+ 369:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   UNLOCK_SPI();
+ 1093              		.loc 1 369 3 view .LVU321
+ 369:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   UNLOCK_SPI();
+ 1094              		.loc 1 369 3 view .LVU322
+ 1095 000a 0122     		movs	r2, #1
+ 1096              	.LVL78:
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 34
+
+
+ 369:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   UNLOCK_SPI();
+ 1097              		.loc 1 369 3 is_stmt 0 view .LVU323
+ 1098 000c 1146     		mov	r1, r2
+ 1099              	.LVL79:
+ 369:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   UNLOCK_SPI();
+ 1100              		.loc 1 369 3 view .LVU324
+ 1101 000e 2A48     		ldr	r0, .L89
+ 1102              	.LVL80:
+ 369:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   UNLOCK_SPI();
+ 1103              		.loc 1 369 3 view .LVU325
+ 1104 0010 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 1105              	.LVL81:
+ 369:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   UNLOCK_SPI();
+ 1106              		.loc 1 369 3 is_stmt 1 view .LVU326
+ 369:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   UNLOCK_SPI();
+ 1107              		.loc 1 369 21 view .LVU327
+ 370:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   SPI_WIFI_DelayUs(3);
+ 1108              		.loc 1 370 15 view .LVU328
+ 371:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 1109              		.loc 1 371 3 view .LVU329
+ 1110 0014 0320     		movs	r0, #3
+ 1111 0016 FFF7FEFF 		bl	SPI_WIFI_DelayUs
+ 1112              	.LVL82:
+ 374:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 1113              		.loc 1 374 3 view .LVU330
+ 374:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 1114              		.loc 1 374 7 is_stmt 0 view .LVU331
+ 1115 001a 2046     		mov	r0, r4
+ 1116 001c FFF7FEFF 		bl	wait_cmddata_rdy_rising_event
+ 1117              	.LVL83:
+ 374:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 1118              		.loc 1 374 6 view .LVU332
+ 1119 0020 0028     		cmp	r0, #0
+ 1120 0022 45DB     		blt	.L85
+ 1121 0024 2746     		mov	r7, r4
+ 379:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   WIFI_ENABLE_NSS(); 
+ 1122              		.loc 1 379 13 is_stmt 1 view .LVU333
+ 380:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   SPI_WIFI_DelayUs(15);
+ 1123              		.loc 1 380 3 view .LVU334
+ 380:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   SPI_WIFI_DelayUs(15);
+ 1124              		.loc 1 380 3 view .LVU335
+ 1125 0026 0022     		movs	r2, #0
+ 1126 0028 0121     		movs	r1, #1
+ 1127 002a 2348     		ldr	r0, .L89
+ 1128 002c FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 1129              	.LVL84:
+ 380:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   SPI_WIFI_DelayUs(15);
+ 1130              		.loc 1 380 3 view .LVU336
+ 380:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   SPI_WIFI_DelayUs(15);
+ 1131              		.loc 1 380 20 view .LVU337
+ 381:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   while (WIFI_IS_CMDDATA_READY())
+ 1132              		.loc 1 381 3 view .LVU338
+ 1133 0030 0F20     		movs	r0, #15
+ 1134 0032 FFF7FEFF 		bl	SPI_WIFI_DelayUs
+ 1135              	.LVL85:
+ 382:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 1136              		.loc 1 382 3 view .LVU339
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 35
+
+
+ 366:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   uint8_t tmp[2];
+ 1137              		.loc 1 366 11 is_stmt 0 view .LVU340
+ 1138 0036 0024     		movs	r4, #0
+ 1139              	.LVL86:
+ 382:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 1140              		.loc 1 382 9 view .LVU341
+ 1141 0038 16E0     		b	.L80
+ 1142              	.LVL87:
+ 1143              	.L81:
+ 386:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       if (HAL_SPI_Receive_IT(&hspi, tmp, 1) != HAL_OK) {
+ 1144              		.loc 1 386 7 is_stmt 1 view .LVU342
+ 386:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       if (HAL_SPI_Receive_IT(&hspi, tmp, 1) != HAL_OK) {
+ 1145              		.loc 1 386 19 is_stmt 0 view .LVU343
+ 1146 003a 0122     		movs	r2, #1
+ 1147 003c 1F4B     		ldr	r3, .L89+4
+ 1148 003e 1A60     		str	r2, [r3]
+ 387:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****         WIFI_DISABLE_NSS();
+ 1149              		.loc 1 387 7 is_stmt 1 view .LVU344
+ 387:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****         WIFI_DISABLE_NSS();
+ 1150              		.loc 1 387 11 is_stmt 0 view .LVU345
+ 1151 0040 01A9     		add	r1, sp, #4
+ 1152 0042 1F48     		ldr	r0, .L89+8
+ 1153 0044 FFF7FEFF 		bl	HAL_SPI_Receive_IT
+ 1154              	.LVL88:
+ 387:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****         WIFI_DISABLE_NSS();
+ 1155              		.loc 1 387 10 view .LVU346
+ 1156 0048 00BB     		cbnz	r0, .L87
+ 393:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 1157              		.loc 1 393 7 is_stmt 1 view .LVU347
+ 1158 004a 3846     		mov	r0, r7
+ 1159 004c FFF7FEFF 		bl	wait_spi_rx_event
+ 1160              	.LVL89:
+ 395:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       pData[1] = tmp[1];
+ 1161              		.loc 1 395 7 view .LVU348
+ 395:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       pData[1] = tmp[1];
+ 1162              		.loc 1 395 21 is_stmt 0 view .LVU349
+ 1163 0050 9DF80430 		ldrb	r3, [sp, #4]	@ zero_extendqisi2
+ 395:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       pData[1] = tmp[1];
+ 1164              		.loc 1 395 16 view .LVU350
+ 1165 0054 2B70     		strb	r3, [r5]
+ 396:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       length += 2;
+ 1166              		.loc 1 396 7 is_stmt 1 view .LVU351
+ 396:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       length += 2;
+ 1167              		.loc 1 396 21 is_stmt 0 view .LVU352
+ 1168 0056 9DF80530 		ldrb	r3, [sp, #5]	@ zero_extendqisi2
+ 396:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       length += 2;
+ 1169              		.loc 1 396 16 view .LVU353
+ 1170 005a 6B70     		strb	r3, [r5, #1]
+ 397:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       pData  += 2;
+ 1171              		.loc 1 397 7 is_stmt 1 view .LVU354
+ 397:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       pData  += 2;
+ 1172              		.loc 1 397 14 is_stmt 0 view .LVU355
+ 1173 005c 0234     		adds	r4, r4, #2
+ 1174              	.LVL90:
+ 397:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       pData  += 2;
+ 1175              		.loc 1 397 14 view .LVU356
+ 1176 005e 24B2     		sxth	r4, r4
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 36
+
+
+ 1177              	.LVL91:
+ 398:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       
+ 1178              		.loc 1 398 7 is_stmt 1 view .LVU357
+ 398:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       
+ 1179              		.loc 1 398 14 is_stmt 0 view .LVU358
+ 1180 0060 0235     		adds	r5, r5, #2
+ 1181              	.LVL92:
+ 400:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****         WIFI_DISABLE_NSS();
+ 1182              		.loc 1 400 7 is_stmt 1 view .LVU359
+ 400:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****         WIFI_DISABLE_NSS();
+ 1183              		.loc 1 400 10 is_stmt 0 view .LVU360
+ 1184 0062 B4F5AF6F 		cmp	r4, #1400
+ 1185 0066 19DA     		bge	.L88
+ 1186              	.LVL93:
+ 1187              	.L80:
+ 382:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 1188              		.loc 1 382 9 is_stmt 1 view .LVU361
+ 382:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 1189              		.loc 1 382 10 is_stmt 0 view .LVU362
+ 1190 0068 0221     		movs	r1, #2
+ 1191 006a 1348     		ldr	r0, .L89
+ 1192 006c FFF7FEFF 		bl	HAL_GPIO_ReadPin
+ 1193              	.LVL94:
+ 382:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 1194              		.loc 1 382 9 view .LVU363
+ 1195 0070 0128     		cmp	r0, #1
+ 1196 0072 03D1     		bne	.L82
+ 384:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 1197              		.loc 1 384 5 is_stmt 1 view .LVU364
+ 384:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 1198              		.loc 1 384 7 is_stmt 0 view .LVU365
+ 1199 0074 B442     		cmp	r4, r6
+ 1200 0076 E0DB     		blt	.L81
+ 384:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 1201              		.loc 1 384 23 discriminator 1 view .LVU366
+ 1202 0078 002E     		cmp	r6, #0
+ 1203 007a DED0     		beq	.L81
+ 1204              	.L82:
+ 412:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   UNLOCK_SPI();
+ 1205              		.loc 1 412 3 is_stmt 1 view .LVU367
+ 412:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   UNLOCK_SPI();
+ 1206              		.loc 1 412 3 view .LVU368
+ 1207 007c 0122     		movs	r2, #1
+ 1208 007e 1146     		mov	r1, r2
+ 1209 0080 0D48     		ldr	r0, .L89
+ 1210 0082 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 1211              	.LVL95:
+ 412:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   UNLOCK_SPI();
+ 1212              		.loc 1 412 3 view .LVU369
+ 412:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   UNLOCK_SPI();
+ 1213              		.loc 1 412 21 view .LVU370
+ 413:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   return length;
+ 1214              		.loc 1 413 15 view .LVU371
+ 414:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** }
+ 1215              		.loc 1 414 3 view .LVU372
+ 1216              	.L79:
+ 415:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** /**
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 37
+
+
+ 1217              		.loc 1 415 1 is_stmt 0 view .LVU373
+ 1218 0086 2046     		mov	r0, r4
+ 1219 0088 03B0     		add	sp, sp, #12
+ 1220              	.LCFI18:
+ 1221              		.cfi_remember_state
+ 1222              		.cfi_def_cfa_offset 20
+ 1223              		@ sp needed
+ 1224 008a F0BD     		pop	{r4, r5, r6, r7, pc}
+ 1225              	.LVL96:
+ 1226              	.L87:
+ 1227              	.LCFI19:
+ 1228              		.cfi_restore_state
+ 388:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****         UNLOCK_SPI();
+ 1229              		.loc 1 388 9 is_stmt 1 view .LVU374
+ 388:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****         UNLOCK_SPI();
+ 1230              		.loc 1 388 9 view .LVU375
+ 1231 008c 0122     		movs	r2, #1
+ 1232 008e 1146     		mov	r1, r2
+ 1233 0090 0948     		ldr	r0, .L89
+ 1234 0092 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 1235              	.LVL97:
+ 388:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****         UNLOCK_SPI();
+ 1236              		.loc 1 388 9 view .LVU376
+ 388:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****         UNLOCK_SPI();
+ 1237              		.loc 1 388 27 view .LVU377
+ 389:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****         return ES_WIFI_ERROR_SPI_FAILED;
+ 1238              		.loc 1 389 21 view .LVU378
+ 390:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       }
+ 1239              		.loc 1 390 9 view .LVU379
+ 390:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       }
+ 1240              		.loc 1 390 16 is_stmt 0 view .LVU380
+ 1241 0096 4FF0FF34 		mov	r4, #-1
+ 1242              	.LVL98:
+ 390:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       }
+ 1243              		.loc 1 390 16 view .LVU381
+ 1244 009a F4E7     		b	.L79
+ 1245              	.LVL99:
+ 1246              	.L88:
+ 401:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****         SPI_WIFI_ResetModule();    
+ 1247              		.loc 1 401 9 is_stmt 1 view .LVU382
+ 401:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****         SPI_WIFI_ResetModule();    
+ 1248              		.loc 1 401 9 view .LVU383
+ 1249 009c 0122     		movs	r2, #1
+ 1250 009e 1146     		mov	r1, r2
+ 1251 00a0 0548     		ldr	r0, .L89
+ 1252 00a2 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 1253              	.LVL100:
+ 401:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****         SPI_WIFI_ResetModule();    
+ 1254              		.loc 1 401 9 view .LVU384
+ 401:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****         SPI_WIFI_ResetModule();    
+ 1255              		.loc 1 401 27 view .LVU385
+ 402:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****         UNLOCK_SPI();
+ 1256              		.loc 1 402 9 view .LVU386
+ 1257 00a6 FFF7FEFF 		bl	SPI_WIFI_ResetModule
+ 1258              	.LVL101:
+ 403:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****         return ES_WIFI_ERROR_STUFFING_FOREVER;
+ 1259              		.loc 1 403 21 view .LVU387
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 38
+
+
+ 404:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       }     
+ 1260              		.loc 1 404 9 view .LVU388
+ 404:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       }     
+ 1261              		.loc 1 404 16 is_stmt 0 view .LVU389
+ 1262 00aa 6FF00304 		mvn	r4, #3
+ 1263              	.LVL102:
+ 404:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       }     
+ 1264              		.loc 1 404 16 view .LVU390
+ 1265 00ae EAE7     		b	.L79
+ 1266              	.LVL103:
+ 1267              	.L85:
+ 376:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   }
+ 1268              		.loc 1 376 14 view .LVU391
+ 1269 00b0 6FF00204 		mvn	r4, #2
+ 1270              	.LVL104:
+ 376:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   }
+ 1271              		.loc 1 376 14 view .LVU392
+ 1272 00b4 E7E7     		b	.L79
+ 1273              	.L90:
+ 1274 00b6 00BF     		.align	2
+ 1275              	.L89:
+ 1276 00b8 00100048 		.word	1207963648
+ 1277 00bc 00000000 		.word	.LANCHOR2
+ 1278 00c0 00000000 		.word	hspi
+ 1279              		.cfi_endproc
+ 1280              	.LFE330:
+ 1282              		.section	.text.SPI_WIFI_SendData,"ax",%progbits
+ 1283              		.align	1
+ 1284              		.global	SPI_WIFI_SendData
+ 1285              		.syntax unified
+ 1286              		.thumb
+ 1287              		.thumb_func
+ 1288              		.fpu fpv4-sp-d16
+ 1290              	SPI_WIFI_SendData:
+ 1291              	.LVL105:
+ 1292              	.LFB331:
+ 424:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   uint8_t Padding[2];
+ 1293              		.loc 1 424 1 is_stmt 1 view -0
+ 1294              		.cfi_startproc
+ 1295              		@ args = 0, pretend = 0, frame = 8
+ 1296              		@ frame_needed = 0, uses_anonymous_args = 0
+ 424:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   uint8_t Padding[2];
+ 1297              		.loc 1 424 1 is_stmt 0 view .LVU394
+ 1298 0000 70B5     		push	{r4, r5, r6, lr}
+ 1299              	.LCFI20:
+ 1300              		.cfi_def_cfa_offset 16
+ 1301              		.cfi_offset 4, -16
+ 1302              		.cfi_offset 5, -12
+ 1303              		.cfi_offset 6, -8
+ 1304              		.cfi_offset 14, -4
+ 1305 0002 82B0     		sub	sp, sp, #8
+ 1306              	.LCFI21:
+ 1307              		.cfi_def_cfa_offset 24
+ 1308 0004 0646     		mov	r6, r0
+ 1309 0006 0C46     		mov	r4, r1
+ 1310 0008 1546     		mov	r5, r2
+ 425:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 39
+
+
+ 1311              		.loc 1 425 3 is_stmt 1 view .LVU395
+ 427:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 1312              		.loc 1 427 3 view .LVU396
+ 427:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 1313              		.loc 1 427 7 is_stmt 0 view .LVU397
+ 1314 000a 1046     		mov	r0, r2
+ 1315              	.LVL106:
+ 427:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 1316              		.loc 1 427 7 view .LVU398
+ 1317 000c FFF7FEFF 		bl	wait_cmddata_rdy_high
+ 1318              	.LVL107:
+ 427:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 1319              		.loc 1 427 6 view .LVU399
+ 1320 0010 0028     		cmp	r0, #0
+ 1321 0012 43DB     		blt	.L97
+ 433:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   LOCK_SPI();
+ 1322              		.loc 1 433 3 is_stmt 1 view .LVU400
+ 433:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   LOCK_SPI();
+ 1323              		.loc 1 433 27 is_stmt 0 view .LVU401
+ 1324 0014 0121     		movs	r1, #1
+ 1325 0016 234B     		ldr	r3, .L103
+ 1326 0018 1960     		str	r1, [r3]
+ 434:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   WIFI_ENABLE_NSS();
+ 1327              		.loc 1 434 13 is_stmt 1 view .LVU402
+ 435:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   SPI_WIFI_DelayUs(15);
+ 1328              		.loc 1 435 3 view .LVU403
+ 435:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   SPI_WIFI_DelayUs(15);
+ 1329              		.loc 1 435 3 view .LVU404
+ 1330 001a 0022     		movs	r2, #0
+ 1331 001c 2248     		ldr	r0, .L103+4
+ 1332 001e FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 1333              	.LVL108:
+ 435:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   SPI_WIFI_DelayUs(15);
+ 1334              		.loc 1 435 3 view .LVU405
+ 435:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   SPI_WIFI_DelayUs(15);
+ 1335              		.loc 1 435 20 view .LVU406
+ 436:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   if (len > 1)
+ 1336              		.loc 1 436 3 view .LVU407
+ 1337 0022 0F20     		movs	r0, #15
+ 1338 0024 FFF7FEFF 		bl	SPI_WIFI_DelayUs
+ 1339              	.LVL109:
+ 437:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 1340              		.loc 1 437 3 view .LVU408
+ 437:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 1341              		.loc 1 437 6 is_stmt 0 view .LVU409
+ 1342 0028 012C     		cmp	r4, #1
+ 1343 002a 05D8     		bhi	.L99
+ 1344              	.L93:
+ 449:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 1345              		.loc 1 449 3 is_stmt 1 view .LVU410
+ 449:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 1346              		.loc 1 449 6 is_stmt 0 view .LVU411
+ 1347 002c 14F0010F 		tst	r4, #1
+ 1348 0030 18D1     		bne	.L100
+ 1349              	.L95:
+ 464:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** }
+ 1350              		.loc 1 464 3 is_stmt 1 view .LVU412
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 40
+
+
+ 464:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** }
+ 1351              		.loc 1 464 10 is_stmt 0 view .LVU413
+ 1352 0032 20B2     		sxth	r0, r4
+ 1353              	.L92:
+ 465:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 1354              		.loc 1 465 1 view .LVU414
+ 1355 0034 02B0     		add	sp, sp, #8
+ 1356              	.LCFI22:
+ 1357              		.cfi_remember_state
+ 1358              		.cfi_def_cfa_offset 16
+ 1359              		@ sp needed
+ 1360 0036 70BD     		pop	{r4, r5, r6, pc}
+ 1361              	.LVL110:
+ 1362              	.L99:
+ 1363              	.LCFI23:
+ 1364              		.cfi_restore_state
+ 439:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     if( HAL_SPI_Transmit_IT(&hspi, (uint8_t *)pdata , len/2) != HAL_OK)
+ 1365              		.loc 1 439 5 is_stmt 1 view .LVU415
+ 439:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     if( HAL_SPI_Transmit_IT(&hspi, (uint8_t *)pdata , len/2) != HAL_OK)
+ 1366              		.loc 1 439 17 is_stmt 0 view .LVU416
+ 1367 0038 1C4B     		ldr	r3, .L103+8
+ 1368 003a 0122     		movs	r2, #1
+ 1369 003c 1A60     		str	r2, [r3]
+ 440:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 1370              		.loc 1 440 5 is_stmt 1 view .LVU417
+ 440:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 1371              		.loc 1 440 9 is_stmt 0 view .LVU418
+ 1372 003e 24FA02F2 		lsr	r2, r4, r2
+ 1373 0042 3146     		mov	r1, r6
+ 1374 0044 1A48     		ldr	r0, .L103+12
+ 1375 0046 FFF7FEFF 		bl	HAL_SPI_Transmit_IT
+ 1376              	.LVL111:
+ 440:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 1377              		.loc 1 440 7 view .LVU419
+ 1378 004a 18B9     		cbnz	r0, .L101
+ 446:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   }
+ 1379              		.loc 1 446 5 is_stmt 1 view .LVU420
+ 1380 004c 2846     		mov	r0, r5
+ 1381 004e FFF7FEFF 		bl	wait_spi_tx_event
+ 1382              	.LVL112:
+ 1383 0052 EBE7     		b	.L93
+ 1384              	.L101:
+ 442:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       UNLOCK_SPI();
+ 1385              		.loc 1 442 7 view .LVU421
+ 442:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       UNLOCK_SPI();
+ 1386              		.loc 1 442 7 view .LVU422
+ 1387 0054 0122     		movs	r2, #1
+ 1388 0056 1146     		mov	r1, r2
+ 1389 0058 1348     		ldr	r0, .L103+4
+ 1390 005a FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 1391              	.LVL113:
+ 442:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       UNLOCK_SPI();
+ 1392              		.loc 1 442 7 view .LVU423
+ 442:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       UNLOCK_SPI();
+ 1393              		.loc 1 442 25 view .LVU424
+ 443:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       return ES_WIFI_ERROR_SPI_FAILED;
+ 1394              		.loc 1 443 19 view .LVU425
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 41
+
+
+ 444:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     }
+ 1395              		.loc 1 444 7 view .LVU426
+ 444:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     }
+ 1396              		.loc 1 444 14 is_stmt 0 view .LVU427
+ 1397 005e 4FF0FF30 		mov	r0, #-1
+ 1398 0062 E7E7     		b	.L92
+ 1399              	.L100:
+ 451:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     Padding[1] = '\n';
+ 1400              		.loc 1 451 5 is_stmt 1 view .LVU428
+ 451:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     Padding[1] = '\n';
+ 1401              		.loc 1 451 23 is_stmt 0 view .LVU429
+ 1402 0064 3019     		adds	r0, r6, r4
+ 1403 0066 10F8013C 		ldrb	r3, [r0, #-1]	@ zero_extendqisi2
+ 451:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     Padding[1] = '\n';
+ 1404              		.loc 1 451 16 view .LVU430
+ 1405 006a 8DF80430 		strb	r3, [sp, #4]
+ 452:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 1406              		.loc 1 452 5 is_stmt 1 view .LVU431
+ 452:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 1407              		.loc 1 452 16 is_stmt 0 view .LVU432
+ 1408 006e 0A23     		movs	r3, #10
+ 1409 0070 8DF80530 		strb	r3, [sp, #5]
+ 454:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     if( HAL_SPI_Transmit_IT(&hspi, Padding, 1) != HAL_OK)
+ 1410              		.loc 1 454 5 is_stmt 1 view .LVU433
+ 454:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     if( HAL_SPI_Transmit_IT(&hspi, Padding, 1) != HAL_OK)
+ 1411              		.loc 1 454 17 is_stmt 0 view .LVU434
+ 1412 0074 0122     		movs	r2, #1
+ 1413 0076 0D4B     		ldr	r3, .L103+8
+ 1414 0078 1A60     		str	r2, [r3]
+ 455:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 1415              		.loc 1 455 5 is_stmt 1 view .LVU435
+ 455:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 1416              		.loc 1 455 9 is_stmt 0 view .LVU436
+ 1417 007a 01A9     		add	r1, sp, #4
+ 1418 007c 0C48     		ldr	r0, .L103+12
+ 1419 007e FFF7FEFF 		bl	HAL_SPI_Transmit_IT
+ 1420              	.LVL114:
+ 455:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     {
+ 1421              		.loc 1 455 7 view .LVU437
+ 1422 0082 18B9     		cbnz	r0, .L102
+ 461:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     
+ 1423              		.loc 1 461 5 is_stmt 1 view .LVU438
+ 1424 0084 2846     		mov	r0, r5
+ 1425 0086 FFF7FEFF 		bl	wait_spi_tx_event
+ 1426              	.LVL115:
+ 1427 008a D2E7     		b	.L95
+ 1428              	.L102:
+ 457:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       UNLOCK_SPI();
+ 1429              		.loc 1 457 7 view .LVU439
+ 457:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       UNLOCK_SPI();
+ 1430              		.loc 1 457 7 view .LVU440
+ 1431 008c 0122     		movs	r2, #1
+ 1432 008e 1146     		mov	r1, r2
+ 1433 0090 0548     		ldr	r0, .L103+4
+ 1434 0092 FFF7FEFF 		bl	HAL_GPIO_WritePin
+ 1435              	.LVL116:
+ 457:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       UNLOCK_SPI();
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 42
+
+
+ 1436              		.loc 1 457 7 view .LVU441
+ 457:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       UNLOCK_SPI();
+ 1437              		.loc 1 457 25 view .LVU442
+ 458:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****       return ES_WIFI_ERROR_SPI_FAILED;
+ 1438              		.loc 1 458 19 view .LVU443
+ 459:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     }  
+ 1439              		.loc 1 459 7 view .LVU444
+ 459:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     }  
+ 1440              		.loc 1 459 14 is_stmt 0 view .LVU445
+ 1441 0096 4FF0FF30 		mov	r0, #-1
+ 1442 009a CBE7     		b	.L92
+ 1443              	.L97:
+ 429:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   }
+ 1444              		.loc 1 429 12 view .LVU446
+ 1445 009c 4FF0FF30 		mov	r0, #-1
+ 1446 00a0 C8E7     		b	.L92
+ 1447              	.L104:
+ 1448 00a2 00BF     		.align	2
+ 1449              	.L103:
+ 1450 00a4 00000000 		.word	.LANCHOR1
+ 1451 00a8 00100048 		.word	1207963648
+ 1452 00ac 00000000 		.word	.LANCHOR3
+ 1453 00b0 00000000 		.word	hspi
+ 1454              		.cfi_endproc
+ 1455              	.LFE331:
+ 1457              		.section	.text.SPI_WIFI_Delay,"ax",%progbits
+ 1458              		.align	1
+ 1459              		.global	SPI_WIFI_Delay
+ 1460              		.syntax unified
+ 1461              		.thumb
+ 1462              		.thumb_func
+ 1463              		.fpu fpv4-sp-d16
+ 1465              	SPI_WIFI_Delay:
+ 1466              	.LVL117:
+ 1467              	.LFB332:
+ 473:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_Delay(Delay);
+ 1468              		.loc 1 473 1 is_stmt 1 view -0
+ 1469              		.cfi_startproc
+ 1470              		@ args = 0, pretend = 0, frame = 0
+ 1471              		@ frame_needed = 0, uses_anonymous_args = 0
+ 473:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   HAL_Delay(Delay);
+ 1472              		.loc 1 473 1 is_stmt 0 view .LVU448
+ 1473 0000 08B5     		push	{r3, lr}
+ 1474              	.LCFI24:
+ 1475              		.cfi_def_cfa_offset 8
+ 1476              		.cfi_offset 3, -8
+ 1477              		.cfi_offset 14, -4
+ 474:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** }
+ 1478              		.loc 1 474 3 is_stmt 1 view .LVU449
+ 1479 0002 FFF7FEFF 		bl	HAL_Delay
+ 1480              	.LVL118:
+ 475:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 1481              		.loc 1 475 1 is_stmt 0 view .LVU450
+ 1482 0006 08BD     		pop	{r3, pc}
+ 1483              		.cfi_endproc
+ 1484              	.LFE332:
+ 1486              		.section	.text.HAL_SPI_RxCpltCallback,"ax",%progbits
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 43
+
+
+ 1487              		.align	1
+ 1488              		.global	HAL_SPI_RxCpltCallback
+ 1489              		.syntax unified
+ 1490              		.thumb
+ 1491              		.thumb_func
+ 1492              		.fpu fpv4-sp-d16
+ 1494              	HAL_SPI_RxCpltCallback:
+ 1495              	.LVL119:
+ 1496              	.LFB334:
+ 506:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 507:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** /**
+ 508:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @brief Rx Transfer completed callback.
+ 509:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @param  hspi: pointer to a SPI_HandleTypeDef structure that contains
+ 510:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   *               the configuration information for SPI module.
+ 511:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @retval None
+ 512:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   */
+ 513:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 514:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
+ 515:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** {
+ 1497              		.loc 1 515 1 is_stmt 1 view -0
+ 1498              		.cfi_startproc
+ 1499              		@ args = 0, pretend = 0, frame = 0
+ 1500              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1501              		@ link register save eliminated.
+ 516:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   if (spi_rx_event)
+ 1502              		.loc 1 516 3 view .LVU452
+ 1503              		.loc 1 516 7 is_stmt 0 view .LVU453
+ 1504 0000 034B     		ldr	r3, .L109
+ 1505 0002 1B68     		ldr	r3, [r3]
+ 1506              		.loc 1 516 6 view .LVU454
+ 1507 0004 13B1     		cbz	r3, .L107
+ 517:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 518:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     SEM_SIGNAL(spi_rx_sem);
+ 1508              		.loc 1 518 27 is_stmt 1 view .LVU455
+ 519:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     spi_rx_event=0;
+ 1509              		.loc 1 519 5 view .LVU456
+ 1510              		.loc 1 519 17 is_stmt 0 view .LVU457
+ 1511 0006 024B     		ldr	r3, .L109
+ 1512 0008 0022     		movs	r2, #0
+ 1513 000a 1A60     		str	r2, [r3]
+ 1514              	.L107:
+ 520:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   }
+ 521:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** }
+ 1515              		.loc 1 521 1 view .LVU458
+ 1516 000c 7047     		bx	lr
+ 1517              	.L110:
+ 1518 000e 00BF     		.align	2
+ 1519              	.L109:
+ 1520 0010 00000000 		.word	.LANCHOR2
+ 1521              		.cfi_endproc
+ 1522              	.LFE334:
+ 1524              		.section	.text.HAL_SPI_TxCpltCallback,"ax",%progbits
+ 1525              		.align	1
+ 1526              		.global	HAL_SPI_TxCpltCallback
+ 1527              		.syntax unified
+ 1528              		.thumb
+ 1529              		.thumb_func
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 44
+
+
+ 1530              		.fpu fpv4-sp-d16
+ 1532              	HAL_SPI_TxCpltCallback:
+ 1533              	.LVL120:
+ 1534              	.LFB335:
+ 522:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 523:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** /**
+ 524:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @brief Tx Transfer completed callback.
+ 525:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @param  hspi: pointer to a SPI_HandleTypeDef structure that contains
+ 526:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   *               the configuration information for SPI module.
+ 527:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @retval None
+ 528:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   */
+ 529:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
+ 530:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** {
+ 1535              		.loc 1 530 1 is_stmt 1 view -0
+ 1536              		.cfi_startproc
+ 1537              		@ args = 0, pretend = 0, frame = 0
+ 1538              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1539              		@ link register save eliminated.
+ 531:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   if (spi_tx_event)
+ 1540              		.loc 1 531 3 view .LVU460
+ 1541              		.loc 1 531 7 is_stmt 0 view .LVU461
+ 1542 0000 034B     		ldr	r3, .L113
+ 1543 0002 1B68     		ldr	r3, [r3]
+ 1544              		.loc 1 531 6 view .LVU462
+ 1545 0004 13B1     		cbz	r3, .L111
+ 532:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   {
+ 533:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     SEM_SIGNAL(spi_tx_sem);
+ 1546              		.loc 1 533 27 is_stmt 1 view .LVU463
+ 534:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****     spi_tx_event=0;
+ 1547              		.loc 1 534 5 view .LVU464
+ 1548              		.loc 1 534 17 is_stmt 0 view .LVU465
+ 1549 0006 024B     		ldr	r3, .L113
+ 1550 0008 0022     		movs	r2, #0
+ 1551 000a 1A60     		str	r2, [r3]
+ 1552              	.L111:
+ 535:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   }
+ 536:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** }
+ 1553              		.loc 1 536 1 view .LVU466
+ 1554 000c 7047     		bx	lr
+ 1555              	.L114:
+ 1556 000e 00BF     		.align	2
+ 1557              	.L113:
+ 1558 0010 00000000 		.word	.LANCHOR3
+ 1559              		.cfi_endproc
+ 1560              	.LFE335:
+ 1562              		.section	.text.SPI_WIFI_ISR,"ax",%progbits
+ 1563              		.align	1
+ 1564              		.global	SPI_WIFI_ISR
+ 1565              		.syntax unified
+ 1566              		.thumb
+ 1567              		.thumb_func
+ 1568              		.fpu fpv4-sp-d16
+ 1570              	SPI_WIFI_ISR:
+ 1571              	.LFB336:
+ 537:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 538:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** 
+ 539:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** /**
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 45
+
+
+ 540:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @brief  Interrupt handler for  Data RDY signal
+ 541:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @param  None
+ 542:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   * @retval None
+ 543:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****   */
+ 544:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** void    SPI_WIFI_ISR(void)
+ 545:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** {
+ 1572              		.loc 1 545 1 is_stmt 1 view -0
+ 1573              		.cfi_startproc
+ 1574              		@ args = 0, pretend = 0, frame = 0
+ 1575              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1576              		@ link register save eliminated.
+ 546:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****    if (cmddata_rdy_rising_event==1)  
+ 1577              		.loc 1 546 4 view .LVU468
+ 1578              		.loc 1 546 32 is_stmt 0 view .LVU469
+ 1579 0000 044B     		ldr	r3, .L118
+ 1580 0002 1B68     		ldr	r3, [r3]
+ 1581              		.loc 1 546 7 view .LVU470
+ 1582 0004 012B     		cmp	r3, #1
+ 1583 0006 00D0     		beq	.L117
+ 1584              	.L115:
+ 547:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****    {
+ 548:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      SEM_SIGNAL(cmddata_rdy_rising_sem);
+ 549:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      cmddata_rdy_rising_event=0;
+ 550:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****    }
+ 551:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c **** }
+ 1585              		.loc 1 551 1 view .LVU471
+ 1586 0008 7047     		bx	lr
+ 1587              	.L117:
+ 548:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****      cmddata_rdy_rising_event=0;
+ 1588              		.loc 1 548 40 is_stmt 1 view .LVU472
+ 549:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****    }
+ 1589              		.loc 1 549 6 view .LVU473
+ 549:Drivers/STM32CubeL4_libs/Src/es_wifi_io.c ****    }
+ 1590              		.loc 1 549 30 is_stmt 0 view .LVU474
+ 1591 000a 024B     		ldr	r3, .L118
+ 1592 000c 0022     		movs	r2, #0
+ 1593 000e 1A60     		str	r2, [r3]
+ 1594              		.loc 1 551 1 view .LVU475
+ 1595 0010 FAE7     		b	.L115
+ 1596              	.L119:
+ 1597 0012 00BF     		.align	2
+ 1598              	.L118:
+ 1599 0014 00000000 		.word	.LANCHOR1
+ 1600              		.cfi_endproc
+ 1601              	.LFE336:
+ 1603              		.comm	hspi,100,4
+ 1604              		.section	.bss.cmddata_rdy_rising_event,"aw",%nobits
+ 1605              		.align	2
+ 1606              		.set	.LANCHOR1,. + 0
+ 1609              	cmddata_rdy_rising_event:
+ 1610 0000 00000000 		.space	4
+ 1611              		.section	.bss.cycle_per_loop.12431,"aw",%nobits
+ 1612              		.align	2
+ 1613              		.set	.LANCHOR0,. + 0
+ 1616              	cycle_per_loop.12431:
+ 1617 0000 00000000 		.space	4
+ 1618              		.section	.bss.spi_rx_event,"aw",%nobits
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 46
+
+
+ 1619              		.align	2
+ 1620              		.set	.LANCHOR2,. + 0
+ 1623              	spi_rx_event:
+ 1624 0000 00000000 		.space	4
+ 1625              		.section	.bss.spi_tx_event,"aw",%nobits
+ 1626              		.align	2
+ 1627              		.set	.LANCHOR3,. + 0
+ 1630              	spi_tx_event:
+ 1631 0000 00000000 		.space	4
+ 1632              		.text
+ 1633              	.Letext0:
+ 1634              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\inc
+ 1635              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\inc
+ 1636              		.file 4 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\lib\\gcc\\arm-none
+ 1637              		.file 5 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\inc
+ 1638              		.file 6 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\inc
+ 1639              		.file 7 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\inc
+ 1640              		.file 8 "Drivers/STM32CubeL4_libs/Inc/es_wifi.h"
+ 1641              		.file 9 "Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l475xx.h"
+ 1642              		.file 10 "Drivers/CMSIS/Include/core_cm4.h"
+ 1643              		.file 11 "Drivers/CMSIS/Device/ST/STM32L4xx/Include/system_stm32l4xx.h"
+ 1644              		.file 12 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_def.h"
+ 1645              		.file 13 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_gpio.h"
+ 1646              		.file 14 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_dma.h"
+ 1647              		.file 15 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash.h"
+ 1648              		.file 16 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi.h"
+ 1649              		.file 17 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h"
+ 1650              		.file 18 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_cortex.h"
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 47
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 es_wifi_io.c
+C:\cygwin64\tmp\ccqVWuXp.s:18     .text.SPI_WIFI_DelayUs:00000000 $t
+C:\cygwin64\tmp\ccqVWuXp.s:25     .text.SPI_WIFI_DelayUs:00000000 SPI_WIFI_DelayUs
+C:\cygwin64\tmp\ccqVWuXp.s:159    .text.SPI_WIFI_DelayUs:0000006c $d
+C:\cygwin64\tmp\ccqVWuXp.s:167    .text.wait_cmddata_rdy_rising_event:00000000 $t
+C:\cygwin64\tmp\ccqVWuXp.s:173    .text.wait_cmddata_rdy_rising_event:00000000 wait_cmddata_rdy_rising_event
+C:\cygwin64\tmp\ccqVWuXp.s:228    .text.wait_cmddata_rdy_rising_event:00000028 $d
+C:\cygwin64\tmp\ccqVWuXp.s:233    .text.wait_spi_rx_event:00000000 $t
+C:\cygwin64\tmp\ccqVWuXp.s:239    .text.wait_spi_rx_event:00000000 wait_spi_rx_event
+C:\cygwin64\tmp\ccqVWuXp.s:294    .text.wait_spi_rx_event:00000028 $d
+C:\cygwin64\tmp\ccqVWuXp.s:299    .text.wait_spi_tx_event:00000000 $t
+C:\cygwin64\tmp\ccqVWuXp.s:305    .text.wait_spi_tx_event:00000000 wait_spi_tx_event
+C:\cygwin64\tmp\ccqVWuXp.s:360    .text.wait_spi_tx_event:00000028 $d
+C:\cygwin64\tmp\ccqVWuXp.s:365    .text.wait_cmddata_rdy_high:00000000 $t
+C:\cygwin64\tmp\ccqVWuXp.s:371    .text.wait_cmddata_rdy_high:00000000 wait_cmddata_rdy_high
+C:\cygwin64\tmp\ccqVWuXp.s:428    .text.wait_cmddata_rdy_high:0000002c $d
+C:\cygwin64\tmp\ccqVWuXp.s:433    .text.SPI_WIFI_MspInit:00000000 $t
+C:\cygwin64\tmp\ccqVWuXp.s:440    .text.SPI_WIFI_MspInit:00000000 SPI_WIFI_MspInit
+C:\cygwin64\tmp\ccqVWuXp.s:689    .text.SPI_WIFI_MspInit:00000114 $d
+C:\cygwin64\tmp\ccqVWuXp.s:697    .text.SPI_WIFI_ResetModule:00000000 $t
+C:\cygwin64\tmp\ccqVWuXp.s:704    .text.SPI_WIFI_ResetModule:00000000 SPI_WIFI_ResetModule
+C:\cygwin64\tmp\ccqVWuXp.s:893    .text.SPI_WIFI_ResetModule:000000ec $d
+                            *COM*:00000064 hspi
+C:\cygwin64\tmp\ccqVWuXp.s:899    .text.SPI_WIFI_Init:00000000 $t
+C:\cygwin64\tmp\ccqVWuXp.s:906    .text.SPI_WIFI_Init:00000000 SPI_WIFI_Init
+C:\cygwin64\tmp\ccqVWuXp.s:1021   .text.SPI_WIFI_Init:00000070 $d
+C:\cygwin64\tmp\ccqVWuXp.s:1027   .text.SPI_WIFI_DeInit:00000000 $t
+C:\cygwin64\tmp\ccqVWuXp.s:1034   .text.SPI_WIFI_DeInit:00000000 SPI_WIFI_DeInit
+C:\cygwin64\tmp\ccqVWuXp.s:1056   .text.SPI_WIFI_DeInit:0000000c $d
+C:\cygwin64\tmp\ccqVWuXp.s:1061   .text.SPI_WIFI_ReceiveData:00000000 $t
+C:\cygwin64\tmp\ccqVWuXp.s:1068   .text.SPI_WIFI_ReceiveData:00000000 SPI_WIFI_ReceiveData
+C:\cygwin64\tmp\ccqVWuXp.s:1276   .text.SPI_WIFI_ReceiveData:000000b8 $d
+C:\cygwin64\tmp\ccqVWuXp.s:1283   .text.SPI_WIFI_SendData:00000000 $t
+C:\cygwin64\tmp\ccqVWuXp.s:1290   .text.SPI_WIFI_SendData:00000000 SPI_WIFI_SendData
+C:\cygwin64\tmp\ccqVWuXp.s:1450   .text.SPI_WIFI_SendData:000000a4 $d
+C:\cygwin64\tmp\ccqVWuXp.s:1458   .text.SPI_WIFI_Delay:00000000 $t
+C:\cygwin64\tmp\ccqVWuXp.s:1465   .text.SPI_WIFI_Delay:00000000 SPI_WIFI_Delay
+C:\cygwin64\tmp\ccqVWuXp.s:1487   .text.HAL_SPI_RxCpltCallback:00000000 $t
+C:\cygwin64\tmp\ccqVWuXp.s:1494   .text.HAL_SPI_RxCpltCallback:00000000 HAL_SPI_RxCpltCallback
+C:\cygwin64\tmp\ccqVWuXp.s:1520   .text.HAL_SPI_RxCpltCallback:00000010 $d
+C:\cygwin64\tmp\ccqVWuXp.s:1525   .text.HAL_SPI_TxCpltCallback:00000000 $t
+C:\cygwin64\tmp\ccqVWuXp.s:1532   .text.HAL_SPI_TxCpltCallback:00000000 HAL_SPI_TxCpltCallback
+C:\cygwin64\tmp\ccqVWuXp.s:1558   .text.HAL_SPI_TxCpltCallback:00000010 $d
+C:\cygwin64\tmp\ccqVWuXp.s:1563   .text.SPI_WIFI_ISR:00000000 $t
+C:\cygwin64\tmp\ccqVWuXp.s:1570   .text.SPI_WIFI_ISR:00000000 SPI_WIFI_ISR
+C:\cygwin64\tmp\ccqVWuXp.s:1599   .text.SPI_WIFI_ISR:00000014 $d
+C:\cygwin64\tmp\ccqVWuXp.s:1605   .bss.cmddata_rdy_rising_event:00000000 $d
+C:\cygwin64\tmp\ccqVWuXp.s:1609   .bss.cmddata_rdy_rising_event:00000000 cmddata_rdy_rising_event
+C:\cygwin64\tmp\ccqVWuXp.s:1612   .bss.cycle_per_loop.12431:00000000 $d
+C:\cygwin64\tmp\ccqVWuXp.s:1616   .bss.cycle_per_loop.12431:00000000 cycle_per_loop.12431
+C:\cygwin64\tmp\ccqVWuXp.s:1619   .bss.spi_rx_event:00000000 $d
+C:\cygwin64\tmp\ccqVWuXp.s:1623   .bss.spi_rx_event:00000000 spi_rx_event
+C:\cygwin64\tmp\ccqVWuXp.s:1626   .bss.spi_tx_event:00000000 $d
+C:\cygwin64\tmp\ccqVWuXp.s:1630   .bss.spi_tx_event:00000000 spi_tx_event
+
+UNDEFINED SYMBOLS
+ARM GAS  C:\cygwin64\tmp\ccqVWuXp.s 			page 48
+
+
+HAL_GetTick
+SystemCoreClock
+HAL_GPIO_ReadPin
+HAL_GPIO_WritePin
+HAL_GPIO_Init
+HAL_Delay
+HAL_SPI_Receive
+HAL_SPI_Init
+HAL_NVIC_SetPriority
+HAL_NVIC_EnableIRQ
+HAL_SPI_DeInit
+HAL_SPI_Receive_IT
+HAL_SPI_Transmit_IT

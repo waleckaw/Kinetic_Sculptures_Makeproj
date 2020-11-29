@@ -1,0 +1,2669 @@
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 1
+
+
+   1              		.cpu cortex-m4
+   2              		.eabi_attribute 27, 1
+   3              		.eabi_attribute 28, 1
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"freertos.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.section	.text.updatePosnArray,"ax",%progbits
+  18              		.align	1
+  19              		.arch armv7e-m
+  20              		.syntax unified
+  21              		.thumb
+  22              		.thumb_func
+  23              		.fpu fpv4-sp-d16
+  25              	updatePosnArray:
+  26              	.LVL0:
+  27              	.LFB333:
+  28              		.file 1 "Src/freertos.c"
+   1:Src/freertos.c **** /* USER CODE BEGIN Header */
+   2:Src/freertos.c **** /**
+   3:Src/freertos.c ****   ******************************************************************************
+   4:Src/freertos.c ****   * File Name          : freertos.c
+   5:Src/freertos.c ****   * Description        : tasks and auxilary functions required for device operation
+   6:Src/freertos.c ****   ******************************************************************************
+   7:Src/freertos.c ****   * @attention
+   8:Src/freertos.c ****   *
+   9:Src/freertos.c ****   * <h2><center>&copy; Copyright (c) 2020 STMicroelectronics.
+  10:Src/freertos.c ****   * All rights reserved.</center></h2>
+  11:Src/freertos.c ****   *
+  12:Src/freertos.c ****   * This software component is licensed by ST under Ultimate Liberty license
+  13:Src/freertos.c ****   * SLA0044, the "License"; You may not use this file except in compliance with
+  14:Src/freertos.c ****   * the License. You may obtain a copy of the License at:
+  15:Src/freertos.c ****   *                             www.st.com/SLA0044
+  16:Src/freertos.c ****   *
+  17:Src/freertos.c ****   ******************************************************************************
+  18:Src/freertos.c ****   */
+  19:Src/freertos.c **** /* USER CODE END Header */
+  20:Src/freertos.c **** 
+  21:Src/freertos.c **** /* Includes ------------------------------------------------------------------*/
+  22:Src/freertos.c **** 
+  23:Src/freertos.c **** #include "Analog_PWM_Functions.h"
+  24:Src/freertos.c **** #include "FreeRTOS.h"
+  25:Src/freertos.c **** #include "task.h"
+  26:Src/freertos.c **** #include "main.h"
+  27:Src/freertos.c **** #include "cmsis_os.h"
+  28:Src/freertos.c **** #include "CustomUserfunctions.h"
+  29:Src/freertos.c **** #include "httpclient.h"
+  30:Src/freertos.c **** #include "http_lib.h"
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 2
+
+
+  31:Src/freertos.c **** #include "es_wifi.h"
+  32:Src/freertos.c **** #include <stdlib.h>
+  33:Src/freertos.c **** #include "ring_buf.h"
+  34:Src/freertos.c **** 
+  35:Src/freertos.c **** /* Private typedef -----------------------------------------------------------*/
+  36:Src/freertos.c **** 
+  37:Src/freertos.c **** // typedef struct {
+  38:Src/freertos.c **** // 	uint16_t servoVal1;
+  39:Src/freertos.c **** // 	uint16_t servoVal2;
+  40:Src/freertos.c **** // 	uint16_t servoVal3;
+  41:Src/freertos.c **** // } avgValArray;
+  42:Src/freertos.c **** 
+  43:Src/freertos.c **** 
+  44:Src/freertos.c **** /* Private defines ------------------------------------------------------------*/
+  45:Src/freertos.c **** 
+  46:Src/freertos.c **** #define ES_WIFI_DATA_SIZE 1400
+  47:Src/freertos.c **** 
+  48:Src/freertos.c **** //SERVO CONTROL GAINS
+  49:Src/freertos.c **** #define K_GAIN_BASE 0.2
+  50:Src/freertos.c **** #define D_GAIN_BASE 0.04
+  51:Src/freertos.c **** 
+  52:Src/freertos.c **** #define K_GAIN_MID 0.15
+  53:Src/freertos.c **** #define D_GAIN_MID 0.04
+  54:Src/freertos.c **** 
+  55:Src/freertos.c **** #define K_GAIN_TOP 0.2
+  56:Src/freertos.c **** #define D_GAIN_TOP 0.04
+  57:Src/freertos.c **** 
+  58:Src/freertos.c **** //TASK TIMING VALUES
+  59:Src/freertos.c **** #define TIME_MAG 10
+  60:Src/freertos.c **** #define GET_MSG_TIME TIME_MAG*20
+  61:Src/freertos.c **** #define PARSE_MSG_TIME TIME_MAG*20
+  62:Src/freertos.c **** #define UPDATE_TIME (TIME_MAG*3)/2
+  63:Src/freertos.c **** 
+  64:Src/freertos.c **** //STATE VALUES
+  65:Src/freertos.c **** 
+  66:Src/freertos.c **** typedef enum {
+  67:Src/freertos.c **** 	MASTER,
+  68:Src/freertos.c **** 	NEUTRAL,
+  69:Src/freertos.c **** 	SLAVE
+  70:Src/freertos.c **** } sculpture_status;
+  71:Src/freertos.c **** 
+  72:Src/freertos.c **** #define MASTER 1
+  73:Src/freertos.c **** #define NEUTRAL 2
+  74:Src/freertos.c **** #define SLAVE 3
+  75:Src/freertos.c **** 
+  76:Src/freertos.c **** /* Private extern typdefs ------------------------------------------------------------*/
+  77:Src/freertos.c **** 
+  78:Src/freertos.c **** //External Peripherals and Functions
+  79:Src/freertos.c **** extern osMessageQId wifiMsgQID;
+  80:Src/freertos.c **** extern osMutexId_t useSPI3MutexHandle;
+  81:Src/freertos.c **** extern ADC_HandleTypeDef hadc1;
+  82:Src/freertos.c **** extern ADC_HandleTypeDef hadc2;
+  83:Src/freertos.c **** extern ADC_HandleTypeDef hadc3;
+  84:Src/freertos.c **** extern TIM_HandleTypeDef htim15;
+  85:Src/freertos.c **** extern TIM_HandleTypeDef htim4;
+  86:Src/freertos.c **** extern TIM_HandleTypeDef htim16;
+  87:Src/freertos.c **** extern void SPI_WIFI_ISR();
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 3
+
+
+  88:Src/freertos.c **** static ADC_HandleTypeDef *ADC_Array[] = {&hadc1, &hadc2, &hadc3};
+  89:Src/freertos.c **** static TIM_HandleTypeDef *PWM_Array[] = {&htim15, &htim4, &htim16};
+  90:Src/freertos.c **** 
+  91:Src/freertos.c **** /* Private variable declarations ------------------------------------------------------------*/
+  92:Src/freertos.c **** 
+  93:Src/freertos.c **** //structs containing analog position servo values for both sculptures
+  94:Src/freertos.c **** static analogPosnArray posnAvgForUpdate;
+  95:Src/freertos.c **** static analogPosnArray analogDestPosns;
+  96:Src/freertos.c **** static analogPosnArray currentAnalogPosns;
+  97:Src/freertos.c **** 
+  98:Src/freertos.c **** // static analogPosnArray posnHistory[8];
+  99:Src/freertos.c **** static ring_buffer posnHistory = {.numFilled = 0, .size = 8, .head = 0, .tail = 0};
+ 100:Src/freertos.c **** // static uint8_t valuesAdded = 0;
+ 101:Src/freertos.c **** 
+ 102:Src/freertos.c **** //ARRAYS READ FROM AND WRITTEN TO BY WIFI FUNCTIONS
+ 103:Src/freertos.c **** uint8_t msgToSend[8];
+ 104:Src/freertos.c **** static uint8_t retData[10];
+ 105:Src/freertos.c **** //values manipulated by wifi sending and receiving function
+ 106:Src/freertos.c **** static uint16_t msgSentLen = 0;
+ 107:Src/freertos.c **** static uint16_t msgReadLen = 0;
+ 108:Src/freertos.c **** 
+ 109:Src/freertos.c **** //ISR VARIABLES FOR DERIVATIVE TERM
+ 110:Src/freertos.c **** static int isrLastPosErr[NUM_SERVOS];
+ 111:Src/freertos.c **** static int lastPosErr[NUM_SERVOS];
+ 112:Src/freertos.c **** static int posErr[NUM_SERVOS];
+ 113:Src/freertos.c **** static int totalErr[NUM_SERVOS];
+ 114:Src/freertos.c **** static int ctrlOut[NUM_SERVOS];
+ 115:Src/freertos.c **** 
+ 116:Src/freertos.c **** //STATE VARIABLES
+ 117:Src/freertos.c **** //1 = master, 2 = neutral, 3 = slave
+ 118:Src/freertos.c **** static sculpture_status masterStatus = NEUTRAL;
+ 119:Src/freertos.c **** static bool wifiConnected = false;
+ 120:Src/freertos.c **** static bool lastMessage = false;
+ 121:Src/freertos.c **** 
+ 122:Src/freertos.c **** static volatile uint8_t button_flags = 0;
+ 123:Src/freertos.c **** 
+ 124:Src/freertos.c **** /* USER CODE END Variables */
+ 125:Src/freertos.c **** 
+ 126:Src/freertos.c **** /* Private function prototypes -----------------------------------------------*/
+ 127:Src/freertos.c **** 
+ 128:Src/freertos.c **** // static void shiftAndAdd(void);
+ 129:Src/freertos.c **** static void calcCurrentPos(analogPosnArray *ptr);
+ 130:Src/freertos.c **** static void Button_ISR(void);
+ 131:Src/freertos.c **** static void updatePosnArray(analogPosnArray* ptr, ANALOG_CMD_t message);
+ 132:Src/freertos.c **** static void lock_servos(void);
+ 133:Src/freertos.c **** static analogPosnArray getCurrAnalogPosns(void); 
+ 134:Src/freertos.c **** 
+ 135:Src/freertos.c **** /* Private application code --------------------------------------------------*/
+ 136:Src/freertos.c **** 
+ 137:Src/freertos.c **** //default low priority task that runs while all other other tasks are inactive
+ 138:Src/freertos.c **** void startDefaultTask(void *argument)
+ 139:Src/freertos.c **** {
+ 140:Src/freertos.c **** 	for (;;)
+ 141:Src/freertos.c **** 	{
+ 142:Src/freertos.c **** 		osDelay(1);
+ 143:Src/freertos.c **** 	}
+ 144:Src/freertos.c **** }
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 4
+
+
+ 145:Src/freertos.c **** 
+ 146:Src/freertos.c **** //parses messages in wifiMsgQ and responds according to current state. If master,
+ 147:Src/freertos.c **** //also responsible for sending messages
+ 148:Src/freertos.c **** void parseWifiMsg(void *argument) 	//AND SEND!!!
+ 149:Src/freertos.c **** {
+ 150:Src/freertos.c **** 	ANALOG_CMD_t msg;
+ 151:Src/freertos.c **** 	osStatus_t status;
+ 152:Src/freertos.c **** 	osStatus_t mutexStatus;
+ 153:Src/freertos.c **** 	uint16_t msgSize = sizeof(msgToSend);
+ 154:Src/freertos.c **** 	analogPosnArray posnAvgForUpdate;
+ 155:Src/freertos.c **** 
+ 156:Src/freertos.c **** 	for(;;)
+ 157:Src/freertos.c **** 	{
+ 158:Src/freertos.c **** 		//if there's a message in the queue, process it
+ 159:Src/freertos.c **** 		status = osMessageQueueGet(wifiMsgQID, &msg, 0, 0);
+ 160:Src/freertos.c **** 		sculpture_status parseTaskMasterStatus = masterStatus;
+ 161:Src/freertos.c **** 		bool parseTaskLastMessage = lastMessage;
+ 162:Src/freertos.c **** 
+ 163:Src/freertos.c **** 		//read the message in the queue and if (master), fill the commands
+ 164:Src/freertos.c **** 		if (status == osOK) {
+ 165:Src/freertos.c **** 			//other sculpture has taken over as master and you are still neutral
+ 166:Src/freertos.c **** 			if ((msg.master == MASTER) && (parseTaskMasterStatus == NEUTRAL)) {
+ 167:Src/freertos.c **** 				//enter SLAVE state
+ 168:Src/freertos.c **** 				masterStatus = SLAVE;
+ 169:Src/freertos.c **** 
+ 170:Src/freertos.c **** 				//turn yellow LED off
+ 171:Src/freertos.c **** 				HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
+ 172:Src/freertos.c **** 				//turn RED LED on
+ 173:Src/freertos.c **** 				HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_4);
+ 174:Src/freertos.c **** 
+ 175:Src/freertos.c **** 				//update servo destination positions based on data bytes from message
+ 176:Src/freertos.c **** 				updatePosnArray(&analogDestPosns, msg);
+ 177:Src/freertos.c **** 
+ 178:Src/freertos.c **** 			} else if (parseTaskMasterStatus == SLAVE) {
+ 179:Src/freertos.c **** 				//last message from the master
+ 180:Src/freertos.c **** 				if (msg.master == LAST_MESSAGE) {
+ 181:Src/freertos.c **** 					//turn yellow LED on
+ 182:Src/freertos.c **** 					HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
+ 183:Src/freertos.c **** 					//turn RED LED off
+ 184:Src/freertos.c **** 					HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_4);
+ 185:Src/freertos.c **** 
+ 186:Src/freertos.c **** 					//set state to NEUTRAL
+ 187:Src/freertos.c **** 					masterStatus = NEUTRAL;
+ 188:Src/freertos.c **** 
+ 189:Src/freertos.c **** 					//lock all servos in current positions
+ 190:Src/freertos.c **** 					lock_servos();
+ 191:Src/freertos.c **** 				} else {
+ 192:Src/freertos.c **** 					//SLAVE state, read message and update servo destination positions
+ 193:Src/freertos.c **** 					updatePosnArray(&analogDestPosns, msg);
+ 194:Src/freertos.c **** 				}
+ 195:Src/freertos.c **** 			}
+ 196:Src/freertos.c **** 		}
+ 197:Src/freertos.c **** 
+ 198:Src/freertos.c **** 		//every time you enter task, after checking message queue...
+ 199:Src/freertos.c **** 		if (parseTaskMasterStatus == MASTER) {
+ 200:Src/freertos.c **** 
+ 201:Src/freertos.c **** 			if (parseTaskLastMessage) {
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 5
+
+
+ 202:Src/freertos.c **** 				//set first byte with special LAST MESSAGE denotation
+ 203:Src/freertos.c **** 				msgToSend[0] = LAST_MESSAGE;
+ 204:Src/freertos.c **** 				//clear lastMessage state variable
+ 205:Src/freertos.c **** 				lastMessage = false;
+ 206:Src/freertos.c **** 				//re-enter NEUTRAL state
+ 207:Src/freertos.c **** 				masterStatus = NEUTRAL;
+ 208:Src/freertos.c **** 				//lock all servos to current positions
+ 209:Src/freertos.c **** 				lock_servos();
+ 210:Src/freertos.c **** 			} else { //if you are set to master, calc and send your positions
+ 211:Src/freertos.c **** 				//get averaged current position to eliminate noise
+ 212:Src/freertos.c **** 				calcCurrentPos(&posnAvgForUpdate);
+ 213:Src/freertos.c **** 				//set msgToSend state byte to MASTER
+ 214:Src/freertos.c **** 				msgToSend[0] = MASTER;
+ 215:Src/freertos.c **** 				//set msgToSend data bytes to current average analog servo position values
+ 216:Src/freertos.c **** 				int k=1;
+ 217:Src/freertos.c **** 				for (int i=0; i<NUM_SERVOS; i++) {
+ 218:Src/freertos.c **** 					msgToSend[k++] = posnAvgForUpdate.servoVals[i] >> 8;
+ 219:Src/freertos.c **** 					msgToSend[k++] = posnAvgForUpdate.servoVals[i] & 0xff;
+ 220:Src/freertos.c **** 				}
+ 221:Src/freertos.c **** 			}
+ 222:Src/freertos.c **** 
+ 223:Src/freertos.c **** 			//toggle ORANGE/BLUE LED
+ 224:Src/freertos.c **** 			HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);
+ 225:Src/freertos.c **** 
+ 226:Src/freertos.c **** 			//acquire SPI mutex and send message to SLAVE sculpture
+ 227:Src/freertos.c **** 			mutexStatus = osMutexAcquire(useSPI3MutexHandle, osWaitForever);
+ 228:Src/freertos.c **** 			if (mutexStatus == osOK)
+ 229:Src/freertos.c **** 			{
+ 230:Src/freertos.c **** 				sendTCPData(msgToSend, msgSize, &msgSentLen);
+ 231:Src/freertos.c **** 				osMutexRelease(useSPI3MutexHandle);
+ 232:Src/freertos.c **** 			}
+ 233:Src/freertos.c **** 		}
+ 234:Src/freertos.c **** 				
+ 235:Src/freertos.c **** 		osDelay(PARSE_MSG_TIME);
+ 236:Src/freertos.c **** 	}
+ 237:Src/freertos.c **** }
+ 238:Src/freertos.c **** 
+ 239:Src/freertos.c **** //intermittently polls for incoming message from other node. If this message is a sculpture
+ 240:Src/freertos.c **** //command, it adds it into  wifiMsgQ
+ 241:Src/freertos.c **** void getWifiMsg(void *argument)
+ 242:Src/freertos.c **** {
+ 243:Src/freertos.c **** 	ANALOG_CMD_t msg;
+ 244:Src/freertos.c **** 	uint16_t msgSize = sizeof(retData);
+ 245:Src/freertos.c **** 	osStatus_t mutexStatus;
+ 246:Src/freertos.c **** 	static uint8_t recStatus;
+ 247:Src/freertos.c **** 	uint32_t queueTimeout;
+ 248:Src/freertos.c **** 
+ 249:Src/freertos.c **** 	for(;;)
+ 250:Src/freertos.c **** 	{
+ 251:Src/freertos.c **** 		//grab current master status
+ 252:Src/freertos.c **** 		uint8_t getTaskMasterStatus = masterStatus;
+ 253:Src/freertos.c **** 
+ 254:Src/freertos.c **** 		//if SLAVE or NEUTRAL state
+ 255:Src/freertos.c **** 		if (getTaskMasterStatus != MASTER)
+ 256:Src/freertos.c **** 		{
+ 257:Src/freertos.c **** 			//toggle BLUE/ORANGE LED
+ 258:Src/freertos.c **** 			HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_9);
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 6
+
+
+ 259:Src/freertos.c **** 			//get SPI mutex... should return almost instantly
+ 260:Src/freertos.c **** 			mutexStatus = osMutexAcquire(useSPI3MutexHandle, osWaitForever);
+ 261:Src/freertos.c **** 			if (mutexStatus == osOK)
+ 262:Src/freertos.c **** 			{
+ 263:Src/freertos.c **** 				//poll for TCP message
+ 264:Src/freertos.c **** 				recStatus = receiveTCPData(msgSize, &msgReadLen, retData);
+ 265:Src/freertos.c **** 				osMutexRelease(useSPI3MutexHandle);
+ 266:Src/freertos.c **** 				//create wifiMsgQ message
+ 267:Src/freertos.c **** 				if (recStatus == 0)
+ 268:Src/freertos.c **** 				{
+ 269:Src/freertos.c **** 					msg.master = retData[1];
+ 270:Src/freertos.c **** 					msg.analogCmdVal1a = retData[2];
+ 271:Src/freertos.c **** 					msg.analogCmdVal1b = retData[3];
+ 272:Src/freertos.c **** 					msg.analogCmdVal2a = retData[4];
+ 273:Src/freertos.c **** 					msg.analogCmdVal2b = retData[5];
+ 274:Src/freertos.c **** 					msg.analogCmdVal3a = retData[6];
+ 275:Src/freertos.c **** 					msg.analogCmdVal3b = retData[7];
+ 276:Src/freertos.c **** 
+ 277:Src/freertos.c **** 					//if message signifies a state change, make sure to process it
+ 278:Src/freertos.c **** 					//otherwise, put destinations in if there's room in the queue
+ 279:Src/freertos.c **** 					if (msg.master == LAST_MESSAGE || msg.master == MASTER) {
+ 280:Src/freertos.c **** 						queueTimeout = osWaitForever;
+ 281:Src/freertos.c **** 					} else {
+ 282:Src/freertos.c **** 						queueTimeout = 0;
+ 283:Src/freertos.c **** 					}
+ 284:Src/freertos.c **** 
+ 285:Src/freertos.c **** 					//enqueue message
+ 286:Src/freertos.c **** 					osMessageQueuePut(wifiMsgQID, &msg, 0, queueTimeout); //attempt to put message in
+ 287:Src/freertos.c **** 				}
+ 288:Src/freertos.c **** 			}
+ 289:Src/freertos.c **** 		}
+ 290:Src/freertos.c **** 		osDelay(GET_MSG_TIME);
+ 291:Src/freertos.c **** 	}
+ 292:Src/freertos.c **** }
+ 293:Src/freertos.c **** 
+ 294:Src/freertos.c **** //reads analog value of each servo and updates currentAnalogPosns accordingly. highest
+ 295:Src/freertos.c **** //priority task
+ 296:Src/freertos.c **** void updateServoPositions(void *argument)
+ 297:Src/freertos.c **** {
+ 298:Src/freertos.c **** 	//after entering this task, wifiConnected set so that pushbutton use changes state
+ 299:Src/freertos.c **** 	wifiConnected = true;
+ 300:Src/freertos.c **** 	for(;;)
+ 301:Src/freertos.c **** 	{
+ 302:Src/freertos.c **** 		//analog read values from each servo
+ 303:Src/freertos.c **** 		currentAnalogPosns = getCurrAnalogPosns();
+ 304:Src/freertos.c **** 		if (posnHistory.numFilled == 0) {
+ 305:Src/freertos.c **** 			posnHistory.vals[0] = currentAnalogPosns;
+ 306:Src/freertos.c **** 			posnHistory.numFilled = 1;
+ 307:Src/freertos.c **** 		} else {
+ 308:Src/freertos.c **** 			addToRingBuf(&posnHistory, currentAnalogPosns);
+ 309:Src/freertos.c **** 		}
+ 310:Src/freertos.c **** 
+ 311:Src/freertos.c **** 		// shiftAndAdd();
+ 312:Src/freertos.c **** 		osDelay(UPDATE_TIME);
+ 313:Src/freertos.c **** 	}
+ 314:Src/freertos.c **** 	/* USER CODE END updateServoPositions */
+ 315:Src/freertos.c **** }
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 7
+
+
+ 316:Src/freertos.c **** 
+ 317:Src/freertos.c **** //function called by buttonISR. if MASTER sends to NEUTRAL and vice versa. If causing
+ 318:Src/freertos.c **** //NEUTRAL -> MASTER transition, unlocks servos on MASTER sculpture
+ 319:Src/freertos.c **** void toggleMasterStatus()
+ 320:Src/freertos.c **** {
+ 321:Src/freertos.c **** 	if (masterStatus == MASTER)
+ 322:Src/freertos.c **** 	{
+ 323:Src/freertos.c **** 		lastMessage = true;
+ 324:Src/freertos.c **** 		//turn yellow on
+ 325:Src/freertos.c **** 		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
+ 326:Src/freertos.c **** 		//turn GREEN off
+ 327:Src/freertos.c **** 		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+ 328:Src/freertos.c **** 	}
+ 329:Src/freertos.c **** 	else if (masterStatus == NEUTRAL)
+ 330:Src/freertos.c **** 	{
+ 331:Src/freertos.c **** 		masterStatus = MASTER;
+ 332:Src/freertos.c **** 		//turn yellow off
+ 333:Src/freertos.c **** 		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_3);
+ 334:Src/freertos.c **** 		//turn green on
+ 335:Src/freertos.c **** 		HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_0);
+ 336:Src/freertos.c **** 
+ 337:Src/freertos.c **** 		//unlock servos (set pulse to zero)
+ 338:Src/freertos.c **** 		for (int i=0; i<NUM_SERVOS; i++) {
+ 339:Src/freertos.c **** 			setPulse(0, false, i);
+ 340:Src/freertos.c **** 		}
+ 341:Src/freertos.c **** 	}
+ 342:Src/freertos.c **** }
+ 343:Src/freertos.c **** 
+ 344:Src/freertos.c **** //function that takes the average of the most recently added analog position values for each servo
+ 345:Src/freertos.c **** //and uses this value to update posnAvgForUpdate
+ 346:Src/freertos.c **** static void calcCurrentPos(analogPosnArray *ptr)
+ 347:Src/freertos.c **** {
+ 348:Src/freertos.c **** 	//account for case where values added is zero
+ 349:Src/freertos.c **** 	if (posnHistory.numFilled == 0) {
+ 350:Src/freertos.c **** 		(*ptr) = getCurrAnalogPosns();
+ 351:Src/freertos.c **** 	} else {
+ 352:Src/freertos.c **** 		for (int j=0; j<NUM_SERVOS; j++) {
+ 353:Src/freertos.c **** 			ptr->servoVals[j] = 0;
+ 354:Src/freertos.c **** 		}
+ 355:Src/freertos.c **** 
+ 356:Src/freertos.c **** 		for (int i = 0; i<posnHistory.numFilled; i++) {
+ 357:Src/freertos.c **** 			for (int j=0; j<NUM_SERVOS; j++) {
+ 358:Src/freertos.c **** 				ptr->servoVals[j] += ((analogPosnArray)getRingBufXRecent(&posnHistory, i)).servoVals[j];
+ 359:Src/freertos.c **** 			}
+ 360:Src/freertos.c **** 		}
+ 361:Src/freertos.c **** 		for (int j=0; j<NUM_SERVOS; j++) {
+ 362:Src/freertos.c **** 			ptr->servoVals[j] /= posnHistory.numFilled;
+ 363:Src/freertos.c **** 		}
+ 364:Src/freertos.c **** 	}
+ 365:Src/freertos.c **** }
+ 366:Src/freertos.c **** 
+ 367:Src/freertos.c **** static uint16_t calcSinglePos(uint8_t link) {
+ 368:Src/freertos.c **** 
+ 369:Src/freertos.c **** 	uint16_t servoPosn = 0;
+ 370:Src/freertos.c **** 		//account for case where values added is zero
+ 371:Src/freertos.c **** 	if (posnHistory.numFilled == 0) {
+ 372:Src/freertos.c **** 		servoPosn = getAnalogVal(ADC_Array[link]);
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 8
+
+
+ 373:Src/freertos.c **** 	} else {
+ 374:Src/freertos.c **** 		for (int i = 0; i<posnHistory.numFilled; i++) {
+ 375:Src/freertos.c **** 			//add all of the values accumulated
+ 376:Src/freertos.c **** 			servoPosn += posnHistory.vals[i].servoVals[link];
+ 377:Src/freertos.c **** 		}
+ 378:Src/freertos.c **** 		//take the average for each servo
+ 379:Src/freertos.c **** 		servoPosn /= posnHistory.numFilled;
+ 380:Src/freertos.c **** 	}
+ 381:Src/freertos.c **** 	//set posnAvgForUpdate (since we went to the trouble of calculating one link)
+ 382:Src/freertos.c **** 	posnAvgForUpdate.servoVals[link] = servoPosn;
+ 383:Src/freertos.c **** 	return servoPosn;
+ 384:Src/freertos.c **** }
+ 385:Src/freertos.c **** 
+ 386:Src/freertos.c **** //********************************TIMER OVERFLOW ISR************************************
+ 387:Src/freertos.c **** 
+ 388:Src/freertos.c **** void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+ 389:Src/freertos.c **** {
+ 390:Src/freertos.c **** 	//increase global variable uwTick - Hardware Abstraction Layer runs on timer 2
+ 391:Src/freertos.c **** 	if (htim->Instance == TIM2) {
+ 392:Src/freertos.c **** 		HAL_IncTick();
+ 393:Src/freertos.c **** 	}
+ 394:Src/freertos.c **** 	//control law/servo output pulse setISR
+ 395:Src/freertos.c **** 	if (htim->Instance == TIM3)
+ 396:Src/freertos.c **** 	{
+ 397:Src/freertos.c **** 		if (masterStatus == SLAVE) //SHOULD BE SLAVE HERE
+ 398:Src/freertos.c **** 		{
+ 399:Src/freertos.c **** 
+ 400:Src/freertos.c **** 			//if the user desires, the code below can be used to simply set the SLAVE's servos to
+ 401:Src/freertos.c **** 			//exactly mimic those of the master, with no controls
+ 402:Src/freertos.c **** #ifndef USE_CONTROL
+ 403:Src/freertos.c **** 			int pulseVal;
+ 404:Src/freertos.c **** 
+ 405:Src/freertos.c **** 			for (int i=0; i<NUM_SERVOS; i++) {
+ 406:Src/freertos.c **** 				pulseVal = analogToPulse(analogDestPosns.servoVals[i], PWM_Array[i]);
+ 407:Src/freertos.c **** 				setPulse(pulseVal, true, i);
+ 408:Src/freertos.c **** 			}
+ 409:Src/freertos.c **** 
+ 410:Src/freertos.c **** #endif //NOT USE_CONTROL
+ 411:Src/freertos.c **** 
+ 412:Src/freertos.c **** 			//the default mode, which makes for much smoother tracking, is to use PD control
+ 413:Src/freertos.c **** 			//to track from the current position to the destination position (for each servo)
+ 414:Src/freertos.c **** 			//analog position values are used to calculate error, which is later mapped to
+ 415:Src/freertos.c **** 			//pulse before being output
+ 416:Src/freertos.c **** #ifdef USE_CONTROL
+ 417:Src/freertos.c **** 
+ 418:Src/freertos.c **** 			for (int i=0; i<NUM_SERVOS; i++) {
+ 419:Src/freertos.c **** 				uint16_t posn = calcSinglePos(i);
+ 420:Src/freertos.c **** 				// isrLastPosErr[i] = lastPosErr[i];
+ 421:Src/freertos.c **** 				posErr[i] = analogDestPosns.servoVals[i] - posn;
+ 422:Src/freertos.c **** 				totalErr[i] = posn + (K_GAIN_BASE*posErr[i]) + D_GAIN_BASE*(posErr[i] - lastPosErr[i]);
+ 423:Src/freertos.c **** 				setPulse(analogToPulse(totalErr[i], PWM_Array[i]), true, i);
+ 424:Src/freertos.c **** 				lastPosErr[i] = posErr[i];
+ 425:Src/freertos.c **** 
+ 426:Src/freertos.c **** 			}
+ 427:Src/freertos.c **** 
+ 428:Src/freertos.c **** #endif //USE_CONTROL
+ 429:Src/freertos.c **** 
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 9
+
+
+ 430:Src/freertos.c **** 		}
+ 431:Src/freertos.c **** 	}
+ 432:Src/freertos.c **** }
+ 433:Src/freertos.c **** 
+ 434:Src/freertos.c **** 
+ 435:Src/freertos.c **** //external interrupt line detection ISR. Services SPI and pushbutton
+ 436:Src/freertos.c **** void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+ 437:Src/freertos.c **** {
+ 438:Src/freertos.c **** 	switch (GPIO_Pin)
+ 439:Src/freertos.c **** 	{
+ 440:Src/freertos.c **** 	case (GPIO_PIN_13):
+ 441:Src/freertos.c ****     	{
+ 442:Src/freertos.c **** 		Button_ISR();
+ 443:Src/freertos.c **** 		break;
+ 444:Src/freertos.c ****     	}
+ 445:Src/freertos.c **** 	case (GPIO_PIN_1):
+ 446:Src/freertos.c **** 		{
+ 447:Src/freertos.c **** 		SPI_WIFI_ISR();
+ 448:Src/freertos.c **** 		break;
+ 449:Src/freertos.c **** 		}
+ 450:Src/freertos.c **** 
+ 451:Src/freertos.c **** 	default:
+ 452:Src/freertos.c **** 	{
+ 453:Src/freertos.c **** 		break;
+ 454:Src/freertos.c **** 	}
+ 455:Src/freertos.c **** 	}
+ 456:Src/freertos.c **** }
+ 457:Src/freertos.c **** 
+ 458:Src/freertos.c **** //during wifi initialization/connection, increments button_flags
+ 459:Src/freertos.c **** //after connection, is used to enter and exit master state
+ 460:Src/freertos.c **** static void Button_ISR(void)
+ 461:Src/freertos.c **** {
+ 462:Src/freertos.c **** 	button_flags++;
+ 463:Src/freertos.c **** 	if (wifiConnected)
+ 464:Src/freertos.c **** 	{
+ 465:Src/freertos.c **** 		toggleMasterStatus();
+ 466:Src/freertos.c **** 	}
+ 467:Src/freertos.c **** }
+ 468:Src/freertos.c **** 
+ 469:Src/freertos.c **** //waits for button to be pushed in order to determine whether user
+ 470:Src/freertos.c **** //wants to change wifi settings
+ 471:Src/freertos.c **** uint8_t Button_WaitForPush(uint32_t delay)
+ 472:Src/freertos.c **** {
+ 473:Src/freertos.c **** 	uint32_t time_out = HAL_GetTick()+delay;
+ 474:Src/freertos.c **** 	do
+ 475:Src/freertos.c **** 	{
+ 476:Src/freertos.c **** 		if (button_flags > 1)
+ 477:Src/freertos.c **** 		{
+ 478:Src/freertos.c **** 			button_flags = 0;
+ 479:Src/freertos.c **** 			return BP_MULTIPLE_PUSH;
+ 480:Src/freertos.c **** 		}
+ 481:Src/freertos.c **** 
+ 482:Src/freertos.c **** 		if (button_flags == 1)
+ 483:Src/freertos.c **** 		{
+ 484:Src/freertos.c **** 			button_flags = 0;
+ 485:Src/freertos.c **** 			return BP_SINGLE_PUSH;
+ 486:Src/freertos.c **** 		}
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 10
+
+
+ 487:Src/freertos.c **** 	}
+ 488:Src/freertos.c **** 	while( HAL_GetTick() < time_out);
+ 489:Src/freertos.c **** 	return BP_NOT_PUSHED;
+ 490:Src/freertos.c **** }
+ 491:Src/freertos.c **** 
+ 492:Src/freertos.c **** static void updatePosnArray(analogPosnArray* ptr, ANALOG_CMD_t message) {
+  29              		.loc 1 492 73 view -0
+  30              		.cfi_startproc
+  31              		@ args = 0, pretend = 0, frame = 8
+  32              		@ frame_needed = 0, uses_anonymous_args = 0
+  33              		@ link register save eliminated.
+  34              		.loc 1 492 73 is_stmt 0 view .LVU1
+  35 0000 82B0     		sub	sp, sp, #8
+  36              	.LCFI0:
+  37              		.cfi_def_cfa_offset 8
+  38 0002 02AB     		add	r3, sp, #8
+  39 0004 03E90600 		stmdb	r3, {r1, r2}
+ 493:Src/freertos.c **** 
+ 494:Src/freertos.c **** 	ptr->servoVals[0] = (message.analogCmdVal1a << 8) | message.analogCmdVal1b;
+  40              		.loc 1 494 2 is_stmt 1 view .LVU2
+  41              		.loc 1 494 30 is_stmt 0 view .LVU3
+  42 0008 9DF80120 		ldrb	r2, [sp, #1]	@ zero_extendqisi2
+  43              		.loc 1 494 61 view .LVU4
+  44 000c 9DF80230 		ldrb	r3, [sp, #2]	@ zero_extendqisi2
+  45              		.loc 1 494 52 view .LVU5
+  46 0010 43EA0223 		orr	r3, r3, r2, lsl #8
+  47              		.loc 1 494 20 view .LVU6
+  48 0014 0380     		strh	r3, [r0]	@ movhi
+ 495:Src/freertos.c **** 	ptr->servoVals[1] = (message.analogCmdVal2a << 8) | message.analogCmdVal2b;
+  49              		.loc 1 495 2 is_stmt 1 view .LVU7
+  50              		.loc 1 495 30 is_stmt 0 view .LVU8
+  51 0016 9DF80320 		ldrb	r2, [sp, #3]	@ zero_extendqisi2
+  52              		.loc 1 495 61 view .LVU9
+  53 001a 9DF80430 		ldrb	r3, [sp, #4]	@ zero_extendqisi2
+  54              		.loc 1 495 52 view .LVU10
+  55 001e 43EA0223 		orr	r3, r3, r2, lsl #8
+  56              		.loc 1 495 20 view .LVU11
+  57 0022 4380     		strh	r3, [r0, #2]	@ movhi
+ 496:Src/freertos.c **** 	ptr->servoVals[2] = (message.analogCmdVal3a << 8) | message.analogCmdVal3b;
+  58              		.loc 1 496 2 is_stmt 1 view .LVU12
+  59              		.loc 1 496 30 is_stmt 0 view .LVU13
+  60 0024 9DF80520 		ldrb	r2, [sp, #5]	@ zero_extendqisi2
+  61              		.loc 1 496 61 view .LVU14
+  62 0028 9DF80630 		ldrb	r3, [sp, #6]	@ zero_extendqisi2
+  63              		.loc 1 496 52 view .LVU15
+  64 002c 43EA0223 		orr	r3, r3, r2, lsl #8
+  65              		.loc 1 496 20 view .LVU16
+  66 0030 8380     		strh	r3, [r0, #4]	@ movhi
+ 497:Src/freertos.c **** 
+ 498:Src/freertos.c **** }
+  67              		.loc 1 498 1 view .LVU17
+  68 0032 02B0     		add	sp, sp, #8
+  69              	.LCFI1:
+  70              		.cfi_def_cfa_offset 0
+  71              		@ sp needed
+  72 0034 7047     		bx	lr
+  73              		.cfi_endproc
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 11
+
+
+  74              	.LFE333:
+  76              		.section	.text.lock_servos,"ax",%progbits
+  77              		.align	1
+  78              		.syntax unified
+  79              		.thumb
+  80              		.thumb_func
+  81              		.fpu fpv4-sp-d16
+  83              	lock_servos:
+  84              	.LFB335:
+ 499:Src/freertos.c **** 
+ 500:Src/freertos.c **** void clearPosnHistory(void) {
+ 501:Src/freertos.c **** 	resetRingBuf(&posnHistory);
+ 502:Src/freertos.c **** }
+ 503:Src/freertos.c **** 
+ 504:Src/freertos.c **** static void lock_servos(void) {
+  85              		.loc 1 504 31 is_stmt 1 view -0
+  86              		.cfi_startproc
+  87              		@ args = 0, pretend = 0, frame = 0
+  88              		@ frame_needed = 0, uses_anonymous_args = 0
+  89 0000 10B5     		push	{r4, lr}
+  90              	.LCFI2:
+  91              		.cfi_def_cfa_offset 8
+  92              		.cfi_offset 4, -8
+  93              		.cfi_offset 14, -4
+ 505:Src/freertos.c **** 	int mypulse;
+  94              		.loc 1 505 2 view .LVU19
+ 506:Src/freertos.c **** 	for (int i=0; i<NUM_SERVOS; i++) {
+  95              		.loc 1 506 2 view .LVU20
+  96              	.LBB2:
+  97              		.loc 1 506 7 view .LVU21
+  98              	.LVL1:
+  99              		.loc 1 506 11 is_stmt 0 view .LVU22
+ 100 0002 0024     		movs	r4, #0
+ 101              		.loc 1 506 2 view .LVU23
+ 102 0004 0CE0     		b	.L4
+ 103              	.LVL2:
+ 104              	.L5:
+ 507:Src/freertos.c **** 		mypulse = analogToPulse(currentAnalogPosns.servoVals[i], PWM_Array[i]);
+ 105              		.loc 1 507 3 is_stmt 1 discriminator 3 view .LVU24
+ 106              		.loc 1 507 13 is_stmt 0 discriminator 3 view .LVU25
+ 107 0006 084B     		ldr	r3, .L7
+ 108 0008 53F82410 		ldr	r1, [r3, r4, lsl #2]
+ 109 000c 074B     		ldr	r3, .L7+4
+ 110 000e 33F81400 		ldrh	r0, [r3, r4, lsl #1]
+ 111 0012 FFF7FEFF 		bl	analogToPulse
+ 112              	.LVL3:
+ 508:Src/freertos.c **** 		setPulse(mypulse, true, i);
+ 113              		.loc 1 508 3 is_stmt 1 discriminator 3 view .LVU26
+ 114 0016 E2B2     		uxtb	r2, r4
+ 115 0018 0121     		movs	r1, #1
+ 116 001a FFF7FEFF 		bl	setPulse
+ 117              	.LVL4:
+ 506:Src/freertos.c **** 	for (int i=0; i<NUM_SERVOS; i++) {
+ 118              		.loc 1 506 30 discriminator 3 view .LVU27
+ 506:Src/freertos.c **** 	for (int i=0; i<NUM_SERVOS; i++) {
+ 119              		.loc 1 506 31 is_stmt 0 discriminator 3 view .LVU28
+ 120 001e 0134     		adds	r4, r4, #1
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 12
+
+
+ 121              	.LVL5:
+ 122              	.L4:
+ 506:Src/freertos.c **** 	for (int i=0; i<NUM_SERVOS; i++) {
+ 123              		.loc 1 506 16 is_stmt 1 discriminator 1 view .LVU29
+ 506:Src/freertos.c **** 	for (int i=0; i<NUM_SERVOS; i++) {
+ 124              		.loc 1 506 2 is_stmt 0 discriminator 1 view .LVU30
+ 125 0020 022C     		cmp	r4, #2
+ 126 0022 F0DD     		ble	.L5
+ 127              	.LBE2:
+ 509:Src/freertos.c **** 	}
+ 510:Src/freertos.c **** 
+ 511:Src/freertos.c **** }
+ 128              		.loc 1 511 1 view .LVU31
+ 129 0024 10BD     		pop	{r4, pc}
+ 130              	.LVL6:
+ 131              	.L8:
+ 132              		.loc 1 511 1 view .LVU32
+ 133 0026 00BF     		.align	2
+ 134              	.L7:
+ 135 0028 00000000 		.word	.LANCHOR1
+ 136 002c 00000000 		.word	.LANCHOR0
+ 137              		.cfi_endproc
+ 138              	.LFE335:
+ 140              		.section	.text.getCurrAnalogPosns,"ax",%progbits
+ 141              		.align	1
+ 142              		.syntax unified
+ 143              		.thumb
+ 144              		.thumb_func
+ 145              		.fpu fpv4-sp-d16
+ 147              	getCurrAnalogPosns:
+ 148              	.LVL7:
+ 149              	.LFB336:
+ 512:Src/freertos.c **** 
+ 513:Src/freertos.c **** static analogPosnArray getCurrAnalogPosns(void) {
+ 150              		.loc 1 513 49 is_stmt 1 view -0
+ 151              		.cfi_startproc
+ 152              		@ args = 0, pretend = 0, frame = 0
+ 153              		@ frame_needed = 0, uses_anonymous_args = 0
+ 154              		.loc 1 513 49 is_stmt 0 view .LVU34
+ 155 0000 38B5     		push	{r3, r4, r5, lr}
+ 156              	.LCFI3:
+ 157              		.cfi_def_cfa_offset 16
+ 158              		.cfi_offset 3, -16
+ 159              		.cfi_offset 4, -12
+ 160              		.cfi_offset 5, -8
+ 161              		.cfi_offset 14, -4
+ 162 0002 0546     		mov	r5, r0
+ 514:Src/freertos.c **** 
+ 515:Src/freertos.c **** 	analogPosnArray arr;
+ 163              		.loc 1 515 2 is_stmt 1 view .LVU35
+ 516:Src/freertos.c **** 
+ 517:Src/freertos.c **** 	for (int i=0; i<NUM_SERVOS; i++) {
+ 164              		.loc 1 517 2 view .LVU36
+ 165              	.LBB3:
+ 166              		.loc 1 517 7 view .LVU37
+ 167              	.LVL8:
+ 168              		.loc 1 517 11 is_stmt 0 view .LVU38
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 13
+
+
+ 169 0004 0024     		movs	r4, #0
+ 170              		.loc 1 517 2 view .LVU39
+ 171 0006 07E0     		b	.L10
+ 172              	.LVL9:
+ 173              	.L11:
+ 518:Src/freertos.c **** 		arr.servoVals[i] = getAnalogVal(ADC_Array[i]);
+ 174              		.loc 1 518 3 is_stmt 1 discriminator 3 view .LVU40
+ 175              		.loc 1 518 22 is_stmt 0 discriminator 3 view .LVU41
+ 176 0008 054B     		ldr	r3, .L13
+ 177 000a 53F82400 		ldr	r0, [r3, r4, lsl #2]
+ 178 000e FFF7FEFF 		bl	getAnalogVal
+ 179              	.LVL10:
+ 180              		.loc 1 518 20 discriminator 3 view .LVU42
+ 181 0012 25F81400 		strh	r0, [r5, r4, lsl #1]	@ movhi
+ 517:Src/freertos.c **** 		arr.servoVals[i] = getAnalogVal(ADC_Array[i]);
+ 182              		.loc 1 517 30 is_stmt 1 discriminator 3 view .LVU43
+ 517:Src/freertos.c **** 		arr.servoVals[i] = getAnalogVal(ADC_Array[i]);
+ 183              		.loc 1 517 31 is_stmt 0 discriminator 3 view .LVU44
+ 184 0016 0134     		adds	r4, r4, #1
+ 185              	.LVL11:
+ 186              	.L10:
+ 517:Src/freertos.c **** 		arr.servoVals[i] = getAnalogVal(ADC_Array[i]);
+ 187              		.loc 1 517 16 is_stmt 1 discriminator 1 view .LVU45
+ 517:Src/freertos.c **** 		arr.servoVals[i] = getAnalogVal(ADC_Array[i]);
+ 188              		.loc 1 517 2 is_stmt 0 discriminator 1 view .LVU46
+ 189 0018 022C     		cmp	r4, #2
+ 190 001a F5DD     		ble	.L11
+ 191              	.LBE3:
+ 519:Src/freertos.c **** 	}
+ 520:Src/freertos.c **** 
+ 521:Src/freertos.c **** 	return arr;
+ 192              		.loc 1 521 2 is_stmt 1 view .LVU47
+ 522:Src/freertos.c **** 
+ 523:Src/freertos.c **** }
+ 193              		.loc 1 523 1 is_stmt 0 view .LVU48
+ 194 001c 2846     		mov	r0, r5
+ 195 001e 38BD     		pop	{r3, r4, r5, pc}
+ 196              	.LVL12:
+ 197              	.L14:
+ 198              		.loc 1 523 1 view .LVU49
+ 199              		.align	2
+ 200              	.L13:
+ 201 0020 00000000 		.word	.LANCHOR2
+ 202              		.cfi_endproc
+ 203              	.LFE336:
+ 205              		.section	.text.calcCurrentPos,"ax",%progbits
+ 206              		.align	1
+ 207              		.syntax unified
+ 208              		.thumb
+ 209              		.thumb_func
+ 210              		.fpu fpv4-sp-d16
+ 212              	calcCurrentPos:
+ 213              	.LVL13:
+ 214              	.LFB327:
+ 347:Src/freertos.c **** 	//account for case where values added is zero
+ 215              		.loc 1 347 1 is_stmt 1 view -0
+ 216              		.cfi_startproc
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 14
+
+
+ 217              		@ args = 0, pretend = 0, frame = 16
+ 218              		@ frame_needed = 0, uses_anonymous_args = 0
+ 347:Src/freertos.c **** 	//account for case where values added is zero
+ 219              		.loc 1 347 1 is_stmt 0 view .LVU51
+ 220 0000 70B5     		push	{r4, r5, r6, lr}
+ 221              	.LCFI4:
+ 222              		.cfi_def_cfa_offset 16
+ 223              		.cfi_offset 4, -16
+ 224              		.cfi_offset 5, -12
+ 225              		.cfi_offset 6, -8
+ 226              		.cfi_offset 14, -4
+ 227 0002 84B0     		sub	sp, sp, #16
+ 228              	.LCFI5:
+ 229              		.cfi_def_cfa_offset 32
+ 230 0004 0546     		mov	r5, r0
+ 349:Src/freertos.c **** 		(*ptr) = getCurrAnalogPosns();
+ 231              		.loc 1 349 2 is_stmt 1 view .LVU52
+ 349:Src/freertos.c **** 		(*ptr) = getCurrAnalogPosns();
+ 232              		.loc 1 349 17 is_stmt 0 view .LVU53
+ 233 0006 204B     		ldr	r3, .L29
+ 234 0008 93F83C30 		ldrb	r3, [r3, #60]	@ zero_extendqisi2
+ 349:Src/freertos.c **** 		(*ptr) = getCurrAnalogPosns();
+ 235              		.loc 1 349 5 view .LVU54
+ 236 000c 0BB1     		cbz	r3, .L27
+ 237              	.LBB4:
+ 352:Src/freertos.c **** 			ptr->servoVals[j] = 0;
+ 238              		.loc 1 352 12 view .LVU55
+ 239 000e 0023     		movs	r3, #0
+ 240 0010 0CE0     		b	.L16
+ 241              	.L27:
+ 242              	.LBE4:
+ 350:Src/freertos.c **** 	} else {
+ 243              		.loc 1 350 3 is_stmt 1 view .LVU56
+ 350:Src/freertos.c **** 	} else {
+ 244              		.loc 1 350 12 is_stmt 0 view .LVU57
+ 245 0012 6846     		mov	r0, sp
+ 246              	.LVL14:
+ 350:Src/freertos.c **** 	} else {
+ 247              		.loc 1 350 12 view .LVU58
+ 248 0014 FFF7FEFF 		bl	getCurrAnalogPosns
+ 249              	.LVL15:
+ 250 0018 009B     		ldr	r3, [sp]	@ unaligned
+ 251 001a 2B60     		str	r3, [r5]	@ unaligned
+ 252 001c BDF80430 		ldrh	r3, [sp, #4]	@ unaligned
+ 253 0020 AB80     		strh	r3, [r5, #4]	@ unaligned
+ 254 0022 2FE0     		b	.L15
+ 255              	.LVL16:
+ 256              	.L18:
+ 257              	.LBB5:
+ 353:Src/freertos.c **** 		}
+ 258              		.loc 1 353 4 is_stmt 1 discriminator 3 view .LVU59
+ 353:Src/freertos.c **** 		}
+ 259              		.loc 1 353 22 is_stmt 0 discriminator 3 view .LVU60
+ 260 0024 0022     		movs	r2, #0
+ 261 0026 25F81320 		strh	r2, [r5, r3, lsl #1]	@ movhi
+ 352:Src/freertos.c **** 			ptr->servoVals[j] = 0;
+ 262              		.loc 1 352 31 is_stmt 1 discriminator 3 view .LVU61
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 15
+
+
+ 352:Src/freertos.c **** 			ptr->servoVals[j] = 0;
+ 263              		.loc 1 352 32 is_stmt 0 discriminator 3 view .LVU62
+ 264 002a 0133     		adds	r3, r3, #1
+ 265              	.LVL17:
+ 266              	.L16:
+ 352:Src/freertos.c **** 			ptr->servoVals[j] = 0;
+ 267              		.loc 1 352 17 is_stmt 1 discriminator 1 view .LVU63
+ 352:Src/freertos.c **** 			ptr->servoVals[j] = 0;
+ 268              		.loc 1 352 3 is_stmt 0 discriminator 1 view .LVU64
+ 269 002c 022B     		cmp	r3, #2
+ 270 002e F9DD     		ble	.L18
+ 271              	.LBE5:
+ 272              	.LBB6:
+ 356:Src/freertos.c **** 			for (int j=0; j<NUM_SERVOS; j++) {
+ 273              		.loc 1 356 12 view .LVU65
+ 274 0030 0026     		movs	r6, #0
+ 275 0032 12E0     		b	.L19
+ 276              	.LVL18:
+ 277              	.L20:
+ 278              	.LBB7:
+ 358:Src/freertos.c **** 			}
+ 279              		.loc 1 358 5 is_stmt 1 discriminator 3 view .LVU66
+ 358:Src/freertos.c **** 			}
+ 280              		.loc 1 358 44 is_stmt 0 discriminator 3 view .LVU67
+ 281 0034 3246     		mov	r2, r6
+ 282 0036 1449     		ldr	r1, .L29
+ 283 0038 02A8     		add	r0, sp, #8
+ 284 003a FFF7FEFF 		bl	getRingBufXRecent
+ 285              	.LVL19:
+ 358:Src/freertos.c **** 			}
+ 286              		.loc 1 358 89 discriminator 3 view .LVU68
+ 287 003e 04AB     		add	r3, sp, #16
+ 288 0040 03EB4403 		add	r3, r3, r4, lsl #1
+ 289 0044 33F8083C 		ldrh	r3, [r3, #-8]
+ 358:Src/freertos.c **** 			}
+ 290              		.loc 1 358 23 discriminator 3 view .LVU69
+ 291 0048 35F81420 		ldrh	r2, [r5, r4, lsl #1]
+ 292 004c 1344     		add	r3, r3, r2
+ 293 004e 25F81430 		strh	r3, [r5, r4, lsl #1]	@ movhi
+ 357:Src/freertos.c **** 				ptr->servoVals[j] += ((analogPosnArray)getRingBufXRecent(&posnHistory, i)).servoVals[j];
+ 294              		.loc 1 357 32 is_stmt 1 discriminator 3 view .LVU70
+ 357:Src/freertos.c **** 				ptr->servoVals[j] += ((analogPosnArray)getRingBufXRecent(&posnHistory, i)).servoVals[j];
+ 295              		.loc 1 357 33 is_stmt 0 discriminator 3 view .LVU71
+ 296 0052 0134     		adds	r4, r4, #1
+ 297              	.LVL20:
+ 298              	.L21:
+ 357:Src/freertos.c **** 				ptr->servoVals[j] += ((analogPosnArray)getRingBufXRecent(&posnHistory, i)).servoVals[j];
+ 299              		.loc 1 357 18 is_stmt 1 discriminator 1 view .LVU72
+ 357:Src/freertos.c **** 				ptr->servoVals[j] += ((analogPosnArray)getRingBufXRecent(&posnHistory, i)).servoVals[j];
+ 300              		.loc 1 357 4 is_stmt 0 discriminator 1 view .LVU73
+ 301 0054 022C     		cmp	r4, #2
+ 302 0056 EDDD     		ble	.L20
+ 303              	.LBE7:
+ 356:Src/freertos.c **** 			for (int j=0; j<NUM_SERVOS; j++) {
+ 304              		.loc 1 356 44 is_stmt 1 discriminator 2 view .LVU74
+ 356:Src/freertos.c **** 			for (int j=0; j<NUM_SERVOS; j++) {
+ 305              		.loc 1 356 45 is_stmt 0 discriminator 2 view .LVU75
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 16
+
+
+ 306 0058 0136     		adds	r6, r6, #1
+ 307              	.LVL21:
+ 308              	.L19:
+ 356:Src/freertos.c **** 			for (int j=0; j<NUM_SERVOS; j++) {
+ 309              		.loc 1 356 19 is_stmt 1 discriminator 1 view .LVU76
+ 356:Src/freertos.c **** 			for (int j=0; j<NUM_SERVOS; j++) {
+ 310              		.loc 1 356 32 is_stmt 0 discriminator 1 view .LVU77
+ 311 005a 0B4B     		ldr	r3, .L29
+ 312 005c 93F83C30 		ldrb	r3, [r3, #60]	@ zero_extendqisi2
+ 356:Src/freertos.c **** 			for (int j=0; j<NUM_SERVOS; j++) {
+ 313              		.loc 1 356 3 discriminator 1 view .LVU78
+ 314 0060 B342     		cmp	r3, r6
+ 315 0062 01DD     		ble	.L28
+ 316              	.LBB8:
+ 357:Src/freertos.c **** 				ptr->servoVals[j] += ((analogPosnArray)getRingBufXRecent(&posnHistory, i)).servoVals[j];
+ 317              		.loc 1 357 13 view .LVU79
+ 318 0064 0024     		movs	r4, #0
+ 319 0066 F5E7     		b	.L21
+ 320              	.L28:
+ 321              	.LBE8:
+ 322              	.LBE6:
+ 323              	.LBB9:
+ 361:Src/freertos.c **** 			ptr->servoVals[j] /= posnHistory.numFilled;
+ 324              		.loc 1 361 12 view .LVU80
+ 325 0068 0023     		movs	r3, #0
+ 326 006a 09E0     		b	.L22
+ 327              	.LVL22:
+ 328              	.L23:
+ 362:Src/freertos.c **** 		}
+ 329              		.loc 1 362 4 is_stmt 1 discriminator 3 view .LVU81
+ 362:Src/freertos.c **** 		}
+ 330              		.loc 1 362 36 is_stmt 0 discriminator 3 view .LVU82
+ 331 006c 064A     		ldr	r2, .L29
+ 332 006e 92F83C10 		ldrb	r1, [r2, #60]	@ zero_extendqisi2
+ 362:Src/freertos.c **** 		}
+ 333              		.loc 1 362 22 discriminator 3 view .LVU83
+ 334 0072 35F81320 		ldrh	r2, [r5, r3, lsl #1]
+ 335 0076 92FBF1F2 		sdiv	r2, r2, r1
+ 336 007a 25F81320 		strh	r2, [r5, r3, lsl #1]	@ movhi
+ 361:Src/freertos.c **** 			ptr->servoVals[j] /= posnHistory.numFilled;
+ 337              		.loc 1 361 31 is_stmt 1 discriminator 3 view .LVU84
+ 361:Src/freertos.c **** 			ptr->servoVals[j] /= posnHistory.numFilled;
+ 338              		.loc 1 361 32 is_stmt 0 discriminator 3 view .LVU85
+ 339 007e 0133     		adds	r3, r3, #1
+ 340              	.LVL23:
+ 341              	.L22:
+ 361:Src/freertos.c **** 			ptr->servoVals[j] /= posnHistory.numFilled;
+ 342              		.loc 1 361 17 is_stmt 1 discriminator 1 view .LVU86
+ 361:Src/freertos.c **** 			ptr->servoVals[j] /= posnHistory.numFilled;
+ 343              		.loc 1 361 3 is_stmt 0 discriminator 1 view .LVU87
+ 344 0080 022B     		cmp	r3, #2
+ 345 0082 F3DD     		ble	.L23
+ 346              	.LVL24:
+ 347              	.L15:
+ 361:Src/freertos.c **** 			ptr->servoVals[j] /= posnHistory.numFilled;
+ 348              		.loc 1 361 3 discriminator 1 view .LVU88
+ 349              	.LBE9:
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 17
+
+
+ 365:Src/freertos.c **** 
+ 350              		.loc 1 365 1 view .LVU89
+ 351 0084 04B0     		add	sp, sp, #16
+ 352              	.LCFI6:
+ 353              		.cfi_def_cfa_offset 16
+ 354              		@ sp needed
+ 355 0086 70BD     		pop	{r4, r5, r6, pc}
+ 356              	.LVL25:
+ 357              	.L30:
+ 365:Src/freertos.c **** 
+ 358              		.loc 1 365 1 view .LVU90
+ 359              		.align	2
+ 360              	.L29:
+ 361 0088 00000000 		.word	.LANCHOR3
+ 362              		.cfi_endproc
+ 363              	.LFE327:
+ 365              		.section	.text.calcSinglePos,"ax",%progbits
+ 366              		.align	1
+ 367              		.syntax unified
+ 368              		.thumb
+ 369              		.thumb_func
+ 370              		.fpu fpv4-sp-d16
+ 372              	calcSinglePos:
+ 373              	.LVL26:
+ 374              	.LFB328:
+ 367:Src/freertos.c **** 
+ 375              		.loc 1 367 45 is_stmt 1 view -0
+ 376              		.cfi_startproc
+ 377              		@ args = 0, pretend = 0, frame = 0
+ 378              		@ frame_needed = 0, uses_anonymous_args = 0
+ 367:Src/freertos.c **** 
+ 379              		.loc 1 367 45 is_stmt 0 view .LVU92
+ 380 0000 38B5     		push	{r3, r4, r5, lr}
+ 381              	.LCFI7:
+ 382              		.cfi_def_cfa_offset 16
+ 383              		.cfi_offset 3, -16
+ 384              		.cfi_offset 4, -12
+ 385              		.cfi_offset 5, -8
+ 386              		.cfi_offset 14, -4
+ 369:Src/freertos.c **** 		//account for case where values added is zero
+ 387              		.loc 1 369 2 is_stmt 1 view .LVU93
+ 388              	.LVL27:
+ 371:Src/freertos.c **** 		servoPosn = getAnalogVal(ADC_Array[link]);
+ 389              		.loc 1 371 2 view .LVU94
+ 371:Src/freertos.c **** 		servoPosn = getAnalogVal(ADC_Array[link]);
+ 390              		.loc 1 371 17 is_stmt 0 view .LVU95
+ 391 0002 0D4B     		ldr	r3, .L38
+ 392 0004 93F83C40 		ldrb	r4, [r3, #60]	@ zero_extendqisi2
+ 371:Src/freertos.c **** 		servoPosn = getAnalogVal(ADC_Array[link]);
+ 393              		.loc 1 371 5 view .LVU96
+ 394 0008 14B1     		cbz	r4, .L37
+ 395              	.LBB10:
+ 374:Src/freertos.c **** 			//add all of the values accumulated
+ 396              		.loc 1 374 12 view .LVU97
+ 397 000a 0023     		movs	r3, #0
+ 398              	.LBE10:
+ 369:Src/freertos.c **** 		//account for case where values added is zero
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 18
+
+
+ 399              		.loc 1 369 11 view .LVU98
+ 400 000c 1A46     		mov	r2, r3
+ 401 000e 0EE0     		b	.L32
+ 402              	.L37:
+ 372:Src/freertos.c **** 	} else {
+ 403              		.loc 1 372 3 is_stmt 1 view .LVU99
+ 372:Src/freertos.c **** 	} else {
+ 404              		.loc 1 372 15 is_stmt 0 view .LVU100
+ 405 0010 0A4B     		ldr	r3, .L38+4
+ 406 0012 53F82000 		ldr	r0, [r3, r0, lsl #2]
+ 407              	.LVL28:
+ 372:Src/freertos.c **** 	} else {
+ 408              		.loc 1 372 15 view .LVU101
+ 409 0016 FFF7FEFF 		bl	getAnalogVal
+ 410              	.LVL29:
+ 372:Src/freertos.c **** 	} else {
+ 411              		.loc 1 372 15 view .LVU102
+ 412 001a 0CE0     		b	.L33
+ 413              	.LVL30:
+ 414              	.L34:
+ 415              	.LBB11:
+ 376:Src/freertos.c **** 		}
+ 416              		.loc 1 376 4 is_stmt 1 discriminator 3 view .LVU103
+ 376:Src/freertos.c **** 		}
+ 417              		.loc 1 376 46 is_stmt 0 discriminator 3 view .LVU104
+ 418 001c 03EB4301 		add	r1, r3, r3, lsl #1
+ 419 0020 0144     		add	r1, r1, r0
+ 420 0022 054D     		ldr	r5, .L38
+ 421 0024 35F81110 		ldrh	r1, [r5, r1, lsl #1]
+ 376:Src/freertos.c **** 		}
+ 422              		.loc 1 376 14 discriminator 3 view .LVU105
+ 423 0028 0A44     		add	r2, r2, r1
+ 424              	.LVL31:
+ 376:Src/freertos.c **** 		}
+ 425              		.loc 1 376 14 discriminator 3 view .LVU106
+ 426 002a 92B2     		uxth	r2, r2
+ 427              	.LVL32:
+ 374:Src/freertos.c **** 			//add all of the values accumulated
+ 428              		.loc 1 374 44 is_stmt 1 discriminator 3 view .LVU107
+ 374:Src/freertos.c **** 			//add all of the values accumulated
+ 429              		.loc 1 374 45 is_stmt 0 discriminator 3 view .LVU108
+ 430 002c 0133     		adds	r3, r3, #1
+ 431              	.LVL33:
+ 432              	.L32:
+ 374:Src/freertos.c **** 			//add all of the values accumulated
+ 433              		.loc 1 374 19 is_stmt 1 discriminator 1 view .LVU109
+ 374:Src/freertos.c **** 			//add all of the values accumulated
+ 434              		.loc 1 374 3 is_stmt 0 discriminator 1 view .LVU110
+ 435 002e 9C42     		cmp	r4, r3
+ 436 0030 F4DC     		bgt	.L34
+ 437              	.LBE11:
+ 379:Src/freertos.c **** 	}
+ 438              		.loc 1 379 3 is_stmt 1 view .LVU111
+ 379:Src/freertos.c **** 	}
+ 439              		.loc 1 379 13 is_stmt 0 view .LVU112
+ 440 0032 92FBF4F0 		sdiv	r0, r2, r4
+ 441              	.LVL34:
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 19
+
+
+ 442              	.L33:
+ 382:Src/freertos.c **** 	return servoPosn;
+ 443              		.loc 1 382 2 is_stmt 1 view .LVU113
+ 383:Src/freertos.c **** }
+ 444              		.loc 1 383 2 view .LVU114
+ 384:Src/freertos.c **** 
+ 445              		.loc 1 384 1 is_stmt 0 view .LVU115
+ 446 0036 38BD     		pop	{r3, r4, r5, pc}
+ 447              	.L39:
+ 448              		.align	2
+ 449              	.L38:
+ 450 0038 00000000 		.word	.LANCHOR3
+ 451 003c 00000000 		.word	.LANCHOR2
+ 452              		.cfi_endproc
+ 453              	.LFE328:
+ 455              		.section	.text.startDefaultTask,"ax",%progbits
+ 456              		.align	1
+ 457              		.global	startDefaultTask
+ 458              		.syntax unified
+ 459              		.thumb
+ 460              		.thumb_func
+ 461              		.fpu fpv4-sp-d16
+ 463              	startDefaultTask:
+ 464              	.LFB322:
+ 139:Src/freertos.c **** 	for (;;)
+ 465              		.loc 1 139 1 is_stmt 1 view -0
+ 466              		.cfi_startproc
+ 467              		@ Volatile: function does not return.
+ 468              		@ args = 0, pretend = 0, frame = 0
+ 469              		@ frame_needed = 0, uses_anonymous_args = 0
+ 470              	.LVL35:
+ 139:Src/freertos.c **** 	for (;;)
+ 471              		.loc 1 139 1 is_stmt 0 view .LVU117
+ 472 0000 08B5     		push	{r3, lr}
+ 473              	.LCFI8:
+ 474              		.cfi_def_cfa_offset 8
+ 475              		.cfi_offset 3, -8
+ 476              		.cfi_offset 14, -4
+ 477              	.LVL36:
+ 478              	.L41:
+ 140:Src/freertos.c **** 	{
+ 479              		.loc 1 140 2 is_stmt 1 discriminator 1 view .LVU118
+ 142:Src/freertos.c **** 	}
+ 480              		.loc 1 142 3 discriminator 1 view .LVU119
+ 481 0002 0120     		movs	r0, #1
+ 482 0004 FFF7FEFF 		bl	osDelay
+ 483              	.LVL37:
+ 140:Src/freertos.c **** 	{
+ 484              		.loc 1 140 8 discriminator 1 view .LVU120
+ 485 0008 FBE7     		b	.L41
+ 486              		.cfi_endproc
+ 487              	.LFE322:
+ 489              		.section	.text.parseWifiMsg,"ax",%progbits
+ 490              		.align	1
+ 491              		.global	parseWifiMsg
+ 492              		.syntax unified
+ 493              		.thumb
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 20
+
+
+ 494              		.thumb_func
+ 495              		.fpu fpv4-sp-d16
+ 497              	parseWifiMsg:
+ 498              	.LFB323:
+ 149:Src/freertos.c **** 	ANALOG_CMD_t msg;
+ 499              		.loc 1 149 1 view -0
+ 500              		.cfi_startproc
+ 501              		@ args = 0, pretend = 0, frame = 16
+ 502              		@ frame_needed = 0, uses_anonymous_args = 0
+ 503              	.LVL38:
+ 149:Src/freertos.c **** 	ANALOG_CMD_t msg;
+ 504              		.loc 1 149 1 is_stmt 0 view .LVU122
+ 505 0000 30B5     		push	{r4, r5, lr}
+ 506              	.LCFI9:
+ 507              		.cfi_def_cfa_offset 12
+ 508              		.cfi_offset 4, -12
+ 509              		.cfi_offset 5, -8
+ 510              		.cfi_offset 14, -4
+ 511 0002 85B0     		sub	sp, sp, #20
+ 512              	.LCFI10:
+ 513              		.cfi_def_cfa_offset 32
+ 514 0004 45E0     		b	.L52
+ 515              	.LVL39:
+ 516              	.L55:
+ 517              	.LBB12:
+ 166:Src/freertos.c **** 				//enter SLAVE state
+ 518              		.loc 1 166 31 discriminator 1 view .LVU123
+ 519 0006 022C     		cmp	r4, #2
+ 520 0008 53D1     		bne	.L45
+ 168:Src/freertos.c **** 
+ 521              		.loc 1 168 5 is_stmt 1 view .LVU124
+ 168:Src/freertos.c **** 
+ 522              		.loc 1 168 18 is_stmt 0 view .LVU125
+ 523 000a 3E4B     		ldr	r3, .L57
+ 524 000c 0322     		movs	r2, #3
+ 525 000e 1A70     		strb	r2, [r3]
+ 171:Src/freertos.c **** 				//turn RED LED on
+ 526              		.loc 1 171 5 is_stmt 1 view .LVU126
+ 527 0010 0821     		movs	r1, #8
+ 528 0012 4FF09040 		mov	r0, #1207959552
+ 529              	.LVL40:
+ 171:Src/freertos.c **** 				//turn RED LED on
+ 530              		.loc 1 171 5 is_stmt 0 view .LVU127
+ 531 0016 FFF7FEFF 		bl	HAL_GPIO_TogglePin
+ 532              	.LVL41:
+ 173:Src/freertos.c **** 
+ 533              		.loc 1 173 5 is_stmt 1 view .LVU128
+ 534 001a 1021     		movs	r1, #16
+ 535 001c 3A48     		ldr	r0, .L57+4
+ 536 001e FFF7FEFF 		bl	HAL_GPIO_TogglePin
+ 537              	.LVL42:
+ 176:Src/freertos.c **** 
+ 538              		.loc 1 176 5 view .LVU129
+ 539 0022 04AB     		add	r3, sp, #16
+ 540 0024 13E90600 		ldmdb	r3, {r1, r2}
+ 541 0028 3848     		ldr	r0, .L57+8
+ 542 002a FFF7FEFF 		bl	updatePosnArray
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 21
+
+
+ 543              	.LVL43:
+ 544 002e 42E0     		b	.L44
+ 545              	.LVL44:
+ 546              	.L56:
+ 180:Src/freertos.c **** 					//turn yellow LED on
+ 547              		.loc 1 180 5 view .LVU130
+ 180:Src/freertos.c **** 					//turn yellow LED on
+ 548              		.loc 1 180 8 is_stmt 0 view .LVU131
+ 549 0030 FF2B     		cmp	r3, #255
+ 550 0032 06D0     		beq	.L54
+ 193:Src/freertos.c **** 				}
+ 551              		.loc 1 193 6 is_stmt 1 view .LVU132
+ 552 0034 04AB     		add	r3, sp, #16
+ 553 0036 13E90600 		ldmdb	r3, {r1, r2}
+ 554 003a 3448     		ldr	r0, .L57+8
+ 555              	.LVL45:
+ 193:Src/freertos.c **** 				}
+ 556              		.loc 1 193 6 is_stmt 0 view .LVU133
+ 557 003c FFF7FEFF 		bl	updatePosnArray
+ 558              	.LVL46:
+ 559 0040 39E0     		b	.L44
+ 560              	.LVL47:
+ 561              	.L54:
+ 182:Src/freertos.c **** 					//turn RED LED off
+ 562              		.loc 1 182 6 is_stmt 1 view .LVU134
+ 563 0042 0821     		movs	r1, #8
+ 564 0044 4FF09040 		mov	r0, #1207959552
+ 565              	.LVL48:
+ 182:Src/freertos.c **** 					//turn RED LED off
+ 566              		.loc 1 182 6 is_stmt 0 view .LVU135
+ 567 0048 FFF7FEFF 		bl	HAL_GPIO_TogglePin
+ 568              	.LVL49:
+ 184:Src/freertos.c **** 
+ 569              		.loc 1 184 6 is_stmt 1 view .LVU136
+ 570 004c 1021     		movs	r1, #16
+ 571 004e 2E48     		ldr	r0, .L57+4
+ 572 0050 FFF7FEFF 		bl	HAL_GPIO_TogglePin
+ 573              	.LVL50:
+ 187:Src/freertos.c **** 
+ 574              		.loc 1 187 6 view .LVU137
+ 187:Src/freertos.c **** 
+ 575              		.loc 1 187 19 is_stmt 0 view .LVU138
+ 576 0054 2B4B     		ldr	r3, .L57
+ 577 0056 0222     		movs	r2, #2
+ 578 0058 1A70     		strb	r2, [r3]
+ 190:Src/freertos.c **** 				} else {
+ 579              		.loc 1 190 6 is_stmt 1 view .LVU139
+ 580 005a FFF7FEFF 		bl	lock_servos
+ 581              	.LVL51:
+ 582 005e 2AE0     		b	.L44
+ 583              	.L48:
+ 584              	.LBB13:
+ 212:Src/freertos.c **** 				//set msgToSend state byte to MASTER
+ 585              		.loc 1 212 5 view .LVU140
+ 586 0060 6846     		mov	r0, sp
+ 587 0062 FFF7FEFF 		bl	calcCurrentPos
+ 588              	.LVL52:
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 22
+
+
+ 214:Src/freertos.c **** 				//set msgToSend data bytes to current average analog servo position values
+ 589              		.loc 1 214 5 view .LVU141
+ 214:Src/freertos.c **** 				//set msgToSend data bytes to current average analog servo position values
+ 590              		.loc 1 214 18 is_stmt 0 view .LVU142
+ 591 0066 0123     		movs	r3, #1
+ 592 0068 294A     		ldr	r2, .L57+12
+ 593 006a 1370     		strb	r3, [r2]
+ 216:Src/freertos.c **** 				for (int i=0; i<NUM_SERVOS; i++) {
+ 594              		.loc 1 216 5 is_stmt 1 view .LVU143
+ 595              	.LVL53:
+ 217:Src/freertos.c **** 					msgToSend[k++] = posnAvgForUpdate.servoVals[i] >> 8;
+ 596              		.loc 1 217 5 view .LVU144
+ 597              	.LBB14:
+ 217:Src/freertos.c **** 					msgToSend[k++] = posnAvgForUpdate.servoVals[i] >> 8;
+ 598              		.loc 1 217 10 view .LVU145
+ 217:Src/freertos.c **** 					msgToSend[k++] = posnAvgForUpdate.servoVals[i] >> 8;
+ 599              		.loc 1 217 14 is_stmt 0 view .LVU146
+ 600 006c 0022     		movs	r2, #0
+ 601              	.LVL54:
+ 602              	.L50:
+ 217:Src/freertos.c **** 					msgToSend[k++] = posnAvgForUpdate.servoVals[i] >> 8;
+ 603              		.loc 1 217 19 is_stmt 1 discriminator 1 view .LVU147
+ 217:Src/freertos.c **** 					msgToSend[k++] = posnAvgForUpdate.servoVals[i] >> 8;
+ 604              		.loc 1 217 5 is_stmt 0 discriminator 1 view .LVU148
+ 605 006e 022A     		cmp	r2, #2
+ 606 0070 30DC     		bgt	.L49
+ 218:Src/freertos.c **** 					msgToSend[k++] = posnAvgForUpdate.servoVals[i] & 0xff;
+ 607              		.loc 1 218 6 is_stmt 1 discriminator 3 view .LVU149
+ 218:Src/freertos.c **** 					msgToSend[k++] = posnAvgForUpdate.servoVals[i] & 0xff;
+ 608              		.loc 1 218 49 is_stmt 0 discriminator 3 view .LVU150
+ 609 0072 04A9     		add	r1, sp, #16
+ 610 0074 01EB4201 		add	r1, r1, r2, lsl #1
+ 611 0078 31F8104C 		ldrh	r4, [r1, #-16]
+ 218:Src/freertos.c **** 					msgToSend[k++] = posnAvgForUpdate.servoVals[i] & 0xff;
+ 612              		.loc 1 218 17 discriminator 3 view .LVU151
+ 613 007c 591C     		adds	r1, r3, #1
+ 614              	.LVL55:
+ 218:Src/freertos.c **** 					msgToSend[k++] = posnAvgForUpdate.servoVals[i] & 0xff;
+ 615              		.loc 1 218 21 discriminator 3 view .LVU152
+ 616 007e 2448     		ldr	r0, .L57+12
+ 617 0080 250A     		lsrs	r5, r4, #8
+ 618 0082 C554     		strb	r5, [r0, r3]
+ 219:Src/freertos.c **** 				}
+ 619              		.loc 1 219 6 is_stmt 1 discriminator 3 view .LVU153
+ 620              	.LVL56:
+ 219:Src/freertos.c **** 				}
+ 621              		.loc 1 219 21 is_stmt 0 discriminator 3 view .LVU154
+ 622 0084 4454     		strb	r4, [r0, r1]
+ 623 0086 0233     		adds	r3, r3, #2
+ 624              	.LVL57:
+ 217:Src/freertos.c **** 					msgToSend[k++] = posnAvgForUpdate.servoVals[i] >> 8;
+ 625              		.loc 1 217 33 is_stmt 1 discriminator 3 view .LVU155
+ 217:Src/freertos.c **** 					msgToSend[k++] = posnAvgForUpdate.servoVals[i] >> 8;
+ 626              		.loc 1 217 34 is_stmt 0 discriminator 3 view .LVU156
+ 627 0088 0132     		adds	r2, r2, #1
+ 628              	.LVL58:
+ 217:Src/freertos.c **** 					msgToSend[k++] = posnAvgForUpdate.servoVals[i] >> 8;
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 23
+
+
+ 629              		.loc 1 217 34 discriminator 3 view .LVU157
+ 630 008a F0E7     		b	.L50
+ 631              	.LVL59:
+ 632              	.L47:
+ 217:Src/freertos.c **** 					msgToSend[k++] = posnAvgForUpdate.servoVals[i] >> 8;
+ 633              		.loc 1 217 34 discriminator 3 view .LVU158
+ 634              	.LBE14:
+ 635              	.LBE13:
+ 235:Src/freertos.c **** 	}
+ 636              		.loc 1 235 3 is_stmt 1 view .LVU159
+ 637 008c C820     		movs	r0, #200
+ 638 008e FFF7FEFF 		bl	osDelay
+ 639              	.LVL60:
+ 640              	.LBE12:
+ 156:Src/freertos.c **** 	{
+ 641              		.loc 1 156 7 view .LVU160
+ 642              	.L52:
+ 154:Src/freertos.c **** 
+ 643              		.loc 1 154 2 view .LVU161
+ 156:Src/freertos.c **** 	{
+ 644              		.loc 1 156 2 view .LVU162
+ 645              	.LBB15:
+ 159:Src/freertos.c **** 		sculpture_status parseTaskMasterStatus = masterStatus;
+ 646              		.loc 1 159 3 view .LVU163
+ 159:Src/freertos.c **** 		sculpture_status parseTaskMasterStatus = masterStatus;
+ 647              		.loc 1 159 12 is_stmt 0 view .LVU164
+ 648 0092 0023     		movs	r3, #0
+ 649 0094 1A46     		mov	r2, r3
+ 650 0096 02A9     		add	r1, sp, #8
+ 651 0098 1E48     		ldr	r0, .L57+16
+ 652 009a 0068     		ldr	r0, [r0]
+ 653 009c FFF7FEFF 		bl	osMessageQueueGet
+ 654              	.LVL61:
+ 160:Src/freertos.c **** 		bool parseTaskLastMessage = lastMessage;
+ 655              		.loc 1 160 3 is_stmt 1 view .LVU165
+ 160:Src/freertos.c **** 		bool parseTaskLastMessage = lastMessage;
+ 656              		.loc 1 160 20 is_stmt 0 view .LVU166
+ 657 00a0 184B     		ldr	r3, .L57
+ 658 00a2 1C78     		ldrb	r4, [r3]	@ zero_extendqisi2
+ 659              	.LVL62:
+ 161:Src/freertos.c **** 
+ 660              		.loc 1 161 3 is_stmt 1 view .LVU167
+ 161:Src/freertos.c **** 
+ 661              		.loc 1 161 8 is_stmt 0 view .LVU168
+ 662 00a4 1C4B     		ldr	r3, .L57+20
+ 663 00a6 1D78     		ldrb	r5, [r3]	@ zero_extendqisi2
+ 664              	.LVL63:
+ 164:Src/freertos.c **** 			//other sculpture has taken over as master and you are still neutral
+ 665              		.loc 1 164 3 is_stmt 1 view .LVU169
+ 164:Src/freertos.c **** 			//other sculpture has taken over as master and you are still neutral
+ 666              		.loc 1 164 6 is_stmt 0 view .LVU170
+ 667 00a8 28B9     		cbnz	r0, .L44
+ 166:Src/freertos.c **** 				//enter SLAVE state
+ 668              		.loc 1 166 4 is_stmt 1 view .LVU171
+ 166:Src/freertos.c **** 				//enter SLAVE state
+ 669              		.loc 1 166 12 is_stmt 0 view .LVU172
+ 670 00aa 9DF80830 		ldrb	r3, [sp, #8]	@ zero_extendqisi2
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 24
+
+
+ 166:Src/freertos.c **** 				//enter SLAVE state
+ 671              		.loc 1 166 7 view .LVU173
+ 672 00ae 012B     		cmp	r3, #1
+ 673 00b0 A9D0     		beq	.L55
+ 674              	.L45:
+ 178:Src/freertos.c **** 				//last message from the master
+ 675              		.loc 1 178 11 is_stmt 1 view .LVU174
+ 178:Src/freertos.c **** 				//last message from the master
+ 676              		.loc 1 178 14 is_stmt 0 view .LVU175
+ 677 00b2 032C     		cmp	r4, #3
+ 678 00b4 BCD0     		beq	.L56
+ 679              	.LVL64:
+ 680              	.L44:
+ 199:Src/freertos.c **** 
+ 681              		.loc 1 199 3 is_stmt 1 view .LVU176
+ 199:Src/freertos.c **** 
+ 682              		.loc 1 199 6 is_stmt 0 view .LVU177
+ 683 00b6 012C     		cmp	r4, #1
+ 684 00b8 E8D1     		bne	.L47
+ 201:Src/freertos.c **** 				//set first byte with special LAST MESSAGE denotation
+ 685              		.loc 1 201 4 is_stmt 1 view .LVU178
+ 201:Src/freertos.c **** 				//set first byte with special LAST MESSAGE denotation
+ 686              		.loc 1 201 7 is_stmt 0 view .LVU179
+ 687 00ba 002D     		cmp	r5, #0
+ 688 00bc D0D0     		beq	.L48
+ 203:Src/freertos.c **** 				//clear lastMessage state variable
+ 689              		.loc 1 203 5 is_stmt 1 view .LVU180
+ 203:Src/freertos.c **** 				//clear lastMessage state variable
+ 690              		.loc 1 203 18 is_stmt 0 view .LVU181
+ 691 00be 144B     		ldr	r3, .L57+12
+ 692 00c0 FF22     		movs	r2, #255
+ 693 00c2 1A70     		strb	r2, [r3]
+ 205:Src/freertos.c **** 				//re-enter NEUTRAL state
+ 694              		.loc 1 205 5 is_stmt 1 view .LVU182
+ 205:Src/freertos.c **** 				//re-enter NEUTRAL state
+ 695              		.loc 1 205 17 is_stmt 0 view .LVU183
+ 696 00c4 144B     		ldr	r3, .L57+20
+ 697 00c6 0022     		movs	r2, #0
+ 698 00c8 1A70     		strb	r2, [r3]
+ 207:Src/freertos.c **** 				//lock all servos to current positions
+ 699              		.loc 1 207 5 is_stmt 1 view .LVU184
+ 207:Src/freertos.c **** 				//lock all servos to current positions
+ 700              		.loc 1 207 18 is_stmt 0 view .LVU185
+ 701 00ca 0E4B     		ldr	r3, .L57
+ 702 00cc 0222     		movs	r2, #2
+ 703 00ce 1A70     		strb	r2, [r3]
+ 209:Src/freertos.c **** 			} else { //if you are set to master, calc and send your positions
+ 704              		.loc 1 209 5 is_stmt 1 view .LVU186
+ 705 00d0 FFF7FEFF 		bl	lock_servos
+ 706              	.LVL65:
+ 707              	.L49:
+ 224:Src/freertos.c **** 
+ 708              		.loc 1 224 4 view .LVU187
+ 709 00d4 4FF40071 		mov	r1, #512
+ 710 00d8 1048     		ldr	r0, .L57+24
+ 711 00da FFF7FEFF 		bl	HAL_GPIO_TogglePin
+ 712              	.LVL66:
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 25
+
+
+ 227:Src/freertos.c **** 			if (mutexStatus == osOK)
+ 713              		.loc 1 227 4 view .LVU188
+ 227:Src/freertos.c **** 			if (mutexStatus == osOK)
+ 714              		.loc 1 227 18 is_stmt 0 view .LVU189
+ 715 00de 4FF0FF31 		mov	r1, #-1
+ 716 00e2 0F4B     		ldr	r3, .L57+28
+ 717 00e4 1868     		ldr	r0, [r3]
+ 718 00e6 FFF7FEFF 		bl	osMutexAcquire
+ 719              	.LVL67:
+ 228:Src/freertos.c **** 			{
+ 720              		.loc 1 228 4 is_stmt 1 view .LVU190
+ 228:Src/freertos.c **** 			{
+ 721              		.loc 1 228 7 is_stmt 0 view .LVU191
+ 722 00ea 0028     		cmp	r0, #0
+ 723 00ec CED1     		bne	.L47
+ 230:Src/freertos.c **** 				osMutexRelease(useSPI3MutexHandle);
+ 724              		.loc 1 230 5 is_stmt 1 view .LVU192
+ 725 00ee 0D4A     		ldr	r2, .L57+32
+ 726 00f0 0821     		movs	r1, #8
+ 727 00f2 0748     		ldr	r0, .L57+12
+ 728              	.LVL68:
+ 230:Src/freertos.c **** 				osMutexRelease(useSPI3MutexHandle);
+ 729              		.loc 1 230 5 is_stmt 0 view .LVU193
+ 730 00f4 FFF7FEFF 		bl	sendTCPData
+ 731              	.LVL69:
+ 231:Src/freertos.c **** 			}
+ 732              		.loc 1 231 5 is_stmt 1 view .LVU194
+ 733 00f8 094B     		ldr	r3, .L57+28
+ 734 00fa 1868     		ldr	r0, [r3]
+ 735 00fc FFF7FEFF 		bl	osMutexRelease
+ 736              	.LVL70:
+ 737 0100 C4E7     		b	.L47
+ 738              	.L58:
+ 739 0102 00BF     		.align	2
+ 740              	.L57:
+ 741 0104 00000000 		.word	.LANCHOR4
+ 742 0108 00040048 		.word	1207960576
+ 743 010c 00000000 		.word	.LANCHOR6
+ 744 0110 00000000 		.word	msgToSend
+ 745 0114 00000000 		.word	wifiMsgQID
+ 746 0118 00000000 		.word	.LANCHOR5
+ 747 011c 00080048 		.word	1207961600
+ 748 0120 00000000 		.word	useSPI3MutexHandle
+ 749 0124 00000000 		.word	.LANCHOR7
+ 750              	.LBE15:
+ 751              		.cfi_endproc
+ 752              	.LFE323:
+ 754              		.section	.text.getWifiMsg,"ax",%progbits
+ 755              		.align	1
+ 756              		.global	getWifiMsg
+ 757              		.syntax unified
+ 758              		.thumb
+ 759              		.thumb_func
+ 760              		.fpu fpv4-sp-d16
+ 762              	getWifiMsg:
+ 763              	.LFB324:
+ 242:Src/freertos.c **** 	ANALOG_CMD_t msg;
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 26
+
+
+ 764              		.loc 1 242 1 view -0
+ 765              		.cfi_startproc
+ 766              		@ args = 0, pretend = 0, frame = 8
+ 767              		@ frame_needed = 0, uses_anonymous_args = 0
+ 768              	.LVL71:
+ 242:Src/freertos.c **** 	ANALOG_CMD_t msg;
+ 769              		.loc 1 242 1 is_stmt 0 view .LVU196
+ 770 0000 10B5     		push	{r4, lr}
+ 771              	.LCFI11:
+ 772              		.cfi_def_cfa_offset 8
+ 773              		.cfi_offset 4, -8
+ 774              		.cfi_offset 14, -4
+ 775 0002 82B0     		sub	sp, sp, #8
+ 776              	.LCFI12:
+ 777              		.cfi_def_cfa_offset 16
+ 778 0004 0DE0     		b	.L62
+ 779              	.LVL72:
+ 780              	.L66:
+ 781              	.LBB16:
+ 280:Src/freertos.c **** 					} else {
+ 782              		.loc 1 280 20 view .LVU197
+ 783 0006 4FF0FF33 		mov	r3, #-1
+ 784 000a 01E0     		b	.L61
+ 785              	.L63:
+ 786 000c 4FF0FF33 		mov	r3, #-1
+ 787              	.L61:
+ 788              	.LVL73:
+ 286:Src/freertos.c **** 				}
+ 789              		.loc 1 286 6 is_stmt 1 view .LVU198
+ 790 0010 0022     		movs	r2, #0
+ 791 0012 6946     		mov	r1, sp
+ 792 0014 2048     		ldr	r0, .L67
+ 793 0016 0068     		ldr	r0, [r0]
+ 794 0018 FFF7FEFF 		bl	osMessageQueuePut
+ 795              	.LVL74:
+ 796              	.L60:
+ 290:Src/freertos.c **** 	}
+ 797              		.loc 1 290 3 view .LVU199
+ 798 001c C820     		movs	r0, #200
+ 799 001e FFF7FEFF 		bl	osDelay
+ 800              	.LVL75:
+ 801              	.LBE16:
+ 249:Src/freertos.c **** 	{
+ 802              		.loc 1 249 7 view .LVU200
+ 803              	.L62:
+ 245:Src/freertos.c **** 	static uint8_t recStatus;
+ 804              		.loc 1 245 2 view .LVU201
+ 246:Src/freertos.c **** 	uint32_t queueTimeout;
+ 805              		.loc 1 246 2 view .LVU202
+ 247:Src/freertos.c **** 
+ 806              		.loc 1 247 2 view .LVU203
+ 249:Src/freertos.c **** 	{
+ 807              		.loc 1 249 2 view .LVU204
+ 808              	.LBB17:
+ 252:Src/freertos.c **** 
+ 809              		.loc 1 252 3 view .LVU205
+ 252:Src/freertos.c **** 
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 27
+
+
+ 810              		.loc 1 252 11 is_stmt 0 view .LVU206
+ 811 0022 1E4B     		ldr	r3, .L67+4
+ 812 0024 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 813              	.LVL76:
+ 255:Src/freertos.c **** 		{
+ 814              		.loc 1 255 3 is_stmt 1 view .LVU207
+ 255:Src/freertos.c **** 		{
+ 815              		.loc 1 255 6 is_stmt 0 view .LVU208
+ 816 0026 012B     		cmp	r3, #1
+ 817 0028 F8D0     		beq	.L60
+ 258:Src/freertos.c **** 			//get SPI mutex... should return almost instantly
+ 818              		.loc 1 258 4 is_stmt 1 view .LVU209
+ 819 002a 4FF40071 		mov	r1, #512
+ 820 002e 1C48     		ldr	r0, .L67+8
+ 821 0030 FFF7FEFF 		bl	HAL_GPIO_TogglePin
+ 822              	.LVL77:
+ 260:Src/freertos.c **** 			if (mutexStatus == osOK)
+ 823              		.loc 1 260 4 view .LVU210
+ 260:Src/freertos.c **** 			if (mutexStatus == osOK)
+ 824              		.loc 1 260 18 is_stmt 0 view .LVU211
+ 825 0034 4FF0FF31 		mov	r1, #-1
+ 826 0038 1A4B     		ldr	r3, .L67+12
+ 827 003a 1868     		ldr	r0, [r3]
+ 828 003c FFF7FEFF 		bl	osMutexAcquire
+ 829              	.LVL78:
+ 261:Src/freertos.c **** 			{
+ 830              		.loc 1 261 4 is_stmt 1 view .LVU212
+ 261:Src/freertos.c **** 			{
+ 831              		.loc 1 261 7 is_stmt 0 view .LVU213
+ 832 0040 0028     		cmp	r0, #0
+ 833 0042 EBD1     		bne	.L60
+ 264:Src/freertos.c **** 				osMutexRelease(useSPI3MutexHandle);
+ 834              		.loc 1 264 5 is_stmt 1 view .LVU214
+ 264:Src/freertos.c **** 				osMutexRelease(useSPI3MutexHandle);
+ 835              		.loc 1 264 17 is_stmt 0 view .LVU215
+ 836 0044 184A     		ldr	r2, .L67+16
+ 837 0046 1949     		ldr	r1, .L67+20
+ 838 0048 0A20     		movs	r0, #10
+ 839              	.LVL79:
+ 264:Src/freertos.c **** 				osMutexRelease(useSPI3MutexHandle);
+ 840              		.loc 1 264 17 view .LVU216
+ 841 004a FFF7FEFF 		bl	receiveTCPData
+ 842              	.LVL80:
+ 264:Src/freertos.c **** 				osMutexRelease(useSPI3MutexHandle);
+ 843              		.loc 1 264 15 view .LVU217
+ 844 004e 184C     		ldr	r4, .L67+24
+ 845 0050 2070     		strb	r0, [r4]
+ 265:Src/freertos.c **** 				//create wifiMsgQ message
+ 846              		.loc 1 265 5 is_stmt 1 view .LVU218
+ 847 0052 144B     		ldr	r3, .L67+12
+ 848 0054 1868     		ldr	r0, [r3]
+ 849 0056 FFF7FEFF 		bl	osMutexRelease
+ 850              	.LVL81:
+ 267:Src/freertos.c **** 				{
+ 851              		.loc 1 267 5 view .LVU219
+ 267:Src/freertos.c **** 				{
+ 852              		.loc 1 267 19 is_stmt 0 view .LVU220
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 28
+
+
+ 853 005a 2378     		ldrb	r3, [r4]	@ zero_extendqisi2
+ 267:Src/freertos.c **** 				{
+ 854              		.loc 1 267 8 view .LVU221
+ 855 005c 002B     		cmp	r3, #0
+ 856 005e DDD1     		bne	.L60
+ 269:Src/freertos.c **** 					msg.analogCmdVal1a = retData[2];
+ 857              		.loc 1 269 6 is_stmt 1 view .LVU222
+ 269:Src/freertos.c **** 					msg.analogCmdVal1a = retData[2];
+ 858              		.loc 1 269 26 is_stmt 0 view .LVU223
+ 859 0060 114B     		ldr	r3, .L67+16
+ 860 0062 5A78     		ldrb	r2, [r3, #1]	@ zero_extendqisi2
+ 269:Src/freertos.c **** 					msg.analogCmdVal1a = retData[2];
+ 861              		.loc 1 269 17 view .LVU224
+ 862 0064 8DF80020 		strb	r2, [sp]
+ 270:Src/freertos.c **** 					msg.analogCmdVal1b = retData[3];
+ 863              		.loc 1 270 6 is_stmt 1 view .LVU225
+ 270:Src/freertos.c **** 					msg.analogCmdVal1b = retData[3];
+ 864              		.loc 1 270 34 is_stmt 0 view .LVU226
+ 865 0068 9978     		ldrb	r1, [r3, #2]	@ zero_extendqisi2
+ 270:Src/freertos.c **** 					msg.analogCmdVal1b = retData[3];
+ 866              		.loc 1 270 25 view .LVU227
+ 867 006a 8DF80110 		strb	r1, [sp, #1]
+ 271:Src/freertos.c **** 					msg.analogCmdVal2a = retData[4];
+ 868              		.loc 1 271 6 is_stmt 1 view .LVU228
+ 271:Src/freertos.c **** 					msg.analogCmdVal2a = retData[4];
+ 869              		.loc 1 271 34 is_stmt 0 view .LVU229
+ 870 006e D978     		ldrb	r1, [r3, #3]	@ zero_extendqisi2
+ 271:Src/freertos.c **** 					msg.analogCmdVal2a = retData[4];
+ 871              		.loc 1 271 25 view .LVU230
+ 872 0070 8DF80210 		strb	r1, [sp, #2]
+ 272:Src/freertos.c **** 					msg.analogCmdVal2b = retData[5];
+ 873              		.loc 1 272 6 is_stmt 1 view .LVU231
+ 272:Src/freertos.c **** 					msg.analogCmdVal2b = retData[5];
+ 874              		.loc 1 272 34 is_stmt 0 view .LVU232
+ 875 0074 1979     		ldrb	r1, [r3, #4]	@ zero_extendqisi2
+ 272:Src/freertos.c **** 					msg.analogCmdVal2b = retData[5];
+ 876              		.loc 1 272 25 view .LVU233
+ 877 0076 8DF80310 		strb	r1, [sp, #3]
+ 273:Src/freertos.c **** 					msg.analogCmdVal3a = retData[6];
+ 878              		.loc 1 273 6 is_stmt 1 view .LVU234
+ 273:Src/freertos.c **** 					msg.analogCmdVal3a = retData[6];
+ 879              		.loc 1 273 34 is_stmt 0 view .LVU235
+ 880 007a 5979     		ldrb	r1, [r3, #5]	@ zero_extendqisi2
+ 273:Src/freertos.c **** 					msg.analogCmdVal3a = retData[6];
+ 881              		.loc 1 273 25 view .LVU236
+ 882 007c 8DF80410 		strb	r1, [sp, #4]
+ 274:Src/freertos.c **** 					msg.analogCmdVal3b = retData[7];
+ 883              		.loc 1 274 6 is_stmt 1 view .LVU237
+ 274:Src/freertos.c **** 					msg.analogCmdVal3b = retData[7];
+ 884              		.loc 1 274 34 is_stmt 0 view .LVU238
+ 885 0080 9979     		ldrb	r1, [r3, #6]	@ zero_extendqisi2
+ 274:Src/freertos.c **** 					msg.analogCmdVal3b = retData[7];
+ 886              		.loc 1 274 25 view .LVU239
+ 887 0082 8DF80510 		strb	r1, [sp, #5]
+ 275:Src/freertos.c **** 
+ 888              		.loc 1 275 6 is_stmt 1 view .LVU240
+ 275:Src/freertos.c **** 
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 29
+
+
+ 889              		.loc 1 275 34 is_stmt 0 view .LVU241
+ 890 0086 DB79     		ldrb	r3, [r3, #7]	@ zero_extendqisi2
+ 275:Src/freertos.c **** 
+ 891              		.loc 1 275 25 view .LVU242
+ 892 0088 8DF80630 		strb	r3, [sp, #6]
+ 279:Src/freertos.c **** 						queueTimeout = osWaitForever;
+ 893              		.loc 1 279 6 is_stmt 1 view .LVU243
+ 279:Src/freertos.c **** 						queueTimeout = osWaitForever;
+ 894              		.loc 1 279 9 is_stmt 0 view .LVU244
+ 895 008c FF2A     		cmp	r2, #255
+ 896 008e BDD0     		beq	.L63
+ 279:Src/freertos.c **** 						queueTimeout = osWaitForever;
+ 897              		.loc 1 279 37 discriminator 1 view .LVU245
+ 898 0090 012A     		cmp	r2, #1
+ 899 0092 B8D0     		beq	.L66
+ 282:Src/freertos.c **** 					}
+ 900              		.loc 1 282 20 view .LVU246
+ 901 0094 0023     		movs	r3, #0
+ 902 0096 BBE7     		b	.L61
+ 903              	.L68:
+ 904              		.align	2
+ 905              	.L67:
+ 906 0098 00000000 		.word	wifiMsgQID
+ 907 009c 00000000 		.word	.LANCHOR4
+ 908 00a0 00080048 		.word	1207961600
+ 909 00a4 00000000 		.word	useSPI3MutexHandle
+ 910 00a8 00000000 		.word	.LANCHOR8
+ 911 00ac 00000000 		.word	.LANCHOR9
+ 912 00b0 00000000 		.word	.LANCHOR10
+ 913              	.LBE17:
+ 914              		.cfi_endproc
+ 915              	.LFE324:
+ 917              		.section	.text.updateServoPositions,"ax",%progbits
+ 918              		.align	1
+ 919              		.global	updateServoPositions
+ 920              		.syntax unified
+ 921              		.thumb
+ 922              		.thumb_func
+ 923              		.fpu fpv4-sp-d16
+ 925              	updateServoPositions:
+ 926              	.LVL82:
+ 927              	.LFB325:
+ 297:Src/freertos.c **** 	//after entering this task, wifiConnected set so that pushbutton use changes state
+ 928              		.loc 1 297 1 is_stmt 1 view -0
+ 929              		.cfi_startproc
+ 930              		@ Volatile: function does not return.
+ 931              		@ args = 0, pretend = 0, frame = 8
+ 932              		@ frame_needed = 0, uses_anonymous_args = 0
+ 297:Src/freertos.c **** 	//after entering this task, wifiConnected set so that pushbutton use changes state
+ 933              		.loc 1 297 1 is_stmt 0 view .LVU248
+ 934 0000 00B5     		push	{lr}
+ 935              	.LCFI13:
+ 936              		.cfi_def_cfa_offset 4
+ 937              		.cfi_offset 14, -4
+ 938 0002 83B0     		sub	sp, sp, #12
+ 939              	.LCFI14:
+ 940              		.cfi_def_cfa_offset 16
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 30
+
+
+ 299:Src/freertos.c **** 	for(;;)
+ 941              		.loc 1 299 2 is_stmt 1 view .LVU249
+ 299:Src/freertos.c **** 	for(;;)
+ 942              		.loc 1 299 16 is_stmt 0 view .LVU250
+ 943 0004 114B     		ldr	r3, .L74
+ 944 0006 0122     		movs	r2, #1
+ 945 0008 1A70     		strb	r2, [r3]
+ 946 000a 08E0     		b	.L72
+ 947              	.LVL83:
+ 948              	.L70:
+ 308:Src/freertos.c **** 		}
+ 949              		.loc 1 308 4 is_stmt 1 view .LVU251
+ 950 000c 104B     		ldr	r3, .L74+4
+ 951 000e 93E80600 		ldm	r3, {r1, r2}
+ 952 0012 1048     		ldr	r0, .L74+8
+ 953 0014 FFF7FEFF 		bl	addToRingBuf
+ 954              	.LVL84:
+ 955              	.L71:
+ 312:Src/freertos.c **** 	}
+ 956              		.loc 1 312 3 view .LVU252
+ 957 0018 0F20     		movs	r0, #15
+ 958 001a FFF7FEFF 		bl	osDelay
+ 959              	.LVL85:
+ 300:Src/freertos.c **** 	{
+ 960              		.loc 1 300 7 view .LVU253
+ 961              	.L72:
+ 300:Src/freertos.c **** 	{
+ 962              		.loc 1 300 2 view .LVU254
+ 303:Src/freertos.c **** 		if (posnHistory.numFilled == 0) {
+ 963              		.loc 1 303 3 view .LVU255
+ 303:Src/freertos.c **** 		if (posnHistory.numFilled == 0) {
+ 964              		.loc 1 303 24 is_stmt 0 view .LVU256
+ 965 001e 0C4C     		ldr	r4, .L74+4
+ 966 0020 6846     		mov	r0, sp
+ 967 0022 FFF7FEFF 		bl	getCurrAnalogPosns
+ 968              	.LVL86:
+ 969 0026 0098     		ldr	r0, [sp]	@ unaligned
+ 970 0028 2060     		str	r0, [r4]
+ 971 002a BDF80430 		ldrh	r3, [sp, #4]	@ unaligned
+ 972 002e A380     		strh	r3, [r4, #4]	@ unaligned
+ 304:Src/freertos.c **** 			posnHistory.vals[0] = currentAnalogPosns;
+ 973              		.loc 1 304 3 is_stmt 1 view .LVU257
+ 304:Src/freertos.c **** 			posnHistory.vals[0] = currentAnalogPosns;
+ 974              		.loc 1 304 18 is_stmt 0 view .LVU258
+ 975 0030 084B     		ldr	r3, .L74+8
+ 976 0032 93F83C30 		ldrb	r3, [r3, #60]	@ zero_extendqisi2
+ 304:Src/freertos.c **** 			posnHistory.vals[0] = currentAnalogPosns;
+ 977              		.loc 1 304 6 view .LVU259
+ 978 0036 002B     		cmp	r3, #0
+ 979 0038 E8D1     		bne	.L70
+ 305:Src/freertos.c **** 			posnHistory.numFilled = 1;
+ 980              		.loc 1 305 4 is_stmt 1 view .LVU260
+ 305:Src/freertos.c **** 			posnHistory.numFilled = 1;
+ 981              		.loc 1 305 24 is_stmt 0 view .LVU261
+ 982 003a 064B     		ldr	r3, .L74+8
+ 983 003c D4E90001 		ldrd	r0, r1, [r4]
+ 984 0040 1860     		str	r0, [r3]
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 31
+
+
+ 985 0042 9980     		strh	r1, [r3, #4]	@ movhi
+ 306:Src/freertos.c **** 		} else {
+ 986              		.loc 1 306 4 is_stmt 1 view .LVU262
+ 306:Src/freertos.c **** 		} else {
+ 987              		.loc 1 306 26 is_stmt 0 view .LVU263
+ 988 0044 0122     		movs	r2, #1
+ 989 0046 83F83C20 		strb	r2, [r3, #60]
+ 990 004a E5E7     		b	.L71
+ 991              	.L75:
+ 992              		.align	2
+ 993              	.L74:
+ 994 004c 00000000 		.word	.LANCHOR11
+ 995 0050 00000000 		.word	.LANCHOR0
+ 996 0054 00000000 		.word	.LANCHOR3
+ 997              		.cfi_endproc
+ 998              	.LFE325:
+ 1000              		.section	.text.toggleMasterStatus,"ax",%progbits
+ 1001              		.align	1
+ 1002              		.global	toggleMasterStatus
+ 1003              		.syntax unified
+ 1004              		.thumb
+ 1005              		.thumb_func
+ 1006              		.fpu fpv4-sp-d16
+ 1008              	toggleMasterStatus:
+ 1009              	.LFB326:
+ 320:Src/freertos.c **** 	if (masterStatus == MASTER)
+ 1010              		.loc 1 320 1 is_stmt 1 view -0
+ 1011              		.cfi_startproc
+ 1012              		@ args = 0, pretend = 0, frame = 0
+ 1013              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1014 0000 10B5     		push	{r4, lr}
+ 1015              	.LCFI15:
+ 1016              		.cfi_def_cfa_offset 8
+ 1017              		.cfi_offset 4, -8
+ 1018              		.cfi_offset 14, -4
+ 321:Src/freertos.c **** 	{
+ 1019              		.loc 1 321 2 view .LVU265
+ 321:Src/freertos.c **** 	{
+ 1020              		.loc 1 321 19 is_stmt 0 view .LVU266
+ 1021 0002 154B     		ldr	r3, .L84
+ 1022 0004 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 321:Src/freertos.c **** 	{
+ 1023              		.loc 1 321 5 view .LVU267
+ 1024 0006 012B     		cmp	r3, #1
+ 1025 0008 02D0     		beq	.L82
+ 329:Src/freertos.c **** 	{
+ 1026              		.loc 1 329 7 is_stmt 1 view .LVU268
+ 329:Src/freertos.c **** 	{
+ 1027              		.loc 1 329 10 is_stmt 0 view .LVU269
+ 1028 000a 022B     		cmp	r3, #2
+ 1029 000c 0DD0     		beq	.L83
+ 1030              	.L76:
+ 342:Src/freertos.c **** 
+ 1031              		.loc 1 342 1 view .LVU270
+ 1032 000e 10BD     		pop	{r4, pc}
+ 1033              	.L82:
+ 323:Src/freertos.c **** 		//turn yellow on
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 32
+
+
+ 1034              		.loc 1 323 3 is_stmt 1 view .LVU271
+ 323:Src/freertos.c **** 		//turn yellow on
+ 1035              		.loc 1 323 15 is_stmt 0 view .LVU272
+ 1036 0010 0124     		movs	r4, #1
+ 1037 0012 124B     		ldr	r3, .L84+4
+ 1038 0014 1C70     		strb	r4, [r3]
+ 325:Src/freertos.c **** 		//turn GREEN off
+ 1039              		.loc 1 325 3 is_stmt 1 view .LVU273
+ 1040 0016 0821     		movs	r1, #8
+ 1041 0018 4FF09040 		mov	r0, #1207959552
+ 1042 001c FFF7FEFF 		bl	HAL_GPIO_TogglePin
+ 1043              	.LVL87:
+ 327:Src/freertos.c **** 	}
+ 1044              		.loc 1 327 3 view .LVU274
+ 1045 0020 2146     		mov	r1, r4
+ 1046 0022 0F48     		ldr	r0, .L84+8
+ 1047 0024 FFF7FEFF 		bl	HAL_GPIO_TogglePin
+ 1048              	.LVL88:
+ 1049 0028 F1E7     		b	.L76
+ 1050              	.L83:
+ 331:Src/freertos.c **** 		//turn yellow off
+ 1051              		.loc 1 331 3 view .LVU275
+ 331:Src/freertos.c **** 		//turn yellow off
+ 1052              		.loc 1 331 16 is_stmt 0 view .LVU276
+ 1053 002a 0124     		movs	r4, #1
+ 1054 002c 0A4B     		ldr	r3, .L84
+ 1055 002e 1C70     		strb	r4, [r3]
+ 333:Src/freertos.c **** 		//turn green on
+ 1056              		.loc 1 333 3 is_stmt 1 view .LVU277
+ 1057 0030 0821     		movs	r1, #8
+ 1058 0032 4FF09040 		mov	r0, #1207959552
+ 1059 0036 FFF7FEFF 		bl	HAL_GPIO_TogglePin
+ 1060              	.LVL89:
+ 335:Src/freertos.c **** 
+ 1061              		.loc 1 335 3 view .LVU278
+ 1062 003a 2146     		mov	r1, r4
+ 1063 003c 0848     		ldr	r0, .L84+8
+ 1064 003e FFF7FEFF 		bl	HAL_GPIO_TogglePin
+ 1065              	.LVL90:
+ 338:Src/freertos.c **** 			setPulse(0, false, i);
+ 1066              		.loc 1 338 3 view .LVU279
+ 1067              	.LBB18:
+ 338:Src/freertos.c **** 			setPulse(0, false, i);
+ 1068              		.loc 1 338 8 view .LVU280
+ 338:Src/freertos.c **** 			setPulse(0, false, i);
+ 1069              		.loc 1 338 12 is_stmt 0 view .LVU281
+ 1070 0042 0024     		movs	r4, #0
+ 1071              	.LVL91:
+ 1072              	.L79:
+ 338:Src/freertos.c **** 			setPulse(0, false, i);
+ 1073              		.loc 1 338 17 is_stmt 1 discriminator 1 view .LVU282
+ 338:Src/freertos.c **** 			setPulse(0, false, i);
+ 1074              		.loc 1 338 3 is_stmt 0 discriminator 1 view .LVU283
+ 1075 0044 022C     		cmp	r4, #2
+ 1076 0046 E2DC     		bgt	.L76
+ 339:Src/freertos.c **** 		}
+ 1077              		.loc 1 339 4 is_stmt 1 discriminator 3 view .LVU284
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 33
+
+
+ 1078 0048 E2B2     		uxtb	r2, r4
+ 1079 004a 0021     		movs	r1, #0
+ 1080 004c 0846     		mov	r0, r1
+ 1081 004e FFF7FEFF 		bl	setPulse
+ 1082              	.LVL92:
+ 338:Src/freertos.c **** 			setPulse(0, false, i);
+ 1083              		.loc 1 338 31 discriminator 3 view .LVU285
+ 338:Src/freertos.c **** 			setPulse(0, false, i);
+ 1084              		.loc 1 338 32 is_stmt 0 discriminator 3 view .LVU286
+ 1085 0052 0134     		adds	r4, r4, #1
+ 1086              	.LVL93:
+ 338:Src/freertos.c **** 			setPulse(0, false, i);
+ 1087              		.loc 1 338 32 discriminator 3 view .LVU287
+ 1088 0054 F6E7     		b	.L79
+ 1089              	.L85:
+ 1090 0056 00BF     		.align	2
+ 1091              	.L84:
+ 1092 0058 00000000 		.word	.LANCHOR4
+ 1093 005c 00000000 		.word	.LANCHOR5
+ 1094 0060 00040048 		.word	1207960576
+ 1095              	.LBE18:
+ 1096              		.cfi_endproc
+ 1097              	.LFE326:
+ 1099              		.section	.text.Button_ISR,"ax",%progbits
+ 1100              		.align	1
+ 1101              		.syntax unified
+ 1102              		.thumb
+ 1103              		.thumb_func
+ 1104              		.fpu fpv4-sp-d16
+ 1106              	Button_ISR:
+ 1107              	.LFB331:
+ 461:Src/freertos.c **** 	button_flags++;
+ 1108              		.loc 1 461 1 is_stmt 1 view -0
+ 1109              		.cfi_startproc
+ 1110              		@ args = 0, pretend = 0, frame = 0
+ 1111              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1112 0000 08B5     		push	{r3, lr}
+ 1113              	.LCFI16:
+ 1114              		.cfi_def_cfa_offset 8
+ 1115              		.cfi_offset 3, -8
+ 1116              		.cfi_offset 14, -4
+ 462:Src/freertos.c **** 	if (wifiConnected)
+ 1117              		.loc 1 462 2 view .LVU289
+ 462:Src/freertos.c **** 	if (wifiConnected)
+ 1118              		.loc 1 462 14 is_stmt 0 view .LVU290
+ 1119 0002 064A     		ldr	r2, .L90
+ 1120 0004 1378     		ldrb	r3, [r2]	@ zero_extendqisi2
+ 1121 0006 0133     		adds	r3, r3, #1
+ 1122 0008 DBB2     		uxtb	r3, r3
+ 1123 000a 1370     		strb	r3, [r2]
+ 463:Src/freertos.c **** 	{
+ 1124              		.loc 1 463 2 is_stmt 1 view .LVU291
+ 463:Src/freertos.c **** 	{
+ 1125              		.loc 1 463 6 is_stmt 0 view .LVU292
+ 1126 000c 044B     		ldr	r3, .L90+4
+ 1127 000e 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 463:Src/freertos.c **** 	{
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 34
+
+
+ 1128              		.loc 1 463 5 view .LVU293
+ 1129 0010 03B9     		cbnz	r3, .L89
+ 1130              	.L86:
+ 467:Src/freertos.c **** 
+ 1131              		.loc 1 467 1 view .LVU294
+ 1132 0012 08BD     		pop	{r3, pc}
+ 1133              	.L89:
+ 465:Src/freertos.c **** 	}
+ 1134              		.loc 1 465 3 is_stmt 1 view .LVU295
+ 1135 0014 FFF7FEFF 		bl	toggleMasterStatus
+ 1136              	.LVL94:
+ 467:Src/freertos.c **** 
+ 1137              		.loc 1 467 1 is_stmt 0 view .LVU296
+ 1138 0018 FBE7     		b	.L86
+ 1139              	.L91:
+ 1140 001a 00BF     		.align	2
+ 1141              	.L90:
+ 1142 001c 00000000 		.word	.LANCHOR12
+ 1143 0020 00000000 		.word	.LANCHOR11
+ 1144              		.cfi_endproc
+ 1145              	.LFE331:
+ 1147              		.global	__aeabi_i2d
+ 1148              		.global	__aeabi_dmul
+ 1149              		.global	__aeabi_dadd
+ 1150              		.global	__aeabi_d2iz
+ 1151              		.section	.text.HAL_TIM_PeriodElapsedCallback,"ax",%progbits
+ 1152              		.align	1
+ 1153              		.global	HAL_TIM_PeriodElapsedCallback
+ 1154              		.syntax unified
+ 1155              		.thumb
+ 1156              		.thumb_func
+ 1157              		.fpu fpv4-sp-d16
+ 1159              	HAL_TIM_PeriodElapsedCallback:
+ 1160              	.LVL95:
+ 1161              	.LFB329:
+ 389:Src/freertos.c **** 	//increase global variable uwTick - Hardware Abstraction Layer runs on timer 2
+ 1162              		.loc 1 389 1 is_stmt 1 view -0
+ 1163              		.cfi_startproc
+ 1164              		@ args = 0, pretend = 0, frame = 0
+ 1165              		@ frame_needed = 0, uses_anonymous_args = 0
+ 389:Src/freertos.c **** 	//increase global variable uwTick - Hardware Abstraction Layer runs on timer 2
+ 1166              		.loc 1 389 1 is_stmt 0 view .LVU298
+ 1167 0000 2DE9F047 		push	{r4, r5, r6, r7, r8, r9, r10, lr}
+ 1168              	.LCFI17:
+ 1169              		.cfi_def_cfa_offset 32
+ 1170              		.cfi_offset 4, -32
+ 1171              		.cfi_offset 5, -28
+ 1172              		.cfi_offset 6, -24
+ 1173              		.cfi_offset 7, -20
+ 1174              		.cfi_offset 8, -16
+ 1175              		.cfi_offset 9, -12
+ 1176              		.cfi_offset 10, -8
+ 1177              		.cfi_offset 14, -4
+ 1178 0004 0446     		mov	r4, r0
+ 391:Src/freertos.c **** 		HAL_IncTick();
+ 1179              		.loc 1 391 2 is_stmt 1 view .LVU299
+ 391:Src/freertos.c **** 		HAL_IncTick();
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 35
+
+
+ 1180              		.loc 1 391 10 is_stmt 0 view .LVU300
+ 1181 0006 0368     		ldr	r3, [r0]
+ 391:Src/freertos.c **** 		HAL_IncTick();
+ 1182              		.loc 1 391 5 view .LVU301
+ 1183 0008 B3F1804F 		cmp	r3, #1073741824
+ 1184 000c 05D0     		beq	.L99
+ 1185              	.LVL96:
+ 1186              	.L93:
+ 395:Src/freertos.c **** 	{
+ 1187              		.loc 1 395 2 is_stmt 1 view .LVU302
+ 395:Src/freertos.c **** 	{
+ 1188              		.loc 1 395 10 is_stmt 0 view .LVU303
+ 1189 000e 2268     		ldr	r2, [r4]
+ 395:Src/freertos.c **** 	{
+ 1190              		.loc 1 395 5 view .LVU304
+ 1191 0010 2D4B     		ldr	r3, .L101+16
+ 1192 0012 9A42     		cmp	r2, r3
+ 1193 0014 04D0     		beq	.L100
+ 1194              	.LVL97:
+ 1195              	.L92:
+ 432:Src/freertos.c **** 
+ 1196              		.loc 1 432 1 view .LVU305
+ 1197 0016 BDE8F087 		pop	{r4, r5, r6, r7, r8, r9, r10, pc}
+ 1198              	.LVL98:
+ 1199              	.L99:
+ 392:Src/freertos.c **** 	}
+ 1200              		.loc 1 392 3 is_stmt 1 view .LVU306
+ 1201 001a FFF7FEFF 		bl	HAL_IncTick
+ 1202              	.LVL99:
+ 392:Src/freertos.c **** 	}
+ 1203              		.loc 1 392 3 is_stmt 0 view .LVU307
+ 1204 001e F6E7     		b	.L93
+ 1205              	.L100:
+ 397:Src/freertos.c **** 		{
+ 1206              		.loc 1 397 3 is_stmt 1 view .LVU308
+ 397:Src/freertos.c **** 		{
+ 1207              		.loc 1 397 20 is_stmt 0 view .LVU309
+ 1208 0020 2A4B     		ldr	r3, .L101+20
+ 1209 0022 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 397:Src/freertos.c **** 		{
+ 1210              		.loc 1 397 6 view .LVU310
+ 1211 0024 032B     		cmp	r3, #3
+ 1212 0026 F6D1     		bne	.L92
+ 1213              	.LBB19:
+ 418:Src/freertos.c **** 				uint16_t posn = calcSinglePos(i);
+ 1214              		.loc 1 418 13 view .LVU311
+ 1215 0028 0024     		movs	r4, #0
+ 1216              	.LVL100:
+ 418:Src/freertos.c **** 				uint16_t posn = calcSinglePos(i);
+ 1217              		.loc 1 418 13 view .LVU312
+ 1218 002a 42E0     		b	.L95
+ 1219              	.LVL101:
+ 1220              	.L96:
+ 1221              	.LBB20:
+ 419:Src/freertos.c **** 				// isrLastPosErr[i] = lastPosErr[i];
+ 1222              		.loc 1 419 5 is_stmt 1 discriminator 3 view .LVU313
+ 419:Src/freertos.c **** 				// isrLastPosErr[i] = lastPosErr[i];
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 36
+
+
+ 1223              		.loc 1 419 21 is_stmt 0 discriminator 3 view .LVU314
+ 1224 002c 5FFA84F9 		uxtb	r9, r4
+ 1225 0030 4846     		mov	r0, r9
+ 1226 0032 FFF7FEFF 		bl	calcSinglePos
+ 1227              	.LVL102:
+ 1228 0036 8246     		mov	r10, r0
+ 1229              	.LVL103:
+ 421:Src/freertos.c **** 				totalErr[i] = posn + (K_GAIN_BASE*posErr[i]) + D_GAIN_BASE*(posErr[i] - lastPosErr[i]);
+ 1230              		.loc 1 421 5 is_stmt 1 discriminator 3 view .LVU315
+ 421:Src/freertos.c **** 				totalErr[i] = posn + (K_GAIN_BASE*posErr[i]) + D_GAIN_BASE*(posErr[i] - lastPosErr[i]);
+ 1231              		.loc 1 421 42 is_stmt 0 discriminator 3 view .LVU316
+ 1232 0038 254B     		ldr	r3, .L101+24
+ 1233 003a 33F81450 		ldrh	r5, [r3, r4, lsl #1]
+ 421:Src/freertos.c **** 				totalErr[i] = posn + (K_GAIN_BASE*posErr[i]) + D_GAIN_BASE*(posErr[i] - lastPosErr[i]);
+ 1234              		.loc 1 421 46 discriminator 3 view .LVU317
+ 1235 003e 2D1A     		subs	r5, r5, r0
+ 421:Src/freertos.c **** 				totalErr[i] = posn + (K_GAIN_BASE*posErr[i]) + D_GAIN_BASE*(posErr[i] - lastPosErr[i]);
+ 1236              		.loc 1 421 15 discriminator 3 view .LVU318
+ 1237 0040 DFF89480 		ldr	r8, .L101+32
+ 1238 0044 48F82450 		str	r5, [r8, r4, lsl #2]
+ 422:Src/freertos.c **** 				setPulse(analogToPulse(totalErr[i], PWM_Array[i]), true, i);
+ 1239              		.loc 1 422 5 is_stmt 1 discriminator 3 view .LVU319
+ 422:Src/freertos.c **** 				setPulse(analogToPulse(totalErr[i], PWM_Array[i]), true, i);
+ 1240              		.loc 1 422 38 is_stmt 0 discriminator 3 view .LVU320
+ 1241 0048 2846     		mov	r0, r5
+ 1242              	.LVL104:
+ 422:Src/freertos.c **** 				setPulse(analogToPulse(totalErr[i], PWM_Array[i]), true, i);
+ 1243              		.loc 1 422 38 discriminator 3 view .LVU321
+ 1244 004a FFF7FEFF 		bl	__aeabi_i2d
+ 1245              	.LVL105:
+ 1246 004e 1AA3     		adr	r3, .L101
+ 1247 0050 D3E90023 		ldrd	r2, [r3]
+ 1248 0054 FFF7FEFF 		bl	__aeabi_dmul
+ 1249              	.LVL106:
+ 1250 0058 0646     		mov	r6, r0
+ 1251 005a 0F46     		mov	r7, r1
+ 422:Src/freertos.c **** 				setPulse(analogToPulse(totalErr[i], PWM_Array[i]), true, i);
+ 1252              		.loc 1 422 24 discriminator 3 view .LVU322
+ 1253 005c 5046     		mov	r0, r10
+ 1254 005e FFF7FEFF 		bl	__aeabi_i2d
+ 1255              	.LVL107:
+ 1256 0062 3246     		mov	r2, r6
+ 1257 0064 3B46     		mov	r3, r7
+ 1258 0066 FFF7FEFF 		bl	__aeabi_dadd
+ 1259              	.LVL108:
+ 1260 006a 0646     		mov	r6, r0
+ 1261 006c 0F46     		mov	r7, r1
+ 422:Src/freertos.c **** 				setPulse(analogToPulse(totalErr[i], PWM_Array[i]), true, i);
+ 1262              		.loc 1 422 87 discriminator 3 view .LVU323
+ 1263 006e DFF86CA0 		ldr	r10, .L101+36
+ 1264 0072 5AF82400 		ldr	r0, [r10, r4, lsl #2]
+ 422:Src/freertos.c **** 				setPulse(analogToPulse(totalErr[i], PWM_Array[i]), true, i);
+ 1265              		.loc 1 422 63 discriminator 3 view .LVU324
+ 1266 0076 281A     		subs	r0, r5, r0
+ 1267 0078 FFF7FEFF 		bl	__aeabi_i2d
+ 1268              	.LVL109:
+ 1269 007c 10A3     		adr	r3, .L101+8
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 37
+
+
+ 1270 007e D3E90023 		ldrd	r2, [r3]
+ 1271 0082 FFF7FEFF 		bl	__aeabi_dmul
+ 1272              	.LVL110:
+ 1273 0086 0246     		mov	r2, r0
+ 1274 0088 0B46     		mov	r3, r1
+ 422:Src/freertos.c **** 				setPulse(analogToPulse(totalErr[i], PWM_Array[i]), true, i);
+ 1275              		.loc 1 422 50 discriminator 3 view .LVU325
+ 1276 008a 3046     		mov	r0, r6
+ 1277 008c 3946     		mov	r1, r7
+ 1278 008e FFF7FEFF 		bl	__aeabi_dadd
+ 1279              	.LVL111:
+ 422:Src/freertos.c **** 				setPulse(analogToPulse(totalErr[i], PWM_Array[i]), true, i);
+ 1280              		.loc 1 422 17 discriminator 3 view .LVU326
+ 1281 0092 FFF7FEFF 		bl	__aeabi_d2iz
+ 1282              	.LVL112:
+ 423:Src/freertos.c **** 				lastPosErr[i] = posErr[i];
+ 1283              		.loc 1 423 5 is_stmt 1 discriminator 3 view .LVU327
+ 1284 0096 0F4B     		ldr	r3, .L101+28
+ 1285 0098 53F82410 		ldr	r1, [r3, r4, lsl #2]
+ 1286 009c FFF7FEFF 		bl	analogToPulse
+ 1287              	.LVL113:
+ 1288 00a0 4A46     		mov	r2, r9
+ 1289 00a2 0121     		movs	r1, #1
+ 1290 00a4 FFF7FEFF 		bl	setPulse
+ 1291              	.LVL114:
+ 424:Src/freertos.c **** 
+ 1292              		.loc 1 424 5 discriminator 3 view .LVU328
+ 424:Src/freertos.c **** 
+ 1293              		.loc 1 424 27 is_stmt 0 discriminator 3 view .LVU329
+ 1294 00a8 58F82430 		ldr	r3, [r8, r4, lsl #2]
+ 424:Src/freertos.c **** 
+ 1295              		.loc 1 424 19 discriminator 3 view .LVU330
+ 1296 00ac 4AF82430 		str	r3, [r10, r4, lsl #2]
+ 1297              	.LBE20:
+ 418:Src/freertos.c **** 				uint16_t posn = calcSinglePos(i);
+ 1298              		.loc 1 418 32 is_stmt 1 discriminator 3 view .LVU331
+ 418:Src/freertos.c **** 				uint16_t posn = calcSinglePos(i);
+ 1299              		.loc 1 418 33 is_stmt 0 discriminator 3 view .LVU332
+ 1300 00b0 0134     		adds	r4, r4, #1
+ 1301              	.LVL115:
+ 1302              	.L95:
+ 418:Src/freertos.c **** 				uint16_t posn = calcSinglePos(i);
+ 1303              		.loc 1 418 18 is_stmt 1 discriminator 1 view .LVU333
+ 418:Src/freertos.c **** 				uint16_t posn = calcSinglePos(i);
+ 1304              		.loc 1 418 4 is_stmt 0 discriminator 1 view .LVU334
+ 1305 00b2 022C     		cmp	r4, #2
+ 1306 00b4 BADD     		ble	.L96
+ 1307 00b6 AEE7     		b	.L92
+ 1308              	.L102:
+ 1309              		.align	3
+ 1310              	.L101:
+ 1311 00b8 9A999999 		.word	-1717986918
+ 1312 00bc 9999C93F 		.word	1070176665
+ 1313 00c0 7B14AE47 		.word	1202590843
+ 1314 00c4 E17AA43F 		.word	1067743969
+ 1315 00c8 00040040 		.word	1073742848
+ 1316 00cc 00000000 		.word	.LANCHOR4
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 38
+
+
+ 1317 00d0 00000000 		.word	.LANCHOR6
+ 1318 00d4 00000000 		.word	.LANCHOR1
+ 1319 00d8 00000000 		.word	.LANCHOR13
+ 1320 00dc 00000000 		.word	.LANCHOR14
+ 1321              	.LBE19:
+ 1322              		.cfi_endproc
+ 1323              	.LFE329:
+ 1325              		.section	.text.HAL_GPIO_EXTI_Callback,"ax",%progbits
+ 1326              		.align	1
+ 1327              		.global	HAL_GPIO_EXTI_Callback
+ 1328              		.syntax unified
+ 1329              		.thumb
+ 1330              		.thumb_func
+ 1331              		.fpu fpv4-sp-d16
+ 1333              	HAL_GPIO_EXTI_Callback:
+ 1334              	.LVL116:
+ 1335              	.LFB330:
+ 437:Src/freertos.c **** 	switch (GPIO_Pin)
+ 1336              		.loc 1 437 1 is_stmt 1 view -0
+ 1337              		.cfi_startproc
+ 1338              		@ args = 0, pretend = 0, frame = 0
+ 1339              		@ frame_needed = 0, uses_anonymous_args = 0
+ 437:Src/freertos.c **** 	switch (GPIO_Pin)
+ 1340              		.loc 1 437 1 is_stmt 0 view .LVU336
+ 1341 0000 08B5     		push	{r3, lr}
+ 1342              	.LCFI18:
+ 1343              		.cfi_def_cfa_offset 8
+ 1344              		.cfi_offset 3, -8
+ 1345              		.cfi_offset 14, -4
+ 438:Src/freertos.c **** 	{
+ 1346              		.loc 1 438 2 is_stmt 1 view .LVU337
+ 1347 0002 0228     		cmp	r0, #2
+ 1348 0004 05D0     		beq	.L104
+ 1349 0006 B0F5005F 		cmp	r0, #8192
+ 1350 000a 01D1     		bne	.L103
+ 442:Src/freertos.c **** 		break;
+ 1351              		.loc 1 442 3 view .LVU338
+ 1352 000c FFF7FEFF 		bl	Button_ISR
+ 1353              	.LVL117:
+ 443:Src/freertos.c ****     	}
+ 1354              		.loc 1 443 3 view .LVU339
+ 1355              	.L103:
+ 456:Src/freertos.c **** 
+ 1356              		.loc 1 456 1 is_stmt 0 view .LVU340
+ 1357 0010 08BD     		pop	{r3, pc}
+ 1358              	.LVL118:
+ 1359              	.L104:
+ 447:Src/freertos.c **** 		break;
+ 1360              		.loc 1 447 3 is_stmt 1 view .LVU341
+ 1361 0012 FFF7FEFF 		bl	SPI_WIFI_ISR
+ 1362              	.LVL119:
+ 448:Src/freertos.c **** 		}
+ 1363              		.loc 1 448 3 view .LVU342
+ 456:Src/freertos.c **** 
+ 1364              		.loc 1 456 1 is_stmt 0 view .LVU343
+ 1365 0016 FBE7     		b	.L103
+ 1366              		.cfi_endproc
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 39
+
+
+ 1367              	.LFE330:
+ 1369              		.section	.text.Button_WaitForPush,"ax",%progbits
+ 1370              		.align	1
+ 1371              		.global	Button_WaitForPush
+ 1372              		.syntax unified
+ 1373              		.thumb
+ 1374              		.thumb_func
+ 1375              		.fpu fpv4-sp-d16
+ 1377              	Button_WaitForPush:
+ 1378              	.LVL120:
+ 1379              	.LFB332:
+ 472:Src/freertos.c **** 	uint32_t time_out = HAL_GetTick()+delay;
+ 1380              		.loc 1 472 1 is_stmt 1 view -0
+ 1381              		.cfi_startproc
+ 1382              		@ args = 0, pretend = 0, frame = 0
+ 1383              		@ frame_needed = 0, uses_anonymous_args = 0
+ 472:Src/freertos.c **** 	uint32_t time_out = HAL_GetTick()+delay;
+ 1384              		.loc 1 472 1 is_stmt 0 view .LVU345
+ 1385 0000 10B5     		push	{r4, lr}
+ 1386              	.LCFI19:
+ 1387              		.cfi_def_cfa_offset 8
+ 1388              		.cfi_offset 4, -8
+ 1389              		.cfi_offset 14, -4
+ 1390 0002 0446     		mov	r4, r0
+ 473:Src/freertos.c **** 	do
+ 1391              		.loc 1 473 2 is_stmt 1 view .LVU346
+ 473:Src/freertos.c **** 	do
+ 1392              		.loc 1 473 22 is_stmt 0 view .LVU347
+ 1393 0004 FFF7FEFF 		bl	HAL_GetTick
+ 1394              	.LVL121:
+ 473:Src/freertos.c **** 	do
+ 1395              		.loc 1 473 11 view .LVU348
+ 1396 0008 0444     		add	r4, r4, r0
+ 1397              	.LVL122:
+ 1398              	.L111:
+ 474:Src/freertos.c **** 	{
+ 1399              		.loc 1 474 2 is_stmt 1 view .LVU349
+ 476:Src/freertos.c **** 		{
+ 1400              		.loc 1 476 3 view .LVU350
+ 476:Src/freertos.c **** 		{
+ 1401              		.loc 1 476 20 is_stmt 0 view .LVU351
+ 1402 000a 0C4B     		ldr	r3, .L115
+ 1403 000c 1B78     		ldrb	r3, [r3]	@ zero_extendqisi2
+ 1404 000e DBB2     		uxtb	r3, r3
+ 476:Src/freertos.c **** 		{
+ 1405              		.loc 1 476 6 view .LVU352
+ 1406 0010 012B     		cmp	r3, #1
+ 1407 0012 0AD8     		bhi	.L113
+ 482:Src/freertos.c **** 		{
+ 1408              		.loc 1 482 3 is_stmt 1 view .LVU353
+ 482:Src/freertos.c **** 		{
+ 1409              		.loc 1 482 20 is_stmt 0 view .LVU354
+ 1410 0014 094B     		ldr	r3, .L115
+ 1411 0016 1878     		ldrb	r0, [r3]	@ zero_extendqisi2
+ 1412 0018 C0B2     		uxtb	r0, r0
+ 482:Src/freertos.c **** 		{
+ 1413              		.loc 1 482 6 view .LVU355
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 40
+
+
+ 1414 001a 0128     		cmp	r0, #1
+ 1415 001c 0AD0     		beq	.L114
+ 488:Src/freertos.c **** 	return BP_NOT_PUSHED;
+ 1416              		.loc 1 488 7 is_stmt 1 view .LVU356
+ 488:Src/freertos.c **** 	return BP_NOT_PUSHED;
+ 1417              		.loc 1 488 9 is_stmt 0 view .LVU357
+ 1418 001e FFF7FEFF 		bl	HAL_GetTick
+ 1419              	.LVL123:
+ 488:Src/freertos.c **** 	return BP_NOT_PUSHED;
+ 1420              		.loc 1 488 2 view .LVU358
+ 1421 0022 A042     		cmp	r0, r4
+ 1422 0024 F1D3     		bcc	.L111
+ 489:Src/freertos.c **** }
+ 1423              		.loc 1 489 9 view .LVU359
+ 1424 0026 0020     		movs	r0, #0
+ 1425 0028 03E0     		b	.L109
+ 1426              	.L113:
+ 478:Src/freertos.c **** 			return BP_MULTIPLE_PUSH;
+ 1427              		.loc 1 478 4 is_stmt 1 view .LVU360
+ 478:Src/freertos.c **** 			return BP_MULTIPLE_PUSH;
+ 1428              		.loc 1 478 17 is_stmt 0 view .LVU361
+ 1429 002a 044B     		ldr	r3, .L115
+ 1430 002c 0022     		movs	r2, #0
+ 1431 002e 1A70     		strb	r2, [r3]
+ 479:Src/freertos.c **** 		}
+ 1432              		.loc 1 479 4 is_stmt 1 view .LVU362
+ 479:Src/freertos.c **** 		}
+ 1433              		.loc 1 479 11 is_stmt 0 view .LVU363
+ 1434 0030 0220     		movs	r0, #2
+ 1435              	.L109:
+ 490:Src/freertos.c **** 
+ 1436              		.loc 1 490 1 view .LVU364
+ 1437 0032 10BD     		pop	{r4, pc}
+ 1438              	.LVL124:
+ 1439              	.L114:
+ 484:Src/freertos.c **** 			return BP_SINGLE_PUSH;
+ 1440              		.loc 1 484 4 is_stmt 1 view .LVU365
+ 484:Src/freertos.c **** 			return BP_SINGLE_PUSH;
+ 1441              		.loc 1 484 17 is_stmt 0 view .LVU366
+ 1442 0034 0022     		movs	r2, #0
+ 1443 0036 1A70     		strb	r2, [r3]
+ 485:Src/freertos.c **** 		}
+ 1444              		.loc 1 485 4 is_stmt 1 view .LVU367
+ 485:Src/freertos.c **** 		}
+ 1445              		.loc 1 485 11 is_stmt 0 view .LVU368
+ 1446 0038 FBE7     		b	.L109
+ 1447              	.L116:
+ 1448 003a 00BF     		.align	2
+ 1449              	.L115:
+ 1450 003c 00000000 		.word	.LANCHOR12
+ 1451              		.cfi_endproc
+ 1452              	.LFE332:
+ 1454              		.section	.text.clearPosnHistory,"ax",%progbits
+ 1455              		.align	1
+ 1456              		.global	clearPosnHistory
+ 1457              		.syntax unified
+ 1458              		.thumb
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 41
+
+
+ 1459              		.thumb_func
+ 1460              		.fpu fpv4-sp-d16
+ 1462              	clearPosnHistory:
+ 1463              	.LFB334:
+ 500:Src/freertos.c **** 	resetRingBuf(&posnHistory);
+ 1464              		.loc 1 500 29 is_stmt 1 view -0
+ 1465              		.cfi_startproc
+ 1466              		@ args = 0, pretend = 0, frame = 0
+ 1467              		@ frame_needed = 0, uses_anonymous_args = 0
+ 1468 0000 08B5     		push	{r3, lr}
+ 1469              	.LCFI20:
+ 1470              		.cfi_def_cfa_offset 8
+ 1471              		.cfi_offset 3, -8
+ 1472              		.cfi_offset 14, -4
+ 501:Src/freertos.c **** }
+ 1473              		.loc 1 501 2 view .LVU370
+ 1474 0002 0248     		ldr	r0, .L119
+ 1475 0004 FFF7FEFF 		bl	resetRingBuf
+ 1476              	.LVL125:
+ 502:Src/freertos.c **** 
+ 1477              		.loc 1 502 1 is_stmt 0 view .LVU371
+ 1478 0008 08BD     		pop	{r3, pc}
+ 1479              	.L120:
+ 1480 000a 00BF     		.align	2
+ 1481              	.L119:
+ 1482 000c 00000000 		.word	.LANCHOR3
+ 1483              		.cfi_endproc
+ 1484              	.LFE334:
+ 1486              		.comm	msgToSend,8,4
+ 1487              		.section	.bss.analogDestPosns,"aw",%nobits
+ 1488              		.align	2
+ 1489              		.set	.LANCHOR6,. + 0
+ 1492              	analogDestPosns:
+ 1493 0000 00000000 		.space	6
+ 1493      0000
+ 1494              		.section	.bss.button_flags,"aw",%nobits
+ 1495              		.set	.LANCHOR12,. + 0
+ 1498              	button_flags:
+ 1499 0000 00       		.space	1
+ 1500              		.section	.bss.currentAnalogPosns,"aw",%nobits
+ 1501              		.align	2
+ 1502              		.set	.LANCHOR0,. + 0
+ 1505              	currentAnalogPosns:
+ 1506 0000 00000000 		.space	6
+ 1506      0000
+ 1507              		.section	.bss.lastMessage,"aw",%nobits
+ 1508              		.set	.LANCHOR5,. + 0
+ 1511              	lastMessage:
+ 1512 0000 00       		.space	1
+ 1513              		.section	.bss.lastPosErr,"aw",%nobits
+ 1514              		.align	2
+ 1515              		.set	.LANCHOR14,. + 0
+ 1518              	lastPosErr:
+ 1519 0000 00000000 		.space	12
+ 1519      00000000 
+ 1519      00000000 
+ 1520              		.section	.bss.msgReadLen,"aw",%nobits
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 42
+
+
+ 1521              		.align	1
+ 1522              		.set	.LANCHOR9,. + 0
+ 1525              	msgReadLen:
+ 1526 0000 0000     		.space	2
+ 1527              		.section	.bss.msgSentLen,"aw",%nobits
+ 1528              		.align	1
+ 1529              		.set	.LANCHOR7,. + 0
+ 1532              	msgSentLen:
+ 1533 0000 0000     		.space	2
+ 1534              		.section	.bss.posErr,"aw",%nobits
+ 1535              		.align	2
+ 1536              		.set	.LANCHOR13,. + 0
+ 1539              	posErr:
+ 1540 0000 00000000 		.space	12
+ 1540      00000000 
+ 1540      00000000 
+ 1541              		.section	.bss.recStatus.13460,"aw",%nobits
+ 1542              		.set	.LANCHOR10,. + 0
+ 1545              	recStatus.13460:
+ 1546 0000 00       		.space	1
+ 1547              		.section	.bss.retData,"aw",%nobits
+ 1548              		.align	2
+ 1549              		.set	.LANCHOR8,. + 0
+ 1552              	retData:
+ 1553 0000 00000000 		.space	10
+ 1553      00000000 
+ 1553      0000
+ 1554              		.section	.bss.wifiConnected,"aw",%nobits
+ 1555              		.set	.LANCHOR11,. + 0
+ 1558              	wifiConnected:
+ 1559 0000 00       		.space	1
+ 1560              		.section	.data.masterStatus,"aw"
+ 1561              		.set	.LANCHOR4,. + 0
+ 1564              	masterStatus:
+ 1565 0000 02       		.byte	2
+ 1566              		.section	.data.posnHistory,"aw"
+ 1567              		.align	2
+ 1568              		.set	.LANCHOR3,. + 0
+ 1571              	posnHistory:
+ 1572 0000 00000000 		.space	60
+ 1572      00000000 
+ 1572      00000000 
+ 1572      00000000 
+ 1572      00000000 
+ 1573 003c 00       		.byte	0
+ 1574 003d 000000   		.space	3
+ 1575 0040 08000000 		.word	8
+ 1576 0044 00000000 		.word	0
+ 1577 0048 00000000 		.word	0
+ 1578              		.section	.rodata.ADC_Array,"a"
+ 1579              		.align	2
+ 1580              		.set	.LANCHOR2,. + 0
+ 1583              	ADC_Array:
+ 1584 0000 00000000 		.word	hadc1
+ 1585 0004 00000000 		.word	hadc2
+ 1586 0008 00000000 		.word	hadc3
+ 1587              		.section	.rodata.PWM_Array,"a"
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 43
+
+
+ 1588              		.align	2
+ 1589              		.set	.LANCHOR1,. + 0
+ 1592              	PWM_Array:
+ 1593 0000 00000000 		.word	htim15
+ 1594 0004 00000000 		.word	htim4
+ 1595 0008 00000000 		.word	htim16
+ 1596              		.text
+ 1597              	.Letext0:
+ 1598              		.file 2 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\inc
+ 1599              		.file 3 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\inc
+ 1600              		.file 4 "Drivers/CMSIS/Include/core_cm4.h"
+ 1601              		.file 5 "Drivers/CMSIS/Device/ST/STM32L4xx/Include/system_stm32l4xx.h"
+ 1602              		.file 6 "Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l475xx.h"
+ 1603              		.file 7 "Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l4xx.h"
+ 1604              		.file 8 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_def.h"
+ 1605              		.file 9 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_dma.h"
+ 1606              		.file 10 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_adc.h"
+ 1607              		.file 11 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_flash.h"
+ 1608              		.file 12 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi.h"
+ 1609              		.file 13 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_tim.h"
+ 1610              		.file 14 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h"
+ 1611              		.file 15 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\lib\\gcc\\arm-non
+ 1612              		.file 16 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\in
+ 1613              		.file 17 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\in
+ 1614              		.file 18 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\in
+ 1615              		.file 19 "c:\\program files (x86)\\gnu arm embedded toolchain\\9 2020-q2-update\\arm-none-eabi\\in
+ 1616              		.file 20 "Drivers/STM32CubeL4_libs/Inc/net.h"
+ 1617              		.file 21 "Drivers/STM32CubeL4_libs/Inc/iot_flash_config.h"
+ 1618              		.file 22 "Inc/main.h"
+ 1619              		.file 23 "Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h"
+ 1620              		.file 24 "Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os.h"
+ 1621              		.file 25 "Inc/CustomUserfunctions.h"
+ 1622              		.file 26 "Inc/ring_buf.h"
+ 1623              		.file 27 "Inc/Analog_PWM_Functions.h"
+ 1624              		.file 28 "Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_gpio.h"
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 44
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 freertos.c
+C:\cygwin64\tmp\ccpuMsGW.s:18     .text.updatePosnArray:00000000 $t
+C:\cygwin64\tmp\ccpuMsGW.s:25     .text.updatePosnArray:00000000 updatePosnArray
+C:\cygwin64\tmp\ccpuMsGW.s:77     .text.lock_servos:00000000 $t
+C:\cygwin64\tmp\ccpuMsGW.s:83     .text.lock_servos:00000000 lock_servos
+C:\cygwin64\tmp\ccpuMsGW.s:135    .text.lock_servos:00000028 $d
+C:\cygwin64\tmp\ccpuMsGW.s:141    .text.getCurrAnalogPosns:00000000 $t
+C:\cygwin64\tmp\ccpuMsGW.s:147    .text.getCurrAnalogPosns:00000000 getCurrAnalogPosns
+C:\cygwin64\tmp\ccpuMsGW.s:201    .text.getCurrAnalogPosns:00000020 $d
+C:\cygwin64\tmp\ccpuMsGW.s:206    .text.calcCurrentPos:00000000 $t
+C:\cygwin64\tmp\ccpuMsGW.s:212    .text.calcCurrentPos:00000000 calcCurrentPos
+C:\cygwin64\tmp\ccpuMsGW.s:361    .text.calcCurrentPos:00000088 $d
+C:\cygwin64\tmp\ccpuMsGW.s:366    .text.calcSinglePos:00000000 $t
+C:\cygwin64\tmp\ccpuMsGW.s:372    .text.calcSinglePos:00000000 calcSinglePos
+C:\cygwin64\tmp\ccpuMsGW.s:450    .text.calcSinglePos:00000038 $d
+C:\cygwin64\tmp\ccpuMsGW.s:456    .text.startDefaultTask:00000000 $t
+C:\cygwin64\tmp\ccpuMsGW.s:463    .text.startDefaultTask:00000000 startDefaultTask
+C:\cygwin64\tmp\ccpuMsGW.s:490    .text.parseWifiMsg:00000000 $t
+C:\cygwin64\tmp\ccpuMsGW.s:497    .text.parseWifiMsg:00000000 parseWifiMsg
+C:\cygwin64\tmp\ccpuMsGW.s:741    .text.parseWifiMsg:00000104 $d
+                            *COM*:00000008 msgToSend
+C:\cygwin64\tmp\ccpuMsGW.s:755    .text.getWifiMsg:00000000 $t
+C:\cygwin64\tmp\ccpuMsGW.s:762    .text.getWifiMsg:00000000 getWifiMsg
+C:\cygwin64\tmp\ccpuMsGW.s:906    .text.getWifiMsg:00000098 $d
+C:\cygwin64\tmp\ccpuMsGW.s:918    .text.updateServoPositions:00000000 $t
+C:\cygwin64\tmp\ccpuMsGW.s:925    .text.updateServoPositions:00000000 updateServoPositions
+C:\cygwin64\tmp\ccpuMsGW.s:994    .text.updateServoPositions:0000004c $d
+C:\cygwin64\tmp\ccpuMsGW.s:1001   .text.toggleMasterStatus:00000000 $t
+C:\cygwin64\tmp\ccpuMsGW.s:1008   .text.toggleMasterStatus:00000000 toggleMasterStatus
+C:\cygwin64\tmp\ccpuMsGW.s:1092   .text.toggleMasterStatus:00000058 $d
+C:\cygwin64\tmp\ccpuMsGW.s:1100   .text.Button_ISR:00000000 $t
+C:\cygwin64\tmp\ccpuMsGW.s:1106   .text.Button_ISR:00000000 Button_ISR
+C:\cygwin64\tmp\ccpuMsGW.s:1142   .text.Button_ISR:0000001c $d
+C:\cygwin64\tmp\ccpuMsGW.s:1152   .text.HAL_TIM_PeriodElapsedCallback:00000000 $t
+C:\cygwin64\tmp\ccpuMsGW.s:1159   .text.HAL_TIM_PeriodElapsedCallback:00000000 HAL_TIM_PeriodElapsedCallback
+C:\cygwin64\tmp\ccpuMsGW.s:1311   .text.HAL_TIM_PeriodElapsedCallback:000000b8 $d
+C:\cygwin64\tmp\ccpuMsGW.s:1326   .text.HAL_GPIO_EXTI_Callback:00000000 $t
+C:\cygwin64\tmp\ccpuMsGW.s:1333   .text.HAL_GPIO_EXTI_Callback:00000000 HAL_GPIO_EXTI_Callback
+C:\cygwin64\tmp\ccpuMsGW.s:1370   .text.Button_WaitForPush:00000000 $t
+C:\cygwin64\tmp\ccpuMsGW.s:1377   .text.Button_WaitForPush:00000000 Button_WaitForPush
+C:\cygwin64\tmp\ccpuMsGW.s:1450   .text.Button_WaitForPush:0000003c $d
+C:\cygwin64\tmp\ccpuMsGW.s:1455   .text.clearPosnHistory:00000000 $t
+C:\cygwin64\tmp\ccpuMsGW.s:1462   .text.clearPosnHistory:00000000 clearPosnHistory
+C:\cygwin64\tmp\ccpuMsGW.s:1482   .text.clearPosnHistory:0000000c $d
+C:\cygwin64\tmp\ccpuMsGW.s:1488   .bss.analogDestPosns:00000000 $d
+C:\cygwin64\tmp\ccpuMsGW.s:1492   .bss.analogDestPosns:00000000 analogDestPosns
+C:\cygwin64\tmp\ccpuMsGW.s:1498   .bss.button_flags:00000000 button_flags
+C:\cygwin64\tmp\ccpuMsGW.s:1499   .bss.button_flags:00000000 $d
+C:\cygwin64\tmp\ccpuMsGW.s:1501   .bss.currentAnalogPosns:00000000 $d
+C:\cygwin64\tmp\ccpuMsGW.s:1505   .bss.currentAnalogPosns:00000000 currentAnalogPosns
+C:\cygwin64\tmp\ccpuMsGW.s:1511   .bss.lastMessage:00000000 lastMessage
+C:\cygwin64\tmp\ccpuMsGW.s:1512   .bss.lastMessage:00000000 $d
+C:\cygwin64\tmp\ccpuMsGW.s:1514   .bss.lastPosErr:00000000 $d
+C:\cygwin64\tmp\ccpuMsGW.s:1518   .bss.lastPosErr:00000000 lastPosErr
+C:\cygwin64\tmp\ccpuMsGW.s:1521   .bss.msgReadLen:00000000 $d
+C:\cygwin64\tmp\ccpuMsGW.s:1525   .bss.msgReadLen:00000000 msgReadLen
+ARM GAS  C:\cygwin64\tmp\ccpuMsGW.s 			page 45
+
+
+C:\cygwin64\tmp\ccpuMsGW.s:1528   .bss.msgSentLen:00000000 $d
+C:\cygwin64\tmp\ccpuMsGW.s:1532   .bss.msgSentLen:00000000 msgSentLen
+C:\cygwin64\tmp\ccpuMsGW.s:1535   .bss.posErr:00000000 $d
+C:\cygwin64\tmp\ccpuMsGW.s:1539   .bss.posErr:00000000 posErr
+C:\cygwin64\tmp\ccpuMsGW.s:1545   .bss.recStatus.13460:00000000 recStatus.13460
+C:\cygwin64\tmp\ccpuMsGW.s:1546   .bss.recStatus.13460:00000000 $d
+C:\cygwin64\tmp\ccpuMsGW.s:1548   .bss.retData:00000000 $d
+C:\cygwin64\tmp\ccpuMsGW.s:1552   .bss.retData:00000000 retData
+C:\cygwin64\tmp\ccpuMsGW.s:1558   .bss.wifiConnected:00000000 wifiConnected
+C:\cygwin64\tmp\ccpuMsGW.s:1559   .bss.wifiConnected:00000000 $d
+C:\cygwin64\tmp\ccpuMsGW.s:1564   .data.masterStatus:00000000 masterStatus
+C:\cygwin64\tmp\ccpuMsGW.s:1567   .data.posnHistory:00000000 $d
+C:\cygwin64\tmp\ccpuMsGW.s:1571   .data.posnHistory:00000000 posnHistory
+C:\cygwin64\tmp\ccpuMsGW.s:1579   .rodata.ADC_Array:00000000 $d
+C:\cygwin64\tmp\ccpuMsGW.s:1583   .rodata.ADC_Array:00000000 ADC_Array
+C:\cygwin64\tmp\ccpuMsGW.s:1588   .rodata.PWM_Array:00000000 $d
+C:\cygwin64\tmp\ccpuMsGW.s:1592   .rodata.PWM_Array:00000000 PWM_Array
+
+UNDEFINED SYMBOLS
+analogToPulse
+setPulse
+getAnalogVal
+getRingBufXRecent
+osDelay
+HAL_GPIO_TogglePin
+osMessageQueueGet
+osMutexAcquire
+sendTCPData
+osMutexRelease
+wifiMsgQID
+useSPI3MutexHandle
+osMessageQueuePut
+receiveTCPData
+addToRingBuf
+__aeabi_i2d
+__aeabi_dmul
+__aeabi_dadd
+__aeabi_d2iz
+HAL_IncTick
+SPI_WIFI_ISR
+HAL_GetTick
+resetRingBuf
+hadc1
+hadc2
+hadc3
+htim15
+htim4
+htim16
