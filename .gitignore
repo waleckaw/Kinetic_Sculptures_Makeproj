@@ -1,0 +1,10 @@
+.DS_store
+*.d
+*.lst
+*.o
+*.hex
+*.elf
+*.bin
+*.xml
+*.user
+*.map
