@@ -107,11 +107,9 @@ static uint16_t msgSentLen = 0;
 static uint16_t msgReadLen = 0;
 
 //ISR VARIABLES FOR DERIVATIVE TERM
-static int isrLastPosErr[NUM_SERVOS];
 static int lastPosErr[NUM_SERVOS];
 static int posErr[NUM_SERVOS];
 static int totalErr[NUM_SERVOS];
-static int ctrlOut[NUM_SERVOS];
 
 //STATE VARIABLES
 //1 = master, 2 = neutral, 3 = slave
@@ -301,13 +299,7 @@ void updateServoPositions(void *argument)
 	{
 		//analog read values from each servo
 		currentAnalogPosns = getCurrAnalogPosns();
-		if (posnHistory.numFilled == 0) {
-			posnHistory.vals[0] = currentAnalogPosns;
-			posnHistory.numFilled = 1;
-		} else {
-			addToRingBuf(&posnHistory, currentAnalogPosns);
-		}
-
+		addToRingBuf(&posnHistory, currentAnalogPosns);
 		// shiftAndAdd();
 		osDelay(UPDATE_TIME);
 	}

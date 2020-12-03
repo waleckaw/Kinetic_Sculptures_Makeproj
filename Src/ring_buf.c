@@ -13,10 +13,12 @@ void resetRingBuf(ring_buffer *buf) {
     if (buf->numFilled == buf->size) {
         buf->tail++;
         buf->tail = buf->tail % buf->size;
-    }
-
-    if (buf->numFilled < buf->size) {
+    } else {
         buf->numFilled++;
+        if (buf->numFilled == 1) {
+            buf->vals[0] = val;
+            return;
+        }
     }
 
     buf->head++;
@@ -35,13 +37,9 @@ analogPosnArray getRingBufXRecent(ring_buffer *buf, int x) {
         printf("x exceeds size of buf\r\n");
         return buf->vals[buf->tail]; //whats the best thing to actually do here? return oldest val?
     } else {
-        int ind;
-        if (x == 0) {
-            ind = buf->head;
-        } else if ((buf->head - x) < 0) {
-            ind = buf->size - (x - buf->head);
-        } else {
-            ind = buf->head - x;
+        int ind = buf->head - x;
+        if (ind < 0) {
+            ind = buf->size + ind;
         }
         return buf->vals[ind];
     }
